@@ -9,7 +9,7 @@ def load_user(user_id):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(256))
     role = db.Column(db.String(20), nullable=False) # 'student', 'faculty', 'admin'
 
     def set_password(self, password):
