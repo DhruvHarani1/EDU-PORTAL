@@ -170,11 +170,56 @@ def attendance_data():
     fatigue = []
     for i in range(5):
         rate = (day_presents[i] / day_counts[i]) if day_counts[i] > 0 else 0
-        fatigue.append(round(rate, 2))
-        
+        fatigue.append(round(rate * 100, 1)) # Percentage
+
+    # 2. Truancy Prediction (Students with < 75% Attendance)
+    # Get all students and their attendance count
+    truancy_list = []
+    
+    # Efficient Query: Group By Student, Count Status
+    # This approximates for now. In prod, use SQL Case.
+    all_students = StudentProfile.query.all()
+    for s in all_students:
+        total_days = Attendance.query.filter_by(student_id=s.id).count()
+        if total_days > 0:
+            present_days = Attendance.query.filter_by(student_id=s.id, status='Present').count()
+            perc = (present_days / total_days) * 100
+            
+            # Risk Factor: < 75% is standard detention threshold
+            if perc < 75:
+                # Probability = Inverse of Attendance roughly
+                prob = round(100 - perc, 1) 
+                truancy_list.append({'name': s.display_name, 'prob': prob, 'perc': round(perc, 1)})
+    
+    # Sort by highest probability of dropout (lowest attendance)
+    truancy_list.sort(key=lambda x: x['prob'], reverse=True)
+
+    # 3. AI Insights
+    insights = {
+        'status': 'Optimal',
+        'summary': 'Attendance generally stable.',
+        'tip': 'No immediate action.'
+    }
+    
+    # Analyze Fatigue (Lowest day)
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    min_rate = min(fatigue)
+    min_day_idx = fatigue.index(min_rate)
+    
+    if min_rate < 70:
+        insights['status'] = 'Fatigue Detected'
+        insights['summary'] = f"{days[min_day_idx]}s are showing significant drops in attendance ({min_rate}%)."
+        insights['tip'] = f"Consider light activities or gamified sessions on {days[min_day_idx]}s to boost engagement."
+    
+    if len(truancy_list) > len(all_students) * 0.15:
+        insights['status'] = 'High Truancy Risk'
+        insights['summary'] = f"Warning: {len(truancy_list)} students are below the 75% mandatory attendance threshold."
+        insights['tip'] = "Initiate automated SMS warnings to parents of at-risk students immediately."
+
     return jsonify({
-        'fatigue': fatigue,
-        'truancy_prob': [{'name': 'Student X', 'prob': 85}, {'name': 'Student Y', 'prob': 72}] # Mock
+        'fatigue': fatigue, # [Mon%, Tue%...]
+        'truancy_prob': truancy_list[:10], # Top 10 risks
+        'insights': insights
     })
 
 # --- 3. Faculty Insights ---

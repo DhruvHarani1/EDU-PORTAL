@@ -91,3 +91,64 @@ The AI doesn't just "guess"; it follows a strict decision tree based on **Growth
 4.  **Actionable Tips**:
     *   The system dynamically counts how many students are "Rising Stars" (High Growth) and suggests using them as peer mentors.
     *   It identifies the count of students in the "Top Left" quadrant and suggests focusing on their foundational concepts.
+
+---
+---
+
+# Engagement & Attendance Metrics
+
+## Overview
+The **Engagement Module** shifts focus from grades to **behavior**. It answers the question: *"Are students showing up, and are they burned out?"*
+It uses attendance data to predict dropout risks and identify systemic scheduling fatigue.
+
+---
+
+## 5. Weekly Engagement Pulse (The "Burnout" Chart)
+
+### **What is it?**
+A bar chart that visualizes the collective energy levels of the class across the week (Mon-Fri).
+
+### **How it Works**
+*   It calculates the **Aggregate Attendance %** for each day of the week over the entire semester.
+*   **Color Logic**:
+    *   **Indigo (Normal)**: Attendance > 70%.
+    *   **Red ("Burnout Day")**: Attendance < 70%.
+    
+### **Strategic Value**
+If the chart turns **Red on Fridays**, it indicates "Weekend Fatigue."
+*   *Action*: Move heavy lectures (Math, Physics) to Tue/Wed and keep Fridays for lighter labs or seminars.
+If the chart turns **Red on Mondays**, it indicates "Momentum Loss."
+*   *Action*: Introduce quizzes or gamified starts to the week.
+
+---
+
+## 6. Truancy Risk Registry (Dropout Prediction)
+
+### **What is it?**
+A "Watch List" of students who are dangerously close to being detained or dropping out due to lack of attendance.
+
+### **The Probability Model**
+The system treats **75% Attendance** as the critical academic threshold.
+*   **Risk Calculation**: `Probability of Dropout = 100 - Attendance %`.
+*   *Example*: A student with 40% attendance has a **60% Probability** of being detained or dropping out.
+
+### **Status Codes**
+*   **At Risk**: Any student below 75%.
+*   **Critical**: Any student below 60%.
+
+---
+
+## 7. AI Pattern Recognition (Behavioral Insights)
+
+### **What is it?**
+The AI looks for non-obvious patterns in the daily logs to suggest administrative changes.
+
+### **Detected Patterns**
+1.  **Fatigue detection**:
+    *   The AI scans for the "Lowest Attendance Day" of the week.
+    *   If that day drops below 70%, it flags a **"Fatigue Alert"** and suggests rescheduling heavy classes.
+    
+2.  **Systemic Truancy**:
+    *   The AI counts how many students are in the *Truancy Risk Registry*.
+    *   If **> 15%** of the class is at risk, it flags a **"High Truancy Risk"** alert. This implies the issue is not with individual students, but with the course itself (e.g., bad timing, poor transport, toxic environment).
+    *   *Action*: "Initiate Automated SMS Warnings".
