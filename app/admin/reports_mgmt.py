@@ -55,7 +55,7 @@ def student_performance_data():
         StudentResult.student_id, 
         ExamEvent.semester, 
         func.avg(StudentResult.marks_obtained)
-    ).join(ExamPaper).join(ExamEvent).group_by(StudentResult.student_id, ExamEvent.semester).all()
+    ).select_from(StudentResult).join(ExamPaper).join(ExamEvent).group_by(StudentResult.student_id, ExamEvent.semester).all()
     
     # Populate semester data
     for sid, sem, avg in sem_avgs:
@@ -92,30 +92,59 @@ def student_performance_data():
         if avg < 40:
             danger_zone.append({'name': data['name'], 'avg': round(avg, 1), 'risk': 'Critical'})
 
-    # 3. Radar Data (Real Aggregation for Sem 3)
-    # Fetch marks grouped by Subject for Semester 3
+    # 3. Radar Data (Real Aggregation)
+    # 3. Radar Data (Real Aggregation)
     radar_labels = []
     radar_data = []
     
-    # We want subjects from Sem 3
-    sem3_subjects = Subject.query.filter_by(semester=3).all()
+    # FETCH ALL SUBJECTS (Safe Fallback)
+    active_subjects = Subject.query.all()
     
-    for sub in sem3_subjects:
-        # Get all results for this subject
-        # Join: StudentResult -> ExamPaper -> Subject
+    for sub in active_subjects:
         results = db.session.query(func.avg(StudentResult.marks_obtained))\
-            .join(ExamPaper)\
+            .select_from(StudentResult)\
+            .join(ExamPaper, StudentResult.exam_paper_id == ExamPaper.id)\
             .filter(ExamPaper.subject_id == sub.id)\
             .scalar()
-            
+        
         if results:
             radar_labels.append(sub.name)
             radar_data.append(round(results, 1))
-            
+
+    # 4. AI Executive Summary / Review
+    # Analyze the whole batch
+    total_students = len(consistency)
+    improving_count = len([c for c in consistency if c['growth'] > 3])
+    declining_count = len([c for c in consistency if c['growth'] < -3])
+    avg_growth = statistics.mean([c['growth'] for c in consistency]) if consistency else 0
+    
+    status = "Stable"
+    if avg_growth > 2: status = "Improving"
+    if avg_growth < -2: status = "Declining"
+    
+    review_text = f"The batch is currently {status}. {improving_count} students have shown significant improvement since Semester 1, while {declining_count} are struggling to keep up."
+    
+    suggestion = "Maintain current momentum."
+    if declining_count > improving_count:
+        suggestion = "Review the teaching pace for 'Core' subjects as many students are falling behind."
+    if len(danger_zone) > total_students * 0.1:
+        suggestion = "Urgent: Over 10% of the class is in the Danger Zone. Schedule a parent-teacher meeting."
+        
+    tips = [
+        "Focus on students in the 'Top Left' quadrant (Consistent but Low Scores). They are trying but failing.",
+        f"Encourage the {improving_count} 'Rising Stars' to mentor their peers."
+    ]
+
     return jsonify({
         'consistency': consistency,
         'danger_zone': danger_zone,
-        'radar': {'labels': radar_labels, 'data': radar_data}
+        'radar': {'labels': radar_labels, 'data': radar_data},
+        'insights': {
+            'status': status,
+            'review': review_text,
+            'suggestion': suggestion,
+            'tips': tips
+        }
     })
 
 # --- 2. Attendance Analytics ---
