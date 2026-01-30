@@ -11,19 +11,19 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
 
     # Register Blueprints
-    from app.blueprints.main import main_bp
+    from app.main import main_bp
     app.register_blueprint(main_bp)
 
-    from app.blueprints.auth import auth_bp
+    from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    from app.blueprints.admin import admin_bp
+    from app.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    from app.blueprints.faculty import faculty_bp
+    from app.faculty import faculty_bp
     app.register_blueprint(faculty_bp, url_prefix='/faculty')
 
-    from app.blueprints.student import student_bp
+    from app.student import student_bp
     app.register_blueprint(student_bp, url_prefix='/student')
 
     return app
