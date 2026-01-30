@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white overflow-hidden shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+        <h1 class="text-3xl font-bold text-gray-900">Welcome to EduPortal</h1>
+        <p class="mt-2 text-sm text-gray-500">
+            A comprehensive management system for Students, Faculty, and Administrators.
+        </p>
+        <div class="mt-5">
+            <a href="{{ url_for('auth.login') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Get Started
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
