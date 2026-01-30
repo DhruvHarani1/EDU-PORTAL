@@ -20,7 +20,3 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
-
-# Placeholder for specific role models
-# class Student(db.Model): ...
-# class Faculty(db.Model): ...
