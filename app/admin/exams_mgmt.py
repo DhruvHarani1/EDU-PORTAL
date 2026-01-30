@@ -77,10 +77,71 @@ def schedule_exam(event_id):
                     )
                     db.session.add(paper)
         
+        if request.form.get('action') == 'publish':
+            event.is_published = True
+            flash('Schedule published successfully!', 'success')
+        else:
+            flash('Schedule updated successfully!', 'success')
+        
         db.session.commit()
-        flash('Schedule updated!', 'success')
     
     # Pre-fetch existing papers logic for template
     existing_papers = {p.subject_id: p for p in event.papers}
     
     return render_template('exams/schedule_exam.html', event=event, subjects=subjects, papers=existing_papers)
+
+@exams_bp.route('/exams/export', methods=['GET', 'POST'])
+@login_required
+def export_results():
+    if request.method == 'POST':
+        import csv
+        from io import StringIO
+        from flask import Response
+
+        course = request.form.get('course')
+        semester = int(request.form.get('semester'))
+        academic_year = request.form.get('academic_year')
+        subject_id = request.form.get('subject_id')
+
+        # 1. Fetch Students
+        students = StudentProfile.query.filter_by(course_name=course, semester=semester).order_by(StudentProfile.enrollment_number).all()
+
+        # 2. Prepare CSV
+        si = StringIO()
+        cw = csv.writer(si)
+
+        # Header
+        if subject_id:
+            subject = Subject.query.get(subject_id)
+            subject_name = subject.name if subject else "Unknown Subject"
+            cw.writerow(['Enrollment No', 'Name', 'Course', 'Semester', 'Academic Year', 'Subject', 'Marks Obtained', 'Total Marks', 'Status'])
+        else:
+            # Consolidated (Dynamic Columns? Keep it simple for now, maybe just list students)
+            # User asked for "result of all the student"
+            cw.writerow(['Enrollment No', 'Name', 'Course', 'Semester', 'Academic Year', 'Subject', 'Marks Obtained', 'Status'])
+
+        # Data
+        if subject_id:
+             subject = Subject.query.get(subject_id)
+             for student in students:
+                 # TODO: Fetch actual Result if exists? 
+                 # Current request implies generating the sheet to BE filled or viewing it.
+                 # Since we skipped result entry, this acts as a template or view of empty results.
+                 cw.writerow([student.enrollment_number, student.display_name, course, semester, academic_year, subject.name, '', '100', ''])
+        else:
+            # All subjects
+            subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
+            for student in students:
+                for sub in subjects:
+                    cw.writerow([student.enrollment_number, student.display_name, course, semester, academic_year, sub.name, '', '', ''])
+
+        output =  Response(si.getvalue(), mimetype="text/csv")
+        output.headers["Content-Disposition"] = f"attachment; filename=results_{course}_{semester}_{academic_year}.csv"
+        return output
+
+    # GET: Show Form
+    courses = db.session.query(StudentProfile.course_name).distinct().all()
+    courses = [c[0] for c in courses]
+    all_subjects = Subject.query.order_by(Subject.name).all() # Should be filtered by JS ideally, but loading all for now
+    
+    return render_template('exams/export_results.html', courses=courses, subjects=all_subjects)

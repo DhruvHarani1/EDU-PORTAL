@@ -30,8 +30,8 @@ def timetable_setup():
     # Fetch existing subjects explicitly assigned to this course/sem
     assigned_subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
     
-    # Fetch all subjects for the dropdown (filtered by course)
-    all_subjects = Subject.query.filter_by(course_name=course).order_by(Subject.name).all()
+    # Fetch all subjects for the dropdown (filtered by course and semester)
+    all_subjects = Subject.query.filter_by(course_name=course, semester=semester).order_by(Subject.name).all()
     
     faculty_members = FacultyProfile.query.all()
     
