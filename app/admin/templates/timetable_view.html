@@ -31,10 +31,10 @@
                         <table class="min-w-full divide-y divide-gray-300">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-24">Day / Period</th>
-                                    {% for p in periods %}
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-24">Day</th>
+                                    {% for header in time_headers %}
                                     <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-l">
-                                        Period {{ p }}
+                                        {{ header }}
                                     </th>
                                     {% endfor %}
                                 </tr>
@@ -102,7 +102,6 @@ function updateSlot(day, period, subjectId, slotId) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            // Optional: Show a subtle toast or just reload to refresh styling
              window.location.reload(); 
         } else {
             alert('Failed to update slot');

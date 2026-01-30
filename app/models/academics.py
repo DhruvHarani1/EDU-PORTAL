@@ -54,3 +54,14 @@ class Timetable(db.Model):
 
     def __repr__(self):
         return f'<Timetable {self.course_name} {self.day_of_week} P{self.period_number}>'
+
+class ScheduleSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course_name = db.Column(db.String(100), nullable=False)
+    semester = db.Column(db.Integer, nullable=False)
+    start_time = db.Column(db.Time, nullable=False) # e.g. 09:00
+    end_time = db.Column(db.Time, nullable=False)   # e.g. 17:00
+    slots_per_day = db.Column(db.Integer, default=8)
+    days_per_week = db.Column(db.Integer, default=5)
+    
+    # Composite unique constraint could be useful but we'll handle in logic

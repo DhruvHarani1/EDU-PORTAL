@@ -1,10 +1,11 @@
 from flask import render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required
 from app.extensions import db
-from app.models import Subject, Timetable, FacultyProfile, StudentProfile
+from app.models import Subject, Timetable, FacultyProfile, StudentProfile, ScheduleSettings
 from . import admin_bp
 import random
 import math
+from datetime import datetime, timedelta
 
 @admin_bp.route('/timetable', methods=['GET'])
 @login_required
@@ -71,29 +72,47 @@ def generate_timetable():
     days_per_week = int(request.form.get('days_per_week', 5)) # Default 5
     slots_per_day = int(request.form.get('slots_per_day', 8)) # Default 8
     
+    # Parse Time Inputs
+    start_time_str = request.form.get('start_time', '09:00')
+    end_time_str = request.form.get('end_time', '17:00')
+    
+    try:
+        start_time_obj = datetime.strptime(start_time_str, '%H:%M').time()
+        end_time_obj = datetime.strptime(end_time_str, '%H:%M').time()
+    except ValueError:
+        flash('Invalid time format. Using defaults 09:00 - 17:00', 'warning')
+        start_time_obj = datetime.strptime('09:00', '%H:%M').time()
+        end_time_obj = datetime.strptime('17:00', '%H:%M').time()
+
+    # Save Settings
+    settings = ScheduleSettings.query.filter_by(course_name=course, semester=semester).first()
+    if not settings:
+        settings = ScheduleSettings(course_name=course, semester=semester)
+        db.session.add(settings)
+    
+    settings.start_time = start_time_obj
+    settings.end_time = end_time_obj
+    settings.slots_per_day = slots_per_day
+    settings.days_per_week = days_per_week
+    db.session.commit() # Save settings first
+    
     # 1. Clear existing timetable for this course/sem
     Timetable.query.filter_by(course_name=course, semester=semester).delete()
     
     # 2. Get Subjects
     subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
     
-    # 3. Simple Greedy Allocation (Proof of Concept)
-    # A real algorithm would use backtracking/CSP, but let's start with a simpler filling strategy
-    # to ensure we produce a valid result first.
-    
+    # 3. Algorithm
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][:days_per_week]
     total_slots = days_per_week * slots_per_day
     
-    # Create a pool of "Subject Instances" based on weekly_lectures
     pool = []
-    
     # 1. Add minimum required lectures
     for sub in subjects:
         for _ in range(sub.weekly_lectures):
             pool.append(sub)
             
-    # 2. FILL LOGIC: If pool is smaller than total slots, keep adding subjects
-    # We cycle through subjects to distribute the extra load evenly
+    # 2. FILL LOGIC
     if subjects and len(pool) < total_slots:
         while len(pool) < total_slots:
              for sub in subjects:
@@ -101,47 +120,31 @@ def generate_timetable():
                      break
                  pool.append(sub)
             
-    # Shuffle for randomness
     random.shuffle(pool)
     
-    # Calculate constraints
-    # If we have 20 instances of Math over 5 days, we need approx 4 per day.
-    # Set limit to ceil(count / days) + 1 (buffer)
     subject_daily_limits = {}
     for sub in subjects:
         count = pool.count(sub)
         subject_daily_limits[sub.id] = math.ceil(count / days_per_week)
     
-    # Initialize grid tracking
-    # mapping: day -> period -> subject
     schedule = {day: {p: None for p in range(1, slots_per_day + 1)} for day in days}
-    
-    # ... (Faculty Busy check logic would be same)
-    
-    # Attempt to place
     unplaced = []
     
     for item in pool:
         placed = False
-        # Try to find a slot
         for day in days:
             if placed: break
             
-            # Count lectures of this subject on this day
             daily_count = sum(1 for p in range(1, slots_per_day+1) 
                               if schedule[day][p] and schedule[day][p].id == item.id)
             
-            # Dynamic Limit Check
             limit = subject_daily_limits.get(item.id, 2)
             if daily_count >= limit:
                 continue 
                 
             for period in range(1, slots_per_day + 1):
-                # Check if empty
                 if schedule[day][period] is None:
-                    # Check Faculty Availability (Global check would go here)
-                    # For now, assume free if local grid is free
-                    
+                    # TODO: Global Faculty Check here if needed
                     schedule[day][period] = item
                     placed = True
                     break
@@ -167,7 +170,7 @@ def generate_timetable():
     db.session.commit()
     
     if unplaced:
-        flash(f"Warning: Could not place {len(unplaced)} lectures due to constraints.", 'warning')
+        flash(f"Warning: Could not place {len(unplaced)} lectures.", 'warning')
     else:
         flash('Timetable generated successfully!', 'success')
         
@@ -183,43 +186,64 @@ def view_timetable():
         return redirect(url_for('admin.timetable_landing'))
         
     slots = Timetable.query.filter_by(course_name=course, semester=int(semester)).all()
+    settings = ScheduleSettings.query.filter_by(course_name=course, semester=int(semester)).first()
     
-    # Structure for Template: Grid[Day][Period] = Slot
-    # Determine max period to render grid correctly
-    max_period = 8
+    # Defaults if no settings found (shouldn't happen if generated via app)
+    slots_per_day = settings.slots_per_day if settings else 8
+    
     if slots:
-        max_period = max([s.period_number for s in slots] + [8])
+        max_period = max([s.period_number for s in slots] + [slots_per_day])
+    else:
+        max_period = slots_per_day
         
     days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    # Filter days that actually have slots or default to Mon-Fri
-    active_days = set([s.day_of_week for s in slots]) 
-    if not active_days:
-        # Default view
-        grid_days = days[:5]
-    else:
-         # Keep order
-         grid_days = [d for d in days if d in active_days]
-         if len(grid_days) < 5: grid_days = days[:5] # Min 5 days view
+    active_days = set([s.day_of_week for s in slots])
     
-    grid = {day: {p: None for p in range(1, max_period + 1)} for day in grid_days}
+    if settings:
+        final_days = days[:settings.days_per_week]
+    elif not active_days:
+        final_days = days[:5]
+    else:
+         grid_days = [d for d in days if d in active_days]
+         if len(grid_days) < 5: final_days = days[:5]
+         else: final_days = grid_days
+
+    # Calculate Time Slots
+    time_headers = []
+    if settings:
+        start_min = settings.start_time.hour * 60 + settings.start_time.minute
+        end_min = settings.end_time.hour * 60 + settings.end_time.minute
+        total_duration = end_min - start_min
+        slot_duration = total_duration // max_period
+        
+        for p in range(max_period):
+            s_time = start_min + (p * slot_duration)
+            e_time = s_time + slot_duration
+            
+            # Format HH:MM
+            s_str = f"{s_time // 60:02d}:{s_time % 60:02d}"
+            e_str = f"{e_time // 60:02d}:{e_time % 60:02d}"
+            
+            # Convert to AM/PM for display
+            s_dt = datetime.strptime(s_str, "%H:%M")
+            e_dt = datetime.strptime(e_str, "%H:%M")
+            time_headers.append(f"{s_dt.strftime('%I:%M %p')} - {e_dt.strftime('%I:%M %p')}")
+    else:
+        time_headers = [f"Period {p+1}" for p in range(max_period)]
+
+    grid = {day: {p: None for p in range(1, max_period + 1)} for day in final_days}
     
     for s in slots:
         if s.day_of_week in grid and s.period_number in grid[s.day_of_week]:
             grid[s.day_of_week][s.period_number] = s
             
-    # For Edit Mode: Need list of subjects to populate dropdowns
     subjects = Subject.query.filter_by(course_name=course, semester=int(semester)).all()
-
-    # Handle Edit Saving
-    if request.method == 'POST':
-        # Logic to update specific slot
-        # Expecting JSON or Form data: slot_day_period = subject_id
-        pass
 
     return render_template('timetable_view.html', 
                            grid=grid, 
-                           days=grid_days, 
-                           periods=range(1, max_period+1),
+                           days=final_days, 
+                           periods=range(1, max_period+1), # 1-based index for logic
+                           time_headers=time_headers, # 0-based index list for display
                            course=course,
                            semester=semester,
                            subjects=subjects)
