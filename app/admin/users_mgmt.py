@@ -54,6 +54,7 @@ def students_list():
 @login_required
 def add_student():
     if request.method == 'POST':
+        name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         enrollment = request.form.get('enrollment_number')
@@ -72,6 +73,7 @@ def add_student():
 
             student = StudentProfile(
                 user_id=user.id,
+                display_name=name,
                 enrollment_number=enrollment,
                 course_name=course,
                 semester=semester
@@ -92,6 +94,7 @@ def edit_student(id):
     student = StudentProfile.query.get_or_404(id)
     
     if request.method == 'POST':
+        name = request.form.get('name')
         email = request.form.get('email')
         enrollment = request.form.get('enrollment_number')
         course = request.form.get('course_name')
@@ -104,6 +107,7 @@ def edit_student(id):
                 return render_template('student_edit.html', student=student)
             student.user.email = email
             
+        student.display_name = name
         student.enrollment_number = enrollment
         student.course_name = course
         student.semester = semester
@@ -157,6 +161,7 @@ def import_students():
                 errors = []
                 
                 for row in csv_reader:
+                    name = row.get('name')
                     email = row.get('email')
                     password = row.get('password')
                     enrollment = row.get('enrollment_number')
@@ -178,6 +183,7 @@ def import_students():
                     
                     student = StudentProfile(
                         user_id=user.id,
+                        display_name=name,
                         enrollment_number=enrollment, 
                         course_name=course,
                         semester=semester

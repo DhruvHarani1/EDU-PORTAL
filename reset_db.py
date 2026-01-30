@@ -26,6 +26,23 @@ with app.app_context():
         student = User(email='student@edu.com', role='student')
         student.set_password('password')
         db.session.add(student)
+        db.session.flush()
+
+        from app.models import StudentProfile, FacultyProfile
+        
+        # Seed Profile for Student
+        student_profile = StudentProfile(
+            user_id=student.id,
+            display_name='John Doe',
+            enrollment_number='STU001',
+            course_name='B.Tech',
+            semester=1
+        )
+        db.session.add(student_profile)
+
+        # Seed Profile for Faculty
+        # Start by finding the faculty user created earlier
+        # But wait, I can just create profile right after user
         
         db.session.commit()
         print("Database reset and seeded successfully!")

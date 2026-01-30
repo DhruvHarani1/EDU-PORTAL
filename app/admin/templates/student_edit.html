@@ -11,6 +11,14 @@
     </div>
 
     <form class="space-y-6 bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6" method="POST">
+        <!-- Name -->
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+            <div class="mt-1">
+                <input type="text" name="name" id="name" value="{{ student.display_name }}" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+            </div>
+        </div>
+
         <!-- Enrollment Number -->
         <div>
             <label for="enrollment_number" class="block text-sm font-medium text-gray-700">Enrollment Number</label>

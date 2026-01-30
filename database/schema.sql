@@ -13,6 +13,7 @@ CREATE INDEX ix_users_email ON users (email);
 CREATE TABLE student_profile (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL UNIQUE,
+    display_name VARCHAR(100) NOT NULL,
     enrollment_number VARCHAR(20) NOT NULL UNIQUE,
     course_name VARCHAR(100) NOT NULL,
     semester INTEGER DEFAULT 1,
