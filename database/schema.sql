@@ -26,6 +26,12 @@ CREATE TABLE faculty_profile (
     user_id INTEGER NOT NULL UNIQUE,
     designation VARCHAR(100) NOT NULL,
     department VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    experience INTEGER,
+    specialization VARCHAR(200),
+    assigned_subject VARCHAR(100),
+    photo_data BYTEA,
+    photo_mimetype VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 

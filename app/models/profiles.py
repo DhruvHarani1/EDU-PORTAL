@@ -17,8 +17,14 @@ class StudentProfile(db.Model):
 class FacultyProfile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+    display_name = db.Column(db.String(100), nullable=False)
     designation = db.Column(db.String(100), nullable=False) # e.g., Professor, Assistant Professor
     department = db.Column(db.String(100), nullable=False) # e.g., Computer Science
+    experience = db.Column(db.Integer) # Years of experience
+    specialization = db.Column(db.String(200)) # e.g., AI, ML
+    assigned_subject = db.Column(db.String(100)) # e.g., Data Structures
+    photo_data = db.Column(db.LargeBinary) # Binary data for photo
+    photo_mimetype = db.Column(db.String(50)) # Mimetype e.g. 'image/jpeg'
     
     # Relationship with User
     user = db.relationship('User', backref=db.backref('faculty_profile', uselist=False))

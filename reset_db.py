@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User
+from app.models import User, StudentProfile, FacultyProfile
 from sqlalchemy import text
 
 app = create_app('development')
@@ -17,10 +17,36 @@ with app.app_context():
         admin.set_password('password')
         db.session.add(admin)
         
-        # Faculty
         faculty = User(email='faculty@edu.com', role='faculty')
         faculty.set_password('password')
         db.session.add(faculty)
+        db.session.flush()
+
+        # Helper to get default image data
+        import os
+        default_img_path = os.path.join(app.root_path, 'static', 'img', 'default_user.png')
+        if not os.path.exists(default_img_path):
+             # Create a dummy file if not exists for seeding purpose or just pass None
+             # For now let's assume we skip or use None
+             photo_data = None
+             mimetype = None
+        else:
+             with open(default_img_path, 'rb') as f:
+                 photo_data = f.read()
+             mimetype = 'image/png'
+
+        faculty_profile = FacultyProfile(
+             user_id=faculty.id,
+             display_name='Dr. Alice Smith',
+             designation='Professor',
+             department='Computer Science',
+             experience=10,
+             specialization='Artificial Intelligence',
+             assigned_subject='Introduction to AI',
+             photo_data=photo_data,
+             photo_mimetype=mimetype
+        )
+        db.session.add(faculty_profile)
         
         # Student
         student = User(email='student@edu.com', role='student')
@@ -28,7 +54,7 @@ with app.app_context():
         db.session.add(student)
         db.session.flush()
 
-        from app.models import StudentProfile, FacultyProfile
+        db.session.flush()
         
         # Seed Profile for Student
         student_profile = StudentProfile(

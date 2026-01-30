@@ -1,23 +1,29 @@
 {% extends "base_admin.html" %}
 
-{% block title %}Add Faculty - EduPortal{% endblock %}
+{% block title %}Edit Faculty - EduPortal{% endblock %}
 
 {% block admin_content %}
 <div class="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <h1 class="text-xl font-semibold text-gray-900 mb-6">Add New Faculty Member</h1>
+    <h1 class="text-xl font-semibold text-gray-900 mb-6">Edit Faculty Member</h1>
     
     <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <form action="{{ url_for('admin.add_faculty') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                <!-- Photo Upload -->
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                 <!-- Photo Upload -->
                 <div>
                      <label class="block text-sm font-medium text-gray-700">Profile Photo</label>
                      <div class="mt-1 flex items-center">
+                        {% if faculty.photo_data %}
+                        <span class="h-12 w-12 rounded-full overflow-hidden bg-gray-100">
+                             <img src="{{ url_for('admin.serve_faculty_photo', id=faculty.id) }}" alt="Current Photo" class="h-full w-full object-cover">
+                        </span>
+                        {% else %}
                         <span class="h-12 w-12 rounded-full overflow-hidden bg-gray-100">
                             <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                             </svg>
                         </span>
+                        {% endif %}
                         <input type="file" name="photo" accept="image/*" class="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                      </div>
                 </div>
@@ -27,7 +33,7 @@
                     <div class="sm:col-span-3">
                         <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
                         <div class="mt-1">
-                            <input type="text" name="name" id="name" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="text" name="name" id="name" value="{{ faculty.display_name }}" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
 
@@ -35,15 +41,7 @@
                     <div class="sm:col-span-3">
                         <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
                         <div class="mt-1">
-                            <input type="email" name="email" id="email" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                        </div>
-                    </div>
-
-                     <!-- Password -->
-                    <div class="sm:col-span-6">
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <div class="mt-1">
-                            <input type="password" name="password" id="password" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="email" name="email" id="email" value="{{ faculty.user.email }}" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
 
@@ -51,7 +49,7 @@
                     <div class="sm:col-span-3">
                         <label for="designation" class="block text-sm font-medium text-gray-700">Designation</label>
                         <div class="mt-1">
-                            <input type="text" name="designation" id="designation" placeholder="e.g. Professor" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="text" name="designation" id="designation" value="{{ faculty.designation }}" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
 
@@ -59,7 +57,7 @@
                     <div class="sm:col-span-3">
                         <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
                         <div class="mt-1">
-                            <input type="text" name="department" id="department" placeholder="e.g. Computer Science" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="text" name="department" id="department" value="{{ faculty.department }}" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
                     
@@ -67,7 +65,7 @@
                      <div class="sm:col-span-2">
                         <label for="experience" class="block text-sm font-medium text-gray-700">Experience (Years)</label>
                         <div class="mt-1">
-                            <input type="number" name="experience" id="experience" min="0" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="number" name="experience" id="experience" value="{{ faculty.experience or '' }}" min="0" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
 
@@ -75,7 +73,7 @@
                     <div class="sm:col-span-4">
                         <label for="specialization" class="block text-sm font-medium text-gray-700">Specialization</label>
                         <div class="mt-1">
-                            <input type="text" name="specialization" id="specialization" placeholder="e.g. Machine Learning" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="text" name="specialization" id="specialization" value="{{ faculty.specialization or '' }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
 
@@ -83,7 +81,7 @@
                     <div class="sm:col-span-6">
                         <label for="assigned_subject" class="block text-sm font-medium text-gray-700">Assigned Subject</label>
                         <div class="mt-1">
-                            <input type="text" name="assigned_subject" id="assigned_subject" placeholder="e.g. Data Structures" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <input type="text" name="assigned_subject" id="assigned_subject" value="{{ faculty.assigned_subject or '' }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                         </div>
                     </div>
                 </div>
@@ -93,7 +91,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Save
+                        Update
                     </button>
                 </div>
             </form>

@@ -1,10 +1,12 @@
-from flask import render_template, request, flash, redirect, url_for, current_app
-from flask_login import login_required
+from flask import render_template, request, flash, redirect, url_for, current_app, Response, make_response
+from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import User, StudentProfile, FacultyProfile
 from . import admin_bp
 import csv
 import io
+import os
+from werkzeug.utils import secure_filename
 
 # --- Student Management ---
 @admin_bp.route('/students')
@@ -206,20 +208,52 @@ def import_students():
     return render_template('student_import_csv.html')
 
 # --- Faculty Management ---
+
+@admin_bp.route('/faculty/photo/<int:id>')
+def serve_faculty_photo(id):
+    faculty = FacultyProfile.query.get_or_404(id)
+    if not faculty.photo_data:
+        # Return default image or 404
+        return redirect(url_for('static', filename='img/default_user.png'))
+    
+    response = make_response(faculty.photo_data)
+    response.headers.set('Content-Type', faculty.photo_mimetype or 'image/jpeg')
+    return response
+
 @admin_bp.route('/faculty')
 @login_required
 def faculty_list():
     faculty_members = FacultyProfile.query.all()
     return render_template('faculty_list.html', faculty_members=faculty_members)
 
+@admin_bp.route('/faculty/view/<int:id>')
+@login_required
+def view_faculty(id):
+    faculty = FacultyProfile.query.get_or_404(id)
+    return render_template('faculty_view.html', faculty=faculty)
+
 @admin_bp.route('/faculty/add', methods=['GET', 'POST'])
 @login_required
 def add_faculty():
     if request.method == 'POST':
+        name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         designation = request.form.get('designation')
         department = request.form.get('department')
+        experience = request.form.get('experience')
+        specialization = request.form.get('specialization')
+        assigned_subject = request.form.get('assigned_subject')
+        
+        # Photo Upload (Binary)
+        photo_data = None
+        photo_mimetype = None
+        
+        if 'photo' in request.files:
+            file = request.files['photo']
+            if file and file.filename != '':
+                photo_data = file.read()
+                photo_mimetype = file.mimetype
 
         if User.query.filter_by(email=email).first():
             flash('Email already exists.', 'error')
@@ -235,8 +269,14 @@ def add_faculty():
             # Create Profile
             faculty = FacultyProfile(
                 user_id=user.id,
+                display_name=name,
                 designation=designation,
-                department=department
+                department=department,
+                experience=experience,
+                specialization=specialization,
+                assigned_subject=assigned_subject,
+                photo_data=photo_data,
+                photo_mimetype=photo_mimetype
             )
             db.session.add(faculty)
             db.session.commit()
@@ -247,3 +287,65 @@ def add_faculty():
             flash(f'Error adding faculty: {str(e)}', 'error')
 
     return render_template('faculty_add.html')
+
+@admin_bp.route('/faculty/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_faculty(id):
+    faculty = FacultyProfile.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        designation = request.form.get('designation')
+        department = request.form.get('department')
+        experience = request.form.get('experience')
+        specialization = request.form.get('specialization')
+        assigned_subject = request.form.get('assigned_subject')
+
+        # Check Email
+        if email != faculty.user.email:
+            if User.query.filter_by(email=email).first():
+                flash('Email already in use.', 'error')
+                return render_template('faculty_edit.html', faculty=faculty)
+            faculty.user.email = email
+            
+        # Photo Upload (Binary)
+        if 'photo' in request.files:
+            file = request.files['photo']
+            if file and file.filename != '':
+                faculty.photo_data = file.read()
+                faculty.photo_mimetype = file.mimetype
+
+        faculty.display_name = name
+        faculty.designation = designation
+        faculty.department = department
+        faculty.experience = experience
+        faculty.specialization = specialization
+        faculty.assigned_subject = assigned_subject
+        
+        try:
+            db.session.commit()
+            flash('Faculty updated successfully!', 'success')
+            return redirect(url_for('admin.faculty_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating faculty: {str(e)}', 'error')
+
+    return render_template('faculty_edit.html', faculty=faculty)
+
+@admin_bp.route('/faculty/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_faculty(id):
+    faculty = FacultyProfile.query.get_or_404(id)
+    try:
+        user = faculty.user
+        db.session.delete(faculty)
+        if user:
+            db.session.delete(user)
+        db.session.commit()
+        flash('Faculty deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting faculty: {str(e)}', 'error')
+        
+    return redirect(url_for('admin.faculty_list'))
