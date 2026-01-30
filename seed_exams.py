@@ -59,4 +59,45 @@ with app.app_context():
             db.session.add(paper)
             
     db.session.commit()
+    
+    # 4. Add Dummy Results (for Re-candidates testing)
+    print("Seeding Dummy Results...")
+    from app.models import StudentResult
+    import random
+    
+    evt_papers = ExamPaper.query.filter_by(exam_event_id=evt.id).all()
+    students = StudentProfile.query.filter_by(course_name=course, semester=sem).all()
+    
+    for student in students:
+        for paper in evt_papers:
+            # Randomly decide status
+            rand = random.random()
+            status = 'Present'
+            marks = 0
+            is_fail = False
+            
+            if rand < 0.1:
+                status = 'Absent'
+                is_fail = True
+            elif rand < 0.3:
+                # Fail
+                marks = random.randint(0, 15) # Assuming 50 total, pass might be 20
+                is_fail = True
+            else:
+                # Pass
+                marks = random.randint(20, 50)
+            
+            # Check if result exists
+            res = StudentResult.query.filter_by(exam_paper_id=paper.id, student_id=student.id).first()
+            if not res:
+                res = StudentResult(
+                    exam_paper_id=paper.id,
+                    student_id=student.id,
+                    marks_obtained=marks,
+                    status=status,
+                    is_fail=is_fail
+                )
+                db.session.add(res)
+    
+    db.session.commit()
     print("Seeding Complete!")

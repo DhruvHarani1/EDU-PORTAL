@@ -168,3 +168,17 @@ def view_schedule(event_id):
     # Sort papers by date
     papers = sorted(event.papers, key=lambda p: p.date if p.date else datetime.max.date())
     return render_template('exams/view_schedule.html', event=event, papers=papers)
+
+@exams_bp.route('/exams/<int:event_id>/recandidates', methods=['GET'])
+@login_required
+def recandidates_report(event_id):
+    event = ExamEvent.query.get_or_404(event_id)
+    
+    # Query for Failures OR Absentees
+    # We need to join with ExamPaper to filter by event_id
+    results = db.session.query(StudentResult).join(ExamPaper).filter(
+        ExamPaper.exam_event_id == event.id,
+        (StudentResult.is_fail == True) | (StudentResult.status == 'Absent')
+    ).all()
+    
+    return render_template('exams/recandidates.html', event=event, results=results)
