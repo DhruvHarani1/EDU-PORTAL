@@ -66,3 +66,27 @@ CREATE TABLE attendance (
     status VARCHAR(20) NOT NULL,
     FOREIGN KEY (student_id) REFERENCES student_profile (id)
 );
+
+-- Subjects Schema
+CREATE TABLE subject (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    course_name VARCHAR(100) NOT NULL,
+    semester INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL,
+    weekly_lectures INTEGER DEFAULT 3,
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+);
+
+-- Timetable Schema
+CREATE TABLE timetable (
+    id SERIAL PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL,
+    semester INTEGER NOT NULL,
+    day_of_week VARCHAR(10) NOT NULL,
+    period_number INTEGER NOT NULL,
+    subject_id INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL, 
+    FOREIGN KEY (subject_id) REFERENCES subject (id),
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+);
