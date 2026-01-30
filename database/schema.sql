@@ -40,8 +40,11 @@ CREATE TABLE notice (
     id SERIAL PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
-    audience VARCHAR(20) DEFAULT 'all',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    category VARCHAR(50) DEFAULT 'general',
+    target_course VARCHAR(100),
+    target_faculty_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (target_faculty_id) REFERENCES faculty_profile (id)
 );
 
 -- Exam Schema

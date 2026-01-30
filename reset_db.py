@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile
+from app.models import User, StudentProfile, FacultyProfile, Notice
 from sqlalchemy import text
 
 app = create_app('development')
@@ -69,7 +69,15 @@ with app.app_context():
         # Seed Profile for Faculty
         # Start by finding the faculty user created earlier
         # But wait, I can just create profile right after user
+        # Seed Notices
+        db.session.flush() # Ensure faculty_profile.id is available
+
+        n1 = Notice(title='Welcome to New Term', content='Classes start next week.', category='university')
+        n2 = Notice(title='Fire Drill', content='Evacuate immediately.', category='emergency')
+        n3 = Notice(title='B.Tech Schedule', content='Exam schedule released.', category='course', target_course='B.Tech')
         
+        db.session.add_all([n1, n2, n3])
+
         db.session.commit()
         print("Database reset and seeded successfully!")
         print("Credentials: admin@edu.com / password")
