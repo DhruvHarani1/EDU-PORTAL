@@ -1,15 +1,54 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required
 from app.extensions import db
 from app.models import User, StudentProfile, FacultyProfile
 from . import admin_bp
+import csv
+import io
 
 # --- Student Management ---
 @admin_bp.route('/students')
 @login_required
 def students_list():
-    students = StudentProfile.query.all()
-    return render_template('student_list.html', students=students)
+    query = StudentProfile.query.join(User)
+    
+    # 1. Search (Query)
+    search_query = request.args.get('q')
+    if search_query:
+        search_filter = f"%{search_query}%"
+        query = query.filter(
+            (StudentProfile.enrollment_number.ilike(search_filter)) |
+            (User.email.ilike(search_filter)) |
+            (StudentProfile.course_name.ilike(search_filter))
+        )
+    
+    # 2. Filters
+    course_filter = request.args.get('course')
+    if course_filter:
+        query = query.filter(StudentProfile.course_name == course_filter)
+        
+    semester_filter = request.args.get('semester')
+    if semester_filter:
+        query = query.filter(StudentProfile.semester == int(semester_filter))
+
+    students = query.all()
+    
+    # Get distinct options for filters
+    courses = db.session.query(StudentProfile.course_name).distinct().all()
+    courses = [c[0] for c in courses]
+    
+    semesters = db.session.query(StudentProfile.semester).distinct().order_by(StudentProfile.semester).all()
+    semesters = [s[0] for s in semesters]
+
+    return render_template(
+        'student_list.html', 
+        students=students, 
+        courses=courses, 
+        semesters=semesters,
+        search_query=search_query,
+        course_filter=course_filter,
+        semester_filter=int(semester_filter) if semester_filter else None
+    )
 
 @admin_bp.route('/students/add', methods=['GET', 'POST'])
 @login_required
@@ -22,17 +61,15 @@ def add_student():
         semester = request.form.get('semester')
 
         if User.query.filter_by(email=email).first():
-            flash('Email already exists.', 'error')
+            flash(f'Email {email} already exists.', 'error')
             return redirect(url_for('admin.add_student'))
 
         try:
-            # Create User
             user = User(email=email, role='student')
             user.set_password(password)
             db.session.add(user)
-            db.session.flush() # Flush to get user.id
+            db.session.flush()
 
-            # Create Profile
             student = StudentProfile(
                 user_id=user.id,
                 enrollment_number=enrollment,
@@ -48,6 +85,119 @@ def add_student():
             flash(f'Error adding student: {str(e)}', 'error')
 
     return render_template('student_add.html')
+
+@admin_bp.route('/students/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_student(id):
+    student = StudentProfile.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        enrollment = request.form.get('enrollment_number')
+        course = request.form.get('course_name')
+        semester = request.form.get('semester')
+        
+        # Check email uniqueness if changed
+        if email != student.user.email:
+            if User.query.filter_by(email=email).first():
+                flash('Email already in use.', 'error')
+                return render_template('student_edit.html', student=student)
+            student.user.email = email
+            
+        student.enrollment_number = enrollment
+        student.course_name = course
+        student.semester = semester
+        
+        try:
+            db.session.commit()
+            flash('Student updated successfully!', 'success')
+            return redirect(url_for('admin.students_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating student: {str(e)}', 'error')
+            
+    return render_template('student_edit.html', student=student)
+
+@admin_bp.route('/students/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_student(id):
+    student = StudentProfile.query.get_or_404(id)
+    try:
+        user = student.user
+        db.session.delete(student)
+        if user:
+            db.session.delete(user)
+        db.session.commit()
+        flash('Student deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting student: {str(e)}', 'error')
+        
+    return redirect(url_for('admin.students_list'))
+
+@admin_bp.route('/students/import', methods=['GET', 'POST'])
+@login_required
+def import_students():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file provided.', 'error')
+            return redirect(request.url)
+            
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected.', 'error')
+            return redirect(request.url)
+            
+        if file:
+            try:
+                stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+                csv_reader = csv.DictReader(stream)
+                
+                count = 0
+                errors = []
+                
+                for row in csv_reader:
+                    email = row.get('email')
+                    password = row.get('password')
+                    enrollment = row.get('enrollment_number')
+                    course = row.get('course_name')
+                    semester = row.get('semester')
+                    
+                    if not all([email, password, enrollment]):
+                        errors.append(f"Skipped row with missing base fields: {row}")
+                        continue
+                        
+                    if User.query.filter_by(email=email).first():
+                        errors.append(f"Skipped existing email: {email}")
+                        continue
+                        
+                    user = User(email=email, role='student')
+                    user.set_password(password)
+                    db.session.add(user)
+                    db.session.flush()
+                    
+                    student = StudentProfile(
+                        user_id=user.id,
+                        enrollment_number=enrollment, 
+                        course_name=course,
+                        semester=semester
+                    )
+                    db.session.add(student)
+                    count += 1
+                
+                db.session.commit()
+                flash(f'Imported {count} students successfully.', 'success')
+                if errors:
+                    for err in errors[:5]: # Show first 5 errors to avoid flooding
+                        flash(err, 'warning')
+                        
+                return redirect(url_for('admin.students_list'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error processing CSV: {str(e)}', 'error')
+    
+    return render_template('student_import_csv.html')
 
 # --- Faculty Management ---
 @admin_bp.route('/faculty')
