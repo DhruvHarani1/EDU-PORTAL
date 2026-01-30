@@ -98,10 +98,12 @@ def export_results():
         from io import StringIO
         from flask import Response
 
-        course = request.form.get('course')
-        semester = int(request.form.get('semester'))
-        academic_year = request.form.get('academic_year')
-        subject_id = request.form.get('subject_id')
+        event_id = request.form.get('event_id')
+        event = ExamEvent.query.get_or_404(event_id)
+        
+        course = event.course_name
+        semester = event.semester
+        academic_year = event.academic_year
 
         # 1. Fetch Students
         students = StudentProfile.query.filter_by(course_name=course, semester=semester).order_by(StudentProfile.enrollment_number).all()
@@ -111,37 +113,50 @@ def export_results():
         cw = csv.writer(si)
 
         # Header
-        if subject_id:
-            subject = Subject.query.get(subject_id)
-            subject_name = subject.name if subject else "Unknown Subject"
-            cw.writerow(['Enrollment No', 'Name', 'Course', 'Semester', 'Academic Year', 'Subject', 'Marks Obtained', 'Total Marks', 'Status'])
-        else:
-            # Consolidated (Dynamic Columns? Keep it simple for now, maybe just list students)
-            # User asked for "result of all the student"
-            cw.writerow(['Enrollment No', 'Name', 'Course', 'Semester', 'Academic Year', 'Subject', 'Marks Obtained', 'Status'])
+        cw.writerow(['Exam Event: ' + event.name])
+        cw.writerow(['Course: ' + course, 'Semester: ' + str(semester), 'Year: ' + academic_year])
+        cw.writerow([]) # Empty line
+        
+        # Dynamic Header based on Papers
+        # We want: [Enrollment, Name, Subject1, Subject2, ..., Total, %]
+        papers = ExamPaper.query.filter_by(exam_event_id=event.id).all()
+        paper_subjects = {p.subject_id: p.subject.name for p in papers if p.subject}
+        sorted_subjects = sorted(paper_subjects.values()) # Alphabetic order for columns? Or By Date?
+        
+        # Let's sort by Date
+        papers.sort(key=lambda x: x.date if x.date else datetime.max.date())
+        sorted_paper_ids = [p.id for p in papers]
+        sorted_subject_names = [p.subject.name for p in papers if p.subject]
+        
+        header_row = ['Enrollment No', 'Name'] + sorted_subject_names + ['Total Marks', 'Obtained Marks', 'Percentage', 'Status']
+        cw.writerow(header_row)
 
         # Data
-        if subject_id:
-             subject = Subject.query.get(subject_id)
-             for student in students:
-                 # TODO: Fetch actual Result if exists? 
-                 # Current request implies generating the sheet to BE filled or viewing it.
-                 # Since we skipped result entry, this acts as a template or view of empty results.
-                 cw.writerow([student.enrollment_number, student.display_name, course, semester, academic_year, subject.name, '', '100', ''])
-        else:
-            # All subjects
-            subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
-            for student in students:
-                for sub in subjects:
-                    cw.writerow([student.enrollment_number, student.display_name, course, semester, academic_year, sub.name, '', '', ''])
+        for student in students:
+            row = [student.enrollment_number, student.display_name]
+            
+            # Placeholder marks for each subject
+            total_max = 0
+            total_obtained = 0
+            
+            for paper in papers:
+                # TODO: Retrieve actual mark
+                # mark = StudentResult.query...
+                # For now empty
+                row.append('') # Marks for this subject
+                total_max += paper.total_marks
+            
+            row.append(total_max) # Total Marks
+            row.append('') # Obtained
+            row.append('') # %
+            row.append('') # Status
+            
+            cw.writerow(row)
 
         output =  Response(si.getvalue(), mimetype="text/csv")
-        output.headers["Content-Disposition"] = f"attachment; filename=results_{course}_{semester}_{academic_year}.csv"
+        output.headers["Content-Disposition"] = f"attachment; filename=results_{event.name.replace(' ', '_')}_{academic_year}.csv"
         return output
 
-    # GET: Show Form
-    courses = db.session.query(StudentProfile.course_name).distinct().all()
-    courses = [c[0] for c in courses]
-    all_subjects = Subject.query.order_by(Subject.name).all() # Should be filtered by JS ideally, but loading all for now
-    
-    return render_template('exams/export_results.html', courses=courses, subjects=all_subjects)
+    # GET: Show Form (Only Published Events)
+    events = ExamEvent.query.filter_by(is_published=True).order_by(ExamEvent.start_date.desc()).all()
+    return render_template('exams/export_results.html', events=events)

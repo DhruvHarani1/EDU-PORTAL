@@ -19,49 +19,23 @@
 
     <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <form action="{{ url_for('admin.exams.export_results') }}" method="POST" class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 gap-x-4">
+            <form action="{{ url_for('admin.exams.export_results') }}" method="POST" class="grid grid-cols-1 gap-y-6">
                 
-                <!-- Course -->
+                <!-- Exam Event Selection -->
                 <div>
-                    <label for="course" class="block text-sm font-medium text-gray-700">Course</label>
-                    <select name="course" id="course" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
-                        <option value="">-- Select Course --</option>
-                        {% for c in courses %}
-                        <option value="{{ c }}">{{ c }}</option>
+                    <label for="event_id" class="block text-sm font-medium text-gray-700">Select Exam Event</label>
+                    <select name="event_id" id="event_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
+                        <option value="">-- Select Completed Exam --</option>
+                        {% for event in events %}
+                        <option value="{{ event.id }}">
+                            {{ event.name }} ({{ event.course_name }} Sem {{ event.semester }} - {{ event.academic_year }})
+                        </option>
                         {% endfor %}
                     </select>
+                    <p class="mt-2 text-sm text-gray-500">Only published exams are shown.</p>
                 </div>
 
-                <!-- Semester -->
-                <div>
-                    <label for="semester" class="block text-sm font-medium text-gray-700">Semester</label>
-                    <select name="semester" id="semester" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
-                        <option value="">-- Select Semester --</option>
-                        {% for i in range(1, 9) %}
-                        <option value="{{ i }}">Semester {{ i }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Academic Year -->
-                <div>
-                    <label for="academic_year" class="block text-sm font-medium text-gray-700">Academic Year</label>
-                    <input type="text" name="academic_year" id="academic_year" placeholder="e.g. 2024-2025" required class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2">
-                </div>
-
-                <!-- Subject (Optional or Required?) User asked for it -->
-                <div>
-                    <label for="subject_id" class="block text-sm font-medium text-gray-700">Subject</label>
-                    <select name="subject_id" id="subject_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
-                        <option value="">-- All Subjects (Consolidated) --</option>
-                        {% for s in subjects %}
-                        <option value="{{ s.id }}">{{ s.name }} ({{ s.course_name }})</option>
-                        {% endfor %}
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">Leave empty to export all subjects for the semester.</p>
-                </div>
-
-                <div class="sm:col-span-2 pt-4">
+                <div class="pt-4">
                     <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
                         Download Result Sheet (CSV)
                     </button>
