@@ -1,0 +1,87 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Faculty Insights{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900">Faculty Impact Matrix</h1>
+            <p class="text-sm text-gray-500">Pedagogical Effectiveness & Performance Trends</p>
+        </div>
+        <a href="{{ url_for('admin.reports.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 flex items-center">
+             Back to Deck
+        </a>
+    </div>
+
+    <!-- Impact Bubble Chart -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Pedagogical Impact Factor</h3>
+        <p class="text-sm text-gray-500 mb-4">
+             <strong>How to read:</strong> 
+             <span class="inline-block w-3 h-3 bg-indigo-500 rounded-full mx-1"></span> Larger bubbles = More consistent results.
+             <br>High Pass Rate + High Difficulty = <strong>Excellent Teaching</strong>.
+        </p>
+        <div class="relative h-96">
+            <canvas id="impactChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Declining Performance Alert -->
+    <div class="bg-white rounded-xl shadow-lg border border-yellow-100 p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Declining Performance Alerts</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="decliningGrid">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch("{{ url_for('admin.reports.faculty_data') }}")
+        .then(r => r.json())
+        .then(data => {
+            // Bubble Chart
+            new Chart(document.getElementById('impactChart'), {
+                type: 'bubble',
+                data: {
+                    datasets: data.impact.map(d => ({
+                        label: d.subject,
+                        data: [{x: d.x, y: d.y, r: d.r}],
+                        backgroundColor: `hsla(${Math.random() * 360}, 70%, 50%, 0.6)`
+                    }))
+                },
+                options: {
+                    scales: {
+                        x: { title: {display: true, text: 'Subject Difficulty (100 - Class Avg)'}, min: 0, max: 100 },
+                        y: { title: {display: true, text: 'Pass Rate (%)'}, min: 0, max: 100 }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(c) { return c.dataset.label + ': ' + c.raw.y + '% Pass'; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Declining Alerts
+            const grid = document.getElementById('decliningGrid');
+            data.declining.forEach(f => {
+                const el = document.createElement('div');
+                el.className = 'bg-yellow-50 rounded-lg p-4 border border-yellow-200';
+                el.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-gray-700">${f.name}</span>
+                        <span class="text-red-600 font-bold">${f.trend}</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Significant drop in subject pass rate vs last semester.</p>
+                `;
+                grid.appendChild(el);
+            });
+        });
+});
+</script>
+{% endblock %}

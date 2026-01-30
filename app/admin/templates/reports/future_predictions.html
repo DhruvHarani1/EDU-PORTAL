@@ -1,0 +1,76 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Future Predictions{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                Future Trends & Predictions
+            </h1>
+            <p class="text-sm text-gray-500">Placement Probability & Market Value Estimator</p>
+        </div>
+        <a href="{{ url_for('admin.reports.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 flex items-center">
+             Back to Deck
+        </a>
+    </div>
+
+    <!-- Top Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg p-8 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl"></div>
+            <h3 class="text-lg font-medium opacity-90 mb-1">Predicted Highest Package</h3>
+            <div class="text-5xl font-extrabold tracking-tight" id="highestPkg">...</div>
+            <p class="mt-2 text-sm opacity-75">
+                Estimated based on the top 1% student performance trends.
+            </p>
+        </div>
+
+         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Average Market Value</h3>
+            <div class="text-4xl font-bold text-gray-900" id="avgPkg">...</div>
+             <p class="mt-2 text-sm text-gray-500">Projected median salary for the batch.</p>
+        </div>
+    </div>
+
+    <!-- Probability Chart -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Placement Probability Distribution</h3>
+        <p class="text-xs text-gray-400 mb-4">Likelihood of placement tiers based on current performace metrics.</p>
+        <div class="relative h-64">
+            <canvas id="placeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch("{{ url_for('admin.reports.future_data') }}")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('highestPkg').textContent = data.highest_package;
+            document.getElementById('avgPkg').textContent = data.avg_package;
+
+            new Chart(document.getElementById('placeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Probability (Tier 1)', 'Medium (Tier 2)', 'Low/At Risk'],
+                    datasets: [{
+                        data: [data.placement_prob.high, data.placement_prob.med, data.placement_prob.low],
+                        backgroundColor: ['#4F46E5', '#3B82F6', '#EF4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+});
+</script>
+{% endblock %}
