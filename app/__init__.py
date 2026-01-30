@@ -17,8 +17,13 @@ def create_app(config_name='default'):
     from app.blueprints.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    # Placeholder for other blueprints
-    # from app.blueprints.admin import admin_bp
-    # app.register_blueprint(admin_bp, url_prefix='/admin')
+    from app.blueprints.admin import admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    from app.blueprints.faculty import faculty_bp
+    app.register_blueprint(faculty_bp, url_prefix='/faculty')
+
+    from app.blueprints.student import student_bp
+    app.register_blueprint(student_bp, url_prefix='/student')
 
     return app
