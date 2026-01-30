@@ -160,3 +160,11 @@ def export_results():
     # GET: Show Form (Only Published Events)
     events = ExamEvent.query.filter_by(is_published=True).order_by(ExamEvent.start_date.desc()).all()
     return render_template('exams/export_results.html', events=events)
+
+@exams_bp.route('/exams/<int:event_id>/view', methods=['GET'])
+@login_required
+def view_schedule(event_id):
+    event = ExamEvent.query.get_or_404(event_id)
+    # Sort papers by date
+    papers = sorted(event.papers, key=lambda p: p.date if p.date else datetime.max.date())
+    return render_template('exams/view_schedule.html', event=event, papers=papers)

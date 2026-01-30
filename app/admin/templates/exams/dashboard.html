@@ -47,7 +47,10 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ url_for('admin.exams.schedule_exam', event_id=event.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Schedule</a>
+                                    {% if not event.is_published %}
+                                    <a href="{{ url_for('admin.exams.schedule_exam', event_id=event.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                    {% endif %}
+                                    <a href="{{ url_for('admin.exams.view_schedule', event_id=event.id) }}" class="text-gray-600 hover:text-gray-900 mr-4">View</a>
                                     <!-- Future: Results Link -->
                                 </td>
                             </tr>
