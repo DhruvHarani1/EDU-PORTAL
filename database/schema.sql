@@ -71,9 +71,10 @@ CREATE TABLE attendance (
 CREATE TABLE subject (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    course_name VARCHAR(100) NOT NULL,
-    semester INTEGER NOT NULL,
-    faculty_id INTEGER NOT NULL,
+    course_name VARCHAR(100),
+    semester INTEGER,
+    academic_year VARCHAR(20),
+    faculty_id INTEGER,
     weekly_lectures INTEGER DEFAULT 3,
     FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
 );
@@ -89,4 +90,52 @@ CREATE TABLE timetable (
     faculty_id INTEGER NOT NULL, 
     FOREIGN KEY (subject_id) REFERENCES subject (id),
     FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+);
+
+-- Schedule Settings Schema
+CREATE TABLE schedule_settings (
+    id SERIAL PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL,
+    semester INTEGER NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    slots_per_day INTEGER DEFAULT 8,
+    days_per_week INTEGER DEFAULT 5
+);
+
+-- Exam Event Schema
+CREATE TABLE exam_event (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    academic_year VARCHAR(20) NOT NULL,
+    course_name VARCHAR(100) NOT NULL,
+    semester INTEGER NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_published BOOLEAN DEFAULT FALSE
+);
+
+-- Exam Paper Schema
+CREATE TABLE exam_paper (
+    id SERIAL PRIMARY KEY,
+    exam_event_id INTEGER NOT NULL,
+    subject_id INTEGER NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    total_marks INTEGER DEFAULT 100,
+    FOREIGN KEY (exam_event_id) REFERENCES exam_event (id),
+    FOREIGN KEY (subject_id) REFERENCES subject (id)
+);
+
+-- Student Result Schema
+CREATE TABLE student_result (
+    id SERIAL PRIMARY KEY,
+    exam_paper_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    marks_obtained FLOAT,
+    status VARCHAR(20) DEFAULT 'Present',
+    is_fail BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (exam_paper_id) REFERENCES exam_paper (id),
+    FOREIGN KEY (student_id) REFERENCES student_profile (id)
 );

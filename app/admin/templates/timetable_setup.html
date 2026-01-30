@@ -53,13 +53,29 @@
                     <input type="hidden" name="semester" value="{{ semester }}">
                     
                     <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Subject Name</label>
-                        <input type="text" name="name" required class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2" placeholder="e.g. Data Structures">
+                        <label class="block text-xs font-medium text-gray-500 uppercase">Subject</label>
+                        <!-- Dropdown for Existing Subjects -->
+                        <div id="subjectSelectContainer">
+                            <select name="subject_id" id="subjectSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border" onchange="checkNewSubject(this)">
+                                <option value="">-- Select Subject --</option>
+                                {% for s in all_subjects %}
+                                <option value="{{ s.id }}" data-faculty="{{ s.faculty_id }}">
+                                    {{ s.name }} {% if s.faculty %}({{ s.faculty.display_name }}){% endif %}
+                                </option>
+                                {% endfor %}
+                                <option value="new" class="font-bold text-indigo-600">+ Create New Subject</option>
+                            </select>
+                        </div>
+                        <!-- Fallback Text Input for New Subject (Hidden by default, used only if fallback needed or handling removed) -->
+                        <div id="newSubjectInput" class="hidden mt-2">
+                             <input type="text" name="name" id="nameInput" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border p-2" placeholder="Enter New Subject Name">
+                        </div>
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-medium text-gray-500 uppercase">Faculty</label>
-                        <select name="faculty_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
+                        <select name="faculty_id" id="facultySelect" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
+                            <option value="">-- Select Faculty --</option>
                             {% for f in faculty_members %}
                             <option value="{{ f.id }}">{{ f.display_name }} ({{ f.department }})</option>
                             {% endfor %}
@@ -124,4 +140,46 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function checkNewSubject(select) {
+        const val = select.value;
+        const nameInputDiv = document.getElementById('newSubjectInput');
+        
+        if (val === 'new') {
+            // Redirect to Create Subject Page
+            if (confirm("Redirect to Subject Management to create a new subject?")) {
+                 window.location.href = "{{ url_for('admin.subjects.subject_list') }}";
+            } else {
+                select.value = ""; // Reset dropdown
+            }
+        } else {
+            nameInputDiv.classList.add('hidden');
+            document.getElementById('nameInput').required = false;
+            
+            // Auto Select Faculty
+            const selectedOption = select.options[select.selectedIndex];
+            let facultyId = selectedOption.getAttribute('data-faculty');
+            
+            // Handle 'None' string from Jinja template or null
+            // Also check for empty string
+            if (facultyId === 'None' || facultyId === null || facultyId.trim() === "") facultyId = "";
+            
+            // Force value assignment
+            if (facultyId) {
+                document.getElementById('facultySelect').value = facultyId;
+            } else {
+                 document.getElementById('facultySelect').value = "";
+            }
+        }
+    }
+    
+    function cancelNewSubject() {
+        document.getElementById('newSubjectInput').classList.add('hidden');
+        document.getElementById('subjectSelect').value = "";
+        document.getElementById('nameInput').required = false;
+    }
+</script>
 {% endblock %}

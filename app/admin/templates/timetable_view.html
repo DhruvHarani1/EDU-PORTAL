@@ -56,7 +56,7 @@
                                                     <option value="">-- Free --</option>
                                                     {% for sub in subjects %}
                                                     <option value="{{ sub.id }}" {% if slot and slot.subject_id == sub.id %}selected{% endif %}>
-                                                        {{ sub.name }}
+                                                        {{ sub.name }} ({{ sub.faculty.display_name }})
                                                     </option>
                                                     {% endfor %}
                                                 </select>

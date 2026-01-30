@@ -27,14 +27,19 @@ def timetable_setup():
 
     semester = int(semester)
     
-    # Fetch existing subjects
-    subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
+    # Fetch existing subjects explicitly assigned to this course/sem
+    assigned_subjects = Subject.query.filter_by(course_name=course, semester=semester).all()
+    
+    # Fetch all subjects for the dropdown (filtered by course)
+    all_subjects = Subject.query.filter_by(course_name=course).order_by(Subject.name).all()
+    
     faculty_members = FacultyProfile.query.all()
     
     return render_template('timetable_setup.html', 
                            course=course, 
                            semester=semester, 
-                           subjects=subjects, 
+                           subjects=assigned_subjects,
+                           all_subjects=all_subjects,
                            faculty_members=faculty_members)
 
 @admin_bp.route('/timetable/add_subject', methods=['POST'])
@@ -43,21 +48,42 @@ def add_subject():
     # Helper to add subject via AJAX or Form
     course = request.form.get('course')
     semester = request.form.get('semester')
-    name = request.form.get('name')
+    
+    subject_id = request.form.get('subject_id') # If selecting existing
+    name = request.form.get('name') # If creating new (fallback)
+    
     faculty_id = request.form.get('faculty_id')
     lectures = request.form.get('lectures')
     
     try:
-        subject = Subject(
-            name=name,
-            course_name=course,
-            semester=semester,
-            faculty_id=faculty_id,
-            weekly_lectures=lectures
-        )
-        db.session.add(subject)
-        db.session.commit()
-        flash('Subject added successfully', 'success')
+        if subject_id:
+            # proper linking of existing subject
+            subject = Subject.query.get(subject_id)
+            if subject:
+                subject.course_name = course
+                subject.semester = semester
+                if faculty_id:
+                    subject.faculty_id = faculty_id
+                if lectures:
+                    subject.weekly_lectures = lectures
+                db.session.commit()
+                flash('Subject linked successfully', 'success')
+            else:
+                flash('Subject not found', 'error')
+        
+        elif name:
+            # Creating new
+            subject = Subject(
+                name=name,
+                course_name=course,
+                semester=semester,
+                faculty_id=faculty_id,
+                weekly_lectures=lectures
+            )
+            db.session.add(subject)
+            db.session.commit()
+            flash('Subject added successfully', 'success')
+            
     except Exception as e:
         db.session.rollback()
         flash(f'Error adding subject: {e}', 'error')

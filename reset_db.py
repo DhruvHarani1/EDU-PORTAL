@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, ScheduleSettings
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, ScheduleSettings, ExamEvent, ExamPaper, StudentResult
 from sqlalchemy import text
 
 app = create_app('development')

@@ -28,9 +28,11 @@ class Attendance(db.Model):
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    course_name = db.Column(db.String(100), nullable=False) # e.g., B.Tech
-    semester = db.Column(db.Integer, nullable=False)
-    faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=False)
+    # Fields for assignment (Nullable for initial creation)
+    course_name = db.Column(db.String(100), nullable=True) 
+    semester = db.Column(db.Integer, nullable=True)
+    academic_year = db.Column(db.String(20), nullable=True) # e.g. "2025-2026"
+    faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True)
     weekly_lectures = db.Column(db.Integer, default=3)
     
     # Relationship
@@ -65,3 +67,49 @@ class ScheduleSettings(db.Model):
     days_per_week = db.Column(db.Integer, default=5)
     
     # Composite unique constraint could be useful but we'll handle in logic
+
+class ExamEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False) # e.g. "End Semester Exam 2024"
+    academic_year = db.Column(db.String(20), nullable=False) # "2023-2024"
+    course_name = db.Column(db.String(100), nullable=False)
+    semester = db.Column(db.Integer, nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    is_published = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    papers = db.relationship('ExamPaper', backref='exam_event', lazy=True, cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f'<ExamEvent {self.name}>'
+
+class ExamPaper(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    exam_event_id = db.Column(db.Integer, db.ForeignKey('exam_event.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    total_marks = db.Column(db.Integer, default=100)
+    
+    # Relationships
+    subject = db.relationship('Subject', backref='exam_papers')
+
+    def __repr__(self):
+        return f'<ExamPaper {self.subject.name} on {self.date}>'
+
+class StudentResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    exam_paper_id = db.Column(db.Integer, db.ForeignKey('exam_paper.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    marks_obtained = db.Column(db.Float, nullable=True) # Check for None if Absent
+    status = db.Column(db.String(20), default='Present') # Present, Absent, Explelled
+    is_fail = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    paper = db.relationship('ExamPaper', backref=db.backref('results', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('exam_results', lazy=True))
+
+    def __repr__(self):
+        return f'<Result {self.student.enrollment_number} - {self.marks_obtained}>'
