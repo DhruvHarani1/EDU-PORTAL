@@ -5,173 +5,214 @@
 
 {% block student_content %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&display=swap');
 
-    .perspective-1000 { perspective: 1000px; }
+    .perspective-1000 { perspective: 1200px; }
     .transform-style-3d { transform-style: preserve-3d; }
     .backface-hidden { backface-visibility: hidden; }
     .rotate-y-180 { transform: rotateY(180deg); }
     
-    /* Holographic Effect */
-    .holo-overlay {
+    /* Ultimate Card Texture */
+    .card-base {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        box-shadow: 
+            0 20px 40px -10px rgba(0,0,0,0.5),
+            0 0 20px rgba(79, 70, 229, 0.2), 
+            inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
+    }
+
+    /* Reactive Hologram */
+    .holo-sheen {
         position: absolute;
         inset: 0;
-        background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.2) 50%, transparent 55%);
-        background-size: 200% 200%;
-        animation: holo-shine 4s infinite linear;
-        pointer-events: none;
-        z-index: 10;
+        background: linear-gradient(
+            115deg, 
+            transparent 30%, 
+            rgba(255, 255, 255, 0.1) 40%, 
+            rgba(255, 255, 255, 0.2) 50%, 
+            rgba(255, 255, 255, 0.1) 60%, 
+            transparent 70%
+        );
+        background-size: 200% 100%;
         mix-blend-mode: overlay;
+        pointer-events: none;
+        opacity: 0.7;
+        mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 60%);
+        -webkit-mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 60%);
+        transition: opacity 0.3s;
     }
     
-    @keyframes holo-shine {
-        0% { background-position: 200% 200%; }
-        100% { background-position: -50% -50%; }
+    /* Gold Chip */
+    .chip-gold {
+        background: linear-gradient(135deg, #e3c485 0%, #ecd393 20%, #ad8c44 50%, #fcf3c5 80%, #997e3a 100%);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        position: relative;
+    }
+    .chip-line {
+        position: absolute;
+        background: rgba(0,0,0,0.15);
     }
 
-    /* Premium Card Texture */
-    .card-texture {
-        background: #0f172a;
-        background-image: 
-            radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.4) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 40%),
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-    }
-    
-    .gold-chip {
-        background: linear-gradient(135deg, #bbb 0%, #d4ae5e 20%, #f3d489 40%, #d4ae5e 60%, #997e3a 100%);
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2), 0 1px 1px rgba(255,255,255,0.4);
-    }
+    /* Fonts */
+    .font-logo { font-family: 'Orbitron', sans-serif; }
+    .font-code { font-family: 'Share Tech Mono', monospace; }
+    .font-body { font-family: 'Inter', sans-serif; }
 
-    .font-tech { font-family: 'Orbitron', sans-serif; }
-    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
-    
+    /* Print Optimization */
     @media print {
         body * { visibility: hidden; }
-        #id-card-container, #id-card-container * { visibility: visible; }
-        #id-card-container {
+        #id-card-wrapper, #id-card-wrapper * { visibility: visible; }
+        #id-card-wrapper {
             position: absolute; left: 50%; top: 50%;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1) !important;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
         }
-        #controls, #sidebar, header { display: none !important; }
+        .holo-sheen, .animate-blob { display: none; }
+        #controls { display: none !important; }
     }
 </style>
 
-<div class="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+<div class="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center p-4 relative overflow-hidden" 
+     onmousemove="handleTilt(event)" 
+     onmouseleave="resetTilt()">
     
-    <!-- Ambient Glow -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/20 blur-[100px] rounded-full"></div>
+    <!-- Dynamic Background -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] mix-blend-screen animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
     </div>
 
-    <!-- 3D Flip Container -->
-    <div id="id-card-container" class="perspective-1000 w-full max-w-[420px] group select-none">
-        <div id="card-inner" class="relative w-full aspect-[1.586/1] transition-all duration-700 transform-style-3d shadow-2xl rounded-xl cursor-pointer" onclick="toggleFlip()">
+    <!-- 3D Card Container -->
+    <div id="id-card-wrapper" class="perspective-1000 w-full max-w-[440px] select-none scale-100 transition-transform duration-300">
+        <div id="card-inner" 
+             class="relative w-full aspect-[1.586/1] transition-transform duration-500 transform-style-3d cursor-pointer shadow-2xl rounded-2xl"
+             onclick="toggleFlip()"
+             style="transform: rotateX(0deg) rotateY(0deg);">
             
-            <!-- FRONT FACE -->
-            <div class="absolute inset-0 w-full h-full backface-hidden rounded-xl overflow-hidden card-texture border border-white/10 shadow-inner">
-                <div class="holo-overlay"></div>
+            <!-- ====== FRONT ====== -->
+            <div class="absolute inset-0 w-full h-full backface-hidden rounded-2xl overflow-hidden card-base border border-white/10">
+                <!-- Holographic Shine -->
+                <div class="holo-sheen" id="holo-fx"></div>
                 
-                <div class="relative h-full flex flex-col p-6 z-20">
-                    <!-- Top Bar -->
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                                <svg class="w-6 h-6 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                <!-- Front Layout -->
+                <div class="relative h-full flex flex-col p-6 z-10 font-body">
+                    
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 backdrop-blur-md flex items-center justify-center shadow-lg">
+                                <svg class="w-6 h-6 text-indigo-300 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="text-sm font-tech font-bold text-white tracking-wider">UNIVERSE<span class="text-indigo-400">UNIVERSITY</span></h1>
-                                <p class="text-[9px] text-gray-300 tracking-[0.2em] uppercase">Student Identity</p>
-                            </div>
-                        </div>
-                        <!-- Smart Chip -->
-                        <div class="w-10 h-8 rounded-md gold-chip relative overflow-hidden border border-[#997e3a]">
-                            <div class="absolute inset-0 border border-black/20 rounded-[inherit]"></div>
-                            <div class="absolute top-2 left-0 right-0 h-[1px] bg-black/20"></div>
-                            <div class="absolute bottom-2 left-0 right-0 h-[1px] bg-black/20"></div>
-                            <div class="absolute top-0 bottom-0 left-3 w-[1px] bg-black/20"></div>
-                            <div class="absolute top-0 bottom-0 right-3 w-[1px] bg-black/20"></div>
-                        </div>
-                    </div>
-
-                    <!-- Main Content -->
-                    <div class="flex gap-5 items-center flex-1">
-                        <!-- Photo -->
-                        <div class="relative">
-                            <div class="w-28 h-28 rounded-xl overflow-hidden border-2 border-indigo-400/50 shadow-lg shadow-indigo-500/20 bg-gray-800">
-                                <img src="https://ui-avatars.com/api/?name={{ student.display_name }}&background=6366f1&color=fff&size=200&font-size=0.35" class="w-full h-full object-cover">
-                            </div>
-                            <!-- Verified Badge -->
-                            <div class="absolute -bottom-2 -right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-1 rounded-full border-2 border-[#0f172a] shadow-sm">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <h1 class="text-[13px] font-logo font-black text-white tracking-widest leading-none mb-1">UNIVERSE <span class="text-indigo-400">EDU</span></h1>
+                                <p class="text-[8px] font-code text-indigo-200/70 tracking-[0.25em] uppercase">Student Access Card</p>
                             </div>
                         </div>
                         
-                        <!-- Text Details -->
-                        <div class="space-y-2 flex-1">
+                        <!-- Realistic Chip -->
+                        <div class="w-11 h-9 rounded-md chip-gold overflow-hidden border border-[#b89b52]">
+                            <div class="chip-line w-full h-[1px] top-[25%]"></div>
+                            <div class="chip-line w-full h-[1px] bottom-[25%]"></div>
+                            <div class="chip-line h-full w-[1px] left-[35%]"></div>
+                            <div class="chip-line h-full w-[1px] right-[35%]"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-3 h-3 rounded-full border border-black/10"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Identity Section -->
+                    <div class="flex gap-6 items-center flex-1">
+                        <!-- Photo Frame -->
+                        <div class="relative group">
+                            <div class="w-[100px] h-[100px] rounded-2xl overflow-hidden border-2 border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.3)] bg-gray-900">
+                                <img src="https://ui-avatars.com/api/?name={{ student.display_name }}&background=0f172a&color=fff&size=200&font-size=0.33" class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500">
+                            </div>
+                            <!-- Live Status Dot -->
+                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-[#10b981] rounded-full border-[3px] border-[#0f172a] shadow-sm animate-pulse"></div>
+                            <!-- Scanlines overlay on photo -->
+                            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-30 pointer-events-none"></div>
+                        </div>
+                        
+                        <!-- Details -->
+                        <div class="flex-1 space-y-3">
                             <div>
-                                <h2 class="text-xl font-bold text-white leading-tight mb-0.5">{{ student.display_name }}</h2>
-                                <p class="text-xs text-indigo-300 uppercase tracking-wider font-semibold opacity-80">Student</p>
+                                <h2 class="text-[22px] font-bold text-white leading-none tracking-tight">{{ student.display_name }}</h2>
+                                <p class="text-[10px] text-indigo-300 font-code tracking-wider mt-1 opacity-80">STUDENT // PRIORITY LEVEL 1</p>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-y-2 gap-x-1 pt-1">
+                            <div class="glass-panel rounded-lg p-2.5 flex items-center justify-between">
                                 <div>
-                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Course</p>
-                                    <p class="text-xs font-medium text-gray-200 truncate">{{ student.course_name }}</p>
+                                    <p class="text-[8px] text-gray-400 uppercase font-black tracking-wider mb-0.5">ID NUMBER</p>
+                                    <p class="font-code text-sm text-white tracking-widest">{{ student.enrollment_number }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">ID Number</p>
-                                    <p class="font-mono-tech text-xs text-indigo-200 tracking-wide">{{ student.enrollment_number }}</p>
+                                <div class="text-right">
+                                     <p class="text-[8px] text-gray-400 uppercase font-black tracking-wider mb-0.5">COURSE</p>
+                                    <p class="font-code text-xs text-indigo-200">{{ student.course_name.split(' ')[0] }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Bottom Bar -->
-                    <div class="mt-auto pt-3 border-t border-white/5 flex justify-between items-end">
-                       <div class="font-mono-tech text-[10px] text-gray-400">
-                           VALID: <span class="text-white">2023 - 2027</span>
-                       </div>
-                       <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ student.enrollment_number }}" class="w-10 h-10 bg-white p-0.5 rounded opacity-90 mix-blend-screen">
+                    <!-- Footer -->
+                    <div class="mt-auto pt-4 flex justify-between items-end opacity-90">
+                        <div class="flex flex-col">
+                            <span class="text-[7px] text-gray-500 font-code uppercase mb-0.5">Valid Until</span>
+                            <span class="text-xs font-code text-white">MAY 2027</span>
+                        </div>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ student.enrollment_number }}&bgcolor=255-255-255&color=0-0-0&margin=0" class="w-10 h-10 rounded-sm mix-blend-screen opacity-80 bg-white">
                     </div>
                 </div>
             </div>
 
-            <!-- BACK FACE -->
-            <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-xl overflow-hidden bg-[#111] border border-gray-700 shadow-xl">
-                <!-- Magnetic Strip -->
-                <div class="h-10 bg-[#000] mt-6 w-full relative border-y border-gray-800"></div>
+            <!-- ====== BACK ====== -->
+            <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl overflow-hidden bg-[#0a0a0a] border border-gray-800 shadow-xl">
+                <!-- Mag Strip -->
+                <div class="h-12 bg-[#1a1a1a] mt-6 w-full relative border-y border-white/5">
+                    <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,#000_2px,#000_4px)] opacity-50"></div>
+                </div>
 
-                <div class="p-6 flex flex-col h-[calc(100%-4rem)] justify-between">
-                    <div class="space-y-4">
-                        <div class="flex justify-between text-xs text-gray-500 font-mono-tech border-b border-gray-800 pb-2">
-                            <span>DOB: {{ student.date_of_birth.strftime('%d %b %Y') }}</span>
-                            <span>B.GRP: O+</span>
+                <div class="p-6 flex flex-col h-[calc(100%-4.5rem)] justify-between">
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center text-xs text-gray-500 font-code border-b border-gray-800 pb-3">
+                            <div class="flex flex-col">
+                                <span class="text-[8px] uppercase tracking-wider">Date of Birth</span>
+                                <span class="text-gray-300">{{ student.date_of_birth.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                            <div class="flex flex-col text-right">
+                                <span class="text-[8px] uppercase tracking-wider">Blood Group</span>
+                                <span class="text-red-400 font-bold">O+</span>
+                            </div>
                         </div>
                         
-                        <div class="text-[9px] text-gray-400 text-justify leading-relaxed opacity-80">
-                            <p class="mb-2">This card is the property of Universe University. If found, please return to the Registrar's Office or verify status at <strong>portal.universe.edu/verify</strong>.</p>
-                            <p>Unauthorized use of this identity document serves as a violation of university protocols under Article 42.</p>
+                        <div class="text-[9px] text-gray-400 text-justify leading-relaxed opacity-70 font-code">
+                            This card remains the property of Universe University. Attempting to duplicate, forge, or alter this document is a punishable offense. 
+                            <br><br>
+                            If found, please return to: <span class="text-indigo-400">Universe Campus, Sector 7, Mars Colony.</span>
                         </div>
                     </div>
 
                     <div class="flex items-end justify-between">
-                        <div class="w-28 text-center">
-                            <div class="h-8 border-b border-gray-600 mb-1 flex items-end justify-center">
-                                <span class="font-handwriting text-gray-500 italic text-sm transform -rotate-3 block">AutoAuthorized</span>
+                        <div class="w-32">
+                             <div class="h-8 border-b border-gray-700 mb-1 flex items-end">
+                                <span class="font-handwriting text-gray-400 text-sm italic w-full text-center">Antigravity_Auth</span>
                             </div>
-                            <p class="text-[8px] text-gray-600 uppercase tracking-widest">Registrar Signature</p>
+                            <p class="text-[7px] text-gray-600 uppercase tracking-widest text-center">Authorized Signature</p>
                         </div>
                         
                         <!-- Barcode -->
-                        <div class="bg-white p-1 rounded-sm opacity-90">
-                           <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ student.enrollment_number }}&scale=2&height=5&incltext&textsize=6" class="h-8 w-auto mix-blend-multiply">
+                        <div class="bg-white p-1.5 rounded opacity-90">
+                           <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ student.enrollment_number }}&scale=2&height=5" class="h-6 w-auto mix-blend-multiply">
                         </div>
                     </div>
                 </div>
@@ -181,22 +222,59 @@
     </div>
 
     <!-- Controls -->
-    <div id="controls" class="mt-10 flex gap-4 animate-fade-in-up">
-        <button onclick="toggleFlip()" class="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            Flip Card
+    <div id="controls" class="mt-12 flex gap-5 opacity-0 animate-fade-in-up" style="animation-delay: 0.2s; animation-fill-mode: forwards;">
+        <button onclick="toggleFlip()" class="group px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-indigo-500/30 text-gray-300 text-sm font-medium transition-all hover:-translate-y-1 flex items-center gap-2">
+            <span class="group-hover:text-indigo-400 transition-colors">Flip Side</span>
+            <svg class="w-4 h-4 text-gray-500 group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
         </button>
-        <button onclick="window.print()" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 border border-transparent text-white text-sm font-medium shadow-lg shadow-indigo-500/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z" /></svg>
-            Download Card
+        <button onclick="window.print()" class="group px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-[0_10px_20px_-5px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-1 flex items-center gap-2">
+            <span>Download</span>
+            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
         </button>
     </div>
 
 </div>
 
 <script>
+    let isFlipped = false;
+    const card = document.getElementById('card-inner');
+    const wrapper = document.getElementById('id-card-wrapper');
+    const holo = document.getElementById('holo-fx');
+
     function toggleFlip() {
-        document.getElementById('card-inner').classList.toggle('rotate-y-180');
+        isFlipped = !isFlipped;
+        if (isFlipped) {
+            card.style.transform = 'rotateY(180deg)';
+        } else {
+            card.style.transform = 'rotateY(0deg)';
+        }
+    }
+
+    function handleTilt(e) {
+        if (window.innerWidth < 768) return; // Disable on mobile
+
+        const rect = wrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const w = rect.width;
+        const h = rect.height;
+
+        // Calculate rotation (Limit to ±10deg)
+        const rotateX = ((y - h / 2) / h) * -20;
+        const rotateY = ((x - w / 2) / w) * 20;
+
+        // Apply 3D rotation + Preserve Flip State
+        const flipRot = isFlipped ? 'rotateY(180deg)' : '';
+        wrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        
+        // Update Holo Position
+        holo.style.setProperty('--mouse-x', `${(x/w)*100}%`);
+        holo.style.setProperty('--mouse-y', `${(y/h)*100}%`);
+    }
+
+    function resetTilt() {
+        wrapper.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+        holo.style.opacity = '0.5';
     }
 </script>
 {% endblock %}
