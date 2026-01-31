@@ -520,10 +520,6 @@ def exams():
 def id_card():
     student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
     
-    # Inject Mock Data for ID Card Display (Schema Limitation)
-    student.date_of_birth = datetime(2003, 5, 15) # Example DOB
-    student.batch_year = "2023-2027"
-    
     return render_template('student/id_card.html', student=student)
 
 @student_bp.route('/clubs')
@@ -688,7 +684,45 @@ def scholarship():
             
     return render_template('student/scholarship.html', student=student, results=results, searched=searched)
 
-@student_bp.route('/settings')
+from werkzeug.security import generate_password_hash, check_password_hash
+
+@student_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    return render_template('student_dashboard.html') # TODO: Create settings.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'update_profile':
+            try:
+                student.phone_number = request.form.get('phone_number')
+                student.address = request.form.get('address')
+                student.guardian_name = request.form.get('guardian_name')
+                student.guardian_contact = request.form.get('guardian_contact')
+                
+                db.session.commit()
+                flash('Profile updated successfully!', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('An error occurred while updating profile.', 'error')
+                
+        elif action == 'change_password':
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+            
+            if not check_password_hash(current_user.password_hash, current_password):
+                flash('Incorrect current password.', 'error')
+            elif new_password != confirm_password:
+                flash('New passwords do not match.', 'error')
+            elif len(new_password) < 6:
+                flash('Password must be at least 6 characters long.', 'error')
+            else:
+                current_user.password_hash = generate_password_hash(new_password)
+                db.session.commit()
+                flash('Password changed successfully!', 'success')
+                
+        return redirect(url_for('student.settings'))
+            
+    return render_template('student/settings.html', student=student)

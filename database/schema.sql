@@ -17,6 +17,12 @@ CREATE TABLE student_profile (
     enrollment_number VARCHAR(20) NOT NULL UNIQUE,
     course_name VARCHAR(100) NOT NULL,
     semester INTEGER DEFAULT 1,
+    date_of_birth DATE,
+    batch_year VARCHAR(20),
+    phone_number VARCHAR(15),
+    address TEXT,
+    guardian_name VARCHAR(100),
+    guardian_contact VARCHAR(15),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 

@@ -8,6 +8,14 @@ class StudentProfile(db.Model):
     course_name = db.Column(db.String(100), nullable=False) # e.g., B.Tech, MBA
     semester = db.Column(db.Integer, default=1)
     
+    # Extended Profile Fields
+    date_of_birth = db.Column(db.Date, nullable=True)
+    batch_year = db.Column(db.String(20), nullable=True) # e.g. "2023-2027"
+    phone_number = db.Column(db.String(15), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+    guardian_name = db.Column(db.String(100), nullable=True)
+    guardian_contact = db.Column(db.String(15), nullable=True)
+    
     # Relationship with User
     user = db.relationship('User', backref=db.backref('student_profile', uselist=False))
 

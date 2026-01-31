@@ -39,7 +39,19 @@ with app.app_context():
         db.session.flush()
 
         # Student Profile
-        sp1 = StudentProfile(user_id=stu1.id, display_name='John Doe', enrollment_number='STU001', course_name='B.Tech', semester=1)
+        sp1 = StudentProfile(
+            user_id=stu1.id, 
+            display_name='John Doe', 
+            enrollment_number='STU001', 
+            course_name='B.Tech', 
+            semester=1,
+            date_of_birth=date(2003, 5, 15),
+            batch_year='2025-2029',
+            phone_number='9876543210',
+            address='123, Campus Road, University City',
+            guardian_name='Robert Doe',
+            guardian_contact='9988776655'
+        )
         db.session.add(sp1)
         db.session.flush()
 
