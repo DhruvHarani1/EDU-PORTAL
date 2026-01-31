@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import io
 from datetime import datetime
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, ExamEvent, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile
 from app.extensions import db
 from flask import render_template, request, redirect, url_for, flash, jsonify
 
@@ -487,7 +487,33 @@ def message_image(message_id):
 @student_bp.route('/exams')
 @login_required
 def exams():
-    return render_template('student_dashboard.html') # TODO: Create exams.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # 1. Upcoming Exams (Schedule)
+    # Fetch active exam events for student's course/semester
+    upcoming_events = ExamEvent.query.filter_by(
+        course_name=student.course_name,
+        semester=student.semester,
+        is_published=True
+    ).order_by(ExamEvent.start_date).all()
+    
+    # 2. Past Results
+    # Fetch results grouped by Exam Event
+    # We join Result -> Paper -> Event
+    results = StudentResult.query.filter_by(student_id=student.id).all()
+    
+    # Group results by Exam Event
+    history = {}
+    for res in results:
+        event = res.paper.exam_event
+        if event not in history:
+            history[event] = {'total_marks': 0, 'obtained_marks': 0, 'papers': []}
+        
+        history[event]['papers'].append(res)
+        history[event]['total_marks'] += res.paper.total_marks
+        history[event]['obtained_marks'] += (res.marks_obtained or 0)
+        
+    return render_template('student/exams.html', student=student, upcoming_events=upcoming_events, result_history=history)
 
 @student_bp.route('/clubs')
 @login_required
