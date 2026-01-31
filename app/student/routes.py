@@ -165,6 +165,9 @@ def academics():
         overall_credits += data['total_credits']
         events_list.append(data)
         
+    # Sort events by date descending (Latest First)
+    events_list.sort(key=lambda x: x['event'].start_date, reverse=True)
+
     cgpi = round(overall_points / overall_credits, 2) if overall_credits > 0 else 0.0
 
     return render_template('student/academics.html', 

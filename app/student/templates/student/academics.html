@@ -38,11 +38,21 @@
         </div>
     </div>
 
-    <!-- Exam Results List -->
-    <h3 class="text-lg font-bold text-gray-900 mb-4 px-2">Exam History</h3>
+    <!-- Exam Results Selector -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 md:mb-0 px-2">Exam History</h3>
+        
+        <div class="relative w-full md:w-64">
+            <select id="examSelector" onchange="showExam(this.value)" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+                {% for exam in exams %}
+                <option value="exam-{{ exam.event.id }}">{{ exam.event.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
     
     {% for exam in exams %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8 overflow-hidden">
+    <div id="exam-{{ exam.event.id }}" class="exam-card bg-white rounded-xl shadow-sm border border-gray-200 mb-8 overflow-hidden {% if not loop.first %}hidden{% endif %}">
         <!-- Exam Header -->
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center">
             <div>
@@ -114,4 +124,19 @@
     {% endfor %}
 
 </div>
+
+<script>
+    function showExam(examId) {
+        // Hide all exam cards
+        document.querySelectorAll('.exam-card').forEach(card => {
+            card.classList.add('hidden');
+        });
+        
+        // Show selected exam card
+        const selected = document.getElementById(examId);
+        if (selected) {
+            selected.classList.remove('hidden');
+        }
+    }
+</script>
 {% endblock %}
