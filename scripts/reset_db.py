@@ -44,12 +44,12 @@ with app.app_context():
         db.session.flush()
 
         print("3. Creating Subjects (B.Tech Sem 1)...")
-        # 5 Subjects
-        s1 = Subject(name='Mathematics-I', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4)
-        s2 = Subject(name='Physics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=3)
-        s3 = Subject(name='Programming in C', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4)
-        s4 = Subject(name='Engineering Graphics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2)
-        s5 = Subject(name='Communication Skills', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2)
+        # 5 Subjects with Notes Links
+        s1 = Subject(name='Mathematics-I', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4, resource_link='https://drive.google.com/drive/folders/maths1-dummy')
+        s2 = Subject(name='Physics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=3, resource_link='https://drive.google.com/drive/folders/phy-dummy')
+        s3 = Subject(name='Programming in C', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4, resource_link='https://drive.google.com/drive/folders/cprog-dummy')
+        s4 = Subject(name='Engineering Graphics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2, resource_link='https://drive.google.com/drive/folders/graphics-dummy')
+        s5 = Subject(name='Communication Skills', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2, resource_link='https://drive.google.com/drive/folders/comm-dummy')
         
         db.session.add_all([s1, s2, s3, s4, s5])
         db.session.flush()

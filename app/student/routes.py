@@ -236,7 +236,15 @@ def download_marksheet(exam_id):
 @student_bp.route('/notes')
 @login_required
 def notes():
-    return render_template('student_dashboard.html') # TODO: Create notes.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch subjects for the student's current semester
+    subjects = Subject.query.filter_by(
+        course_name=student.course_name,
+        semester=student.semester
+    ).all()
+    
+    return render_template('student/notes.html', student=student, subjects=subjects)
 
 @student_bp.route('/events')
 @login_required

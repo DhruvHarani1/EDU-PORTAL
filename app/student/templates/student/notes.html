@@ -1,0 +1,75 @@
+{% extends "base_student.html" %}
+
+{% block title %}Notes & Resources | EduPortal{% endblock %}
+{% block header_title %}Notes & Resources{% endblock %}
+
+{% block student_content %}
+<div class="px-4 sm:px-0 max-w-7xl mx-auto">
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900">Study Material & Notes</h2>
+        <p class="mt-1 text-sm text-gray-500">Access course materials, lecture notes, and reference links provided by faculty.</p>
+    </div>
+
+    {% if subjects %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for sub in subjects %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+            <!-- Card Header -->
+            <div class="bg-indigo-600 px-6 py-4">
+                <h3 class="text-lg font-bold text-white truncate" title="{{ sub.name }}">{{ sub.name }}</h3>
+                <p class="text-indigo-200 text-xs mt-1">Course Code: SUB{{ sub.id }}</p>
+            </div>
+            
+            <!-- Card Body -->
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="bg-indigo-50 rounded-full p-2 mr-3">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">Faculty</p>
+                        <p class="text-xs text-gray-500">{{ sub.faculty.display_name if sub.faculty else 'TBA' }}</p>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4 mt-2">
+                    {% if sub.resource_link %}
+                    <a href="{{ sub.resource_link }}" target="_blank" rel="noopener noreferrer" 
+                       class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Access Notes
+                    </a>
+                    <p class="text-[10px] text-gray-400 text-center mt-2 flex items-center justify-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="Drive" class="h-3 w-3 mr-1 opacity-50">
+                        Via Google Drive
+                    </p>
+                    {% else %}
+                    <button disabled class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed">
+                        <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        No Resources Yet
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No subjects found</h3>
+        <p class="mt-1 text-sm text-gray-500">You are not enrolled in any subjects for this semester yet.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

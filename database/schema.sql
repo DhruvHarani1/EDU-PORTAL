@@ -76,6 +76,7 @@ CREATE TABLE subject (
     academic_year VARCHAR(20),
     faculty_id INTEGER,
     weekly_lectures INTEGER DEFAULT 3,
+    resource_link VARCHAR(500),
     FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
 );
 

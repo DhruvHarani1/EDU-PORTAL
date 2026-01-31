@@ -34,6 +34,7 @@ class Subject(db.Model):
     academic_year = db.Column(db.String(20), nullable=True) # e.g. "2025-2026"
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True)
     weekly_lectures = db.Column(db.Integer, default=3)
+    resource_link = db.Column(db.String(500), nullable=True) # Google Drive Link
     
     # Relationship
     faculty = db.relationship('FacultyProfile', backref=db.backref('subjects_taught', lazy=True))
