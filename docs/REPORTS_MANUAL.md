@@ -152,3 +152,62 @@ The AI looks for non-obvious patterns in the daily logs to suggest administrativ
     *   The AI counts how many students are in the *Truancy Risk Registry*.
     *   If **> 15%** of the class is at risk, it flags a **"High Truancy Risk"** alert. This implies the issue is not with individual students, but with the course itself (e.g., bad timing, poor transport, toxic environment).
     *   *Action*: "Initiate Automated SMS Warnings".
+
+---
+---
+
+# Faculty Performance Architect
+
+## Overview
+The **Faculty Intelligence** module changes the conversation from *"How are students doing?"* to *"How effectively are they being taught?"*. 
+It treats teaching as a skill that can be measured using two axes: **Performance** (Grades) and **Equity** (Inclusivity).
+
+---
+
+## 8. The Equity Score
+
+### **What is it?**
+A metric that measures if a teacher is carrying the *whole* class with them, or just teaching to the top 10%. 
+It is the anti-thesis of "Average Marks."
+
+### **The Math**
+*   **Formula**: `Equity = 100 - (Standard Deviation * 2.0)`
+*   **Interpretation**:
+    *   A **High Equity Score** (> 70) means the gap between the Topper and the Last Bencher is small. The teacher ensures everyone understands the concept.
+    *   A **Low Equity Score** (< 40) means the marks are extremely spread out. Some get 99%, others get 10%. The teacher is likely lecturing at a pace only the elite students can follow.
+
+---
+
+## 9. Faculty Archetypes
+
+The AI automatically classifies every professor into one of four personas based on their Performance (Avg Marks) and Equity (Std Dev).
+
+### **1. 🏆 The Master Teacher** (Emerald)
+*   **Stats**: High Performance (> 60%) + High Equity (> 60%).
+*   **Meaning**: The Ideal. This teacher delivers complex concepts simply. Everyone passes, and everyone scores well.
+*   **Action**: These teachers should lead "Masterclasses" for junior faculty.
+
+### **2. ⚡ The Elite Coach** (Indigo)
+*   **Stats**: High Performance (> 65%) + Low Equity.
+*   **Meaning**: Great for smart kids, terrible for weak ones. Their class average is high because the toppers score 100%, masking the fact that 20% of the class failed.
+*   **Action**: Needs to slow down and use more visual aids for weaker students.
+
+### **3. 🤝 The Empathetic Guide** (Blue)
+*   **Stats**: Low Performance + High Equity.
+*   **Meaning**: Everyone passes, but no one excels. The class is "safe" but likely too easy or lacking in depth. 
+*   **Action**: Needs to increase the rigor of the coursework.
+
+### **4. 🚩 The Strict Evaluator / The Chaos Agent** (Red)
+*   **Stats**: Low Performance + Low Equity.
+*   **Meaning**: The Danger Zone. Low average scores AND high confusion. This often indicates a disconnect between the teaching style and the exam difficulty.
+*   **Action**: Immediate audit of syllabus coverage and exam papers.
+
+---
+
+## 10. AI Intervention Logic
+
+The Executive Review bar at the top of the dashboard suggests high-level strategies based on the *aggregate* composition of the faculty.
+
+*   **"High Performing" Status**: If > 3 Master Teachers are detected.
+*   **"Needs Attention" Status**: If > 3 Strict Evaluators are detected.
+    *   *AI Tip*: "Audit the difficulty of exam papers for the flagged subjects."

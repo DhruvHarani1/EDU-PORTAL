@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
 from flask_login import login_required
 from app.extensions import db
-from app.models import StudentResult, Attendance, Subject, StudentProfile, ExamEvent, ExamPaper
+from app.models import StudentResult, Attendance, Subject, StudentProfile, ExamEvent, ExamPaper, FacultyProfile
 from sqlalchemy import func
 import statistics
 
@@ -231,23 +231,102 @@ def faculty_insights_view():
 @reports_bp.route('/api/reports/faculty', methods=['GET'])
 @login_required
 def faculty_data():
-    # 1. Impact Factor (Difficulty vs Pass Rate)
+    # 1. Fetch all Faculties via the Subject Link
+    # In seed_analytics.py, Subject has a 'faculty_id'. 
+    # We should iterate Subjects first, then find the teacher.
+    
     subjects = Subject.query.all()
-    impact = []
+    faculty_metrics = []
+    
+    hero_count = 0
+    concern_count = 0
+    
     for sub in subjects:
-        # Join results
-        sub_results = db.session.query(StudentResult).join(ExamPaper).filter(ExamPaper.subject_id == sub.id).all()
+        # Check if subject has a faculty assigned
+        # Note: Subject model might not have backref 'faculty' defined in all versions, 
+        # so let's query safe.
+        if not sub.faculty_id:
+            continue
+            
+        fac = FacultyProfile.query.get(sub.faculty_id)
+        if not fac:
+            continue
+        
+        # Get Results for this subject
+        sub_results = db.session.query(StudentResult.marks_obtained)\
+            .join(ExamPaper).filter(ExamPaper.subject_id == sub.id).all()
+            
         if sub_results:
             marks = [r.marks_obtained for r in sub_results if r.marks_obtained is not None]
-            if marks:
+            if len(marks) > 0:
                 avg = statistics.mean(marks)
+                std_dev = statistics.stdev(marks) if len(marks) > 1 else 0
                 pass_rate = (len([m for m in marks if m >= 35]) / len(marks)) * 100
-                difficulty = 100 - avg # Proxy
-                impact.append({'subject': sub.name, 'x': round(difficulty, 1), 'y': round(pass_rate, 1), 'r': 10})
                 
+                # METRIC 1: Equity Index
+                # Lower StdDev = High Equity (Everyone understands equally)
+                # Adjusted formula to be less punitive: 100 - (StdDev * 2)
+                # Typical StdDev is 15-20, so 100 - 40 = 60 (Average Equity)
+                equity_score = max(0, 100 - (std_dev * 2.0)) 
+                
+                # METRIC 2: Performance Index
+                perf_score = avg
+                
+                # ARCHETYPE CLASSIFICATION
+                archetype = "The Generalist"
+                color = "gray"
+                
+                # Adjusted Thresholds for realistic distribution
+                if perf_score >= 60 and equity_score >= 60:
+                    archetype = "The Master Teacher" 
+                    color = "emerald"
+                    hero_count += 1
+                elif perf_score >= 65 and equity_score < 60:
+                    archetype = "The Elite Coach" 
+                    color = "indigo"
+                elif perf_score < 55 and equity_score >= 65:
+                    archetype = "The Empathetic Guide"
+                    color = "blue"
+                elif equity_score < 45: # Priority on Chaos
+                    archetype = "The Strict Evaluator"
+                    color = "red"
+                    concern_count += 1
+                
+                faculty_metrics.append({
+                    'name': fac.display_name,
+                    'subject': sub.name,
+                    'avg': round(avg, 1),
+                    'equity': round(equity_score, 1),
+                    'archetype': archetype,
+                    'color': color,
+                    'pass_rate': round(pass_rate, 1),
+                    'students': len(marks)
+                })
+    
+    # Sort
+    faculty_metrics.sort(key=lambda x: x['avg'], reverse=True)
+    
+    # 2. AI Review
+    insight_text = "Faculty performance is standard."
+    tip_text = "Encourage peer reviews."
+    status = "Stable"
+    
+    if hero_count > 2:
+        status = "High Performing"
+        insight_text = f"Outstanding! We have {hero_count} 'Master Teachers' who are lifting the entire class average."
+        tip_text = "Schedule a 'Masterclass' where these teachers share their inclusive teaching techniques."
+    elif concern_count > 2:
+        status = "Needs Attention"
+        insight_text = "Several faculty members are showing 'Strict Evaluator' signs, meaning high failure rates and low equity."
+        tip_text = "Audit the difficulty of exam papers for the flagged subjects."
+
     return jsonify({
-        'impact': impact,
-        'declining': [{'name': 'Prof. Smith', 'trend': '-15%'}] # Mock
+        'metrics': faculty_metrics,
+        'insights': {
+            'status': status,
+            'summary': insight_text,
+            'tip': tip_text
+        }
     })
 
 # --- 4. Future Predictions ---
