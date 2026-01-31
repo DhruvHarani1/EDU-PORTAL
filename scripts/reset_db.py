@@ -5,7 +5,7 @@ from datetime import date, timedelta, datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult, UniversityEvent, EventRegistration
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult, UniversityEvent, EventRegistration, FeeRecord
 
 app = create_app('development')
 
@@ -171,6 +171,37 @@ with app.app_context():
             image_mimetype='image/png'
         )
         db.session.add_all([ev1, ev2, ev3])
+        db.session.flush()
+
+        db.session.add_all([ev1, ev2, ev3])
+        db.session.flush()
+
+        # --- Fee Records ---
+        print("5.8 Creating Fee Records...")
+        # Sem 1: Paid
+        fee1 = FeeRecord(
+            student_id=sp1.id,
+            semester=1,
+            academic_year='2025-2026',
+            amount_due=50000.0,
+            amount_paid=50000.0,
+            due_date=date(2025, 8, 15),
+            status='Paid',
+            payment_date=datetime(2025, 8, 10, 10, 30),
+            payment_mode='Online',
+            transaction_reference='TXN123456789'
+        )
+        # Sem 2: Pending
+        fee2 = FeeRecord(
+            student_id=sp1.id,
+            semester=2,
+            academic_year='2025-2026',
+            amount_due=50000.0,
+            amount_paid=0.0,
+            due_date=date(2026, 1, 30),
+            status='Pending'
+        )
+        db.session.add_all([fee1, fee2])
         db.session.flush()
 
         # --- Semester 1 Exams ---

@@ -2,7 +2,7 @@ from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
 import io
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice, FeeRecord
 from app.extensions import db
 
 @student_bp.route('/dashboard')
@@ -302,7 +302,14 @@ def notices():
 @student_bp.route('/fees')
 @login_required
 def fees():
-    return render_template('student_dashboard.html') # TODO: Create fees.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    records = FeeRecord.query.filter_by(student_id=student.id).order_by(FeeRecord.due_date.desc()).all()
+    
+    pending_fees = [r for r in records if r.status == 'Pending' or r.status == 'Overdue']
+    history_fees = [r for r in records if r.status == 'Paid']
+    
+    return render_template('student/fees.html', student=student, pending_fees=pending_fees, history_fees=history_fees)
 
 @student_bp.route('/queries')
 @login_required

@@ -166,3 +166,19 @@ CREATE TABLE event_registration (
     FOREIGN KEY (student_id) REFERENCES student_profile (id),
     UNIQUE(event_id, student_id)
 );
+
+-- Fee Record Schema
+CREATE TABLE fee_record (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL,
+    semester INTEGER NOT NULL,
+    academic_year VARCHAR(20) NOT NULL,
+    amount_due FLOAT NOT NULL,
+    amount_paid FLOAT DEFAULT 0.0,
+    due_date DATE NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pending',
+    payment_date TIMESTAMP,
+    payment_mode VARCHAR(50),
+    transaction_reference VARCHAR(100),
+    FOREIGN KEY (student_id) REFERENCES student_profile (id)
+);
