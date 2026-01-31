@@ -75,8 +75,9 @@
                                 {% set color_class = 'bg-emerald-500' %}
                                 {% if s.pct < 75 %}{% set color_class = 'bg-amber-400' %}{% endif %}
                                 {% if s.pct < 60 %}{% set color_class = 'bg-rose-500' %}{% endif %}
-                                {% set bar_style = 'width:' ~ s.pct ~ '%' %}
-                                <div class="{{ color_class }} h-full rounded-full transition-all duration-500 ease-out" style="{{ bar_style }}"></div>
+                                
+                                {% set progress_bar_attr = 'style="width:' ~ s.pct ~ '%;"' %}
+                                <div class="{{ color_class }} h-full rounded-full transition-all duration-500 ease-out" {{ progress_bar_attr | safe }}></div>
                             </div>
                             <span class="text-sm font-bold text-gray-700 w-12 text-right">{{ s.pct | int }}%</span>
                         </div>
