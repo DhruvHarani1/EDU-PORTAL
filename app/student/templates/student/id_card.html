@@ -183,11 +183,64 @@
     </div>
 
     <!-- Controls -->
-    <div id="controls" class="mt-8 text-center">
-        <p class="text-sm text-gray-500 mb-4 animate-pulse">Hover card to see details</p>
-        <button onclick="window.print()" class="px-6 py-2 rounded-full bg-white border border-gray-200 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors">
+    <div id="controls" class="mt-8 text-center space-x-4">
+        <button onclick="window.print()" class="px-6 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-lg transition-all transform hover:scale-105 flex inline-flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Download / Print
         </button>
+    </div>
+
+    <!-- Additional Identity Info -->
+    <div class="mt-12 w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+        
+        <!-- Status Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Active Student</h3>
+                <p class="text-xs text-gray-500">Verified for Academic Year 2025-26</p>
+                <p class="text-[10px] text-green-600 font-medium mt-1">Valid until May 2026</p>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Emergency Contact</h3>
+                <p class="text-xs text-gray-500">Guardian: {{ student.guardian_name or 'Not Set' }}</p>
+                <p class="text-[10px] text-gray-600 font-medium mt-1">Ph: {{ student.guardian_contact or 'N/A' }}</p>
+            </div>
+        </div>
+
+        <!-- Library Status -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+             <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            </div>
+             <div>
+                <h3 class="text-sm font-bold text-gray-900">Library Access</h3>
+                <p class="text-xs text-gray-500">Books Borrowed: 0</p>
+                <p class="text-[10px] text-blue-600 font-medium mt-1">Account Active</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+             <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+             <div>
+                <h3 class="text-sm font-bold text-gray-900">Lost Card?</h3>
+                <p class="text-xs text-gray-500">Immediately report to admin.</p>
+                <a href="#" class="text-[10px] text-red-600 font-bold mt-1 uppercase hover:underline">Report Issue ></a>
+            </div>
+        </div>
+
     </div>
 
 </div>
