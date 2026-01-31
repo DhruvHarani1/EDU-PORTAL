@@ -598,10 +598,95 @@ def timetable():
             
     return render_template('student/timetable.html', student=student, schedule=schedule)
 
-@student_bp.route('/scholarship')
+@student_bp.route('/scholarship', methods=['GET', 'POST'])
 @login_required
 def scholarship():
-    return render_template('student_dashboard.html') # TODO: Create scholarship.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    results = []
+    searched = False
+    
+    # Mock Scholarship Database (Real-world examples)
+    SCHOLARSHIP_DB = [
+        {
+            'name': 'National Scholarship Portal (NSP) - Central Sector Scheme',
+            'provider': 'Govt of India',
+            'amount': '₹10,000 - ₹20,000 / year',
+            'url': 'https://scholarships.gov.in/',
+            'max_income': 800000,
+            'categories': ['General', 'OBC', 'SC', 'ST'],
+            'genders': ['Male', 'Female', 'Other']
+        },
+        {
+            'name': 'Post Matric Scholarship for SC Students',
+            'provider': 'State Governments',
+            'amount': 'Full Tuition Fee + Allowance',
+            'url': 'https://socialjustice.gov.in/schemes',
+            'max_income': 250000,
+            'categories': ['SC'],
+            'genders': ['Male', 'Female', 'Other']
+        },
+        {
+            'name': 'HDFC Badhte Kadam Scholarship',
+            'provider': 'HDFC Bank',
+            'amount': 'Up to ₹1,00,000',
+            'url': 'https://www.hdfcbank.com/personal/borrow/popular-loans/educational-loan/scholarship',
+            'max_income': 600000,
+            'categories': ['General', 'OBC', 'SC', 'ST'],
+            'genders': ['Male', 'Female', 'Other']
+        },
+        {
+            'name': 'AICTE Pragati Scholarship for Girls',
+            'provider': 'AICTE',
+            'amount': '₹50,000 / year',
+            'url': 'https://www.aicte-india.org/schemes/students-schemes',
+            'max_income': 800000,
+            'categories': ['General', 'OBC', 'SC', 'ST'],
+            'genders': ['Female']
+        },
+        {
+            'name': 'Reliance Foundation Undergraduate Scholarship',
+            'provider': 'Reliance Foundation',
+            'amount': 'Up to ₹2,00,000',
+            'url': 'https://www.reliancefoundation.org/',
+            'max_income': 1500000,
+            'categories': ['General', 'OBC', 'SC', 'ST'],
+            'genders': ['Male', 'Female', 'Other']
+        },
+        {
+            'name': 'ONGC Scholarship for OBC/SC/ST',
+            'provider': 'ONGC',
+            'amount': '₹48,000 / year',
+            'url': 'https://ongcscholar.org/',
+            'max_income': 450000,
+            'categories': ['OBC', 'SC', 'ST'],
+            'genders': ['Male', 'Female', 'Other']
+        }
+    ]
+
+    if request.method == 'POST':
+        searched = True
+        income = float(request.form.get('income', 0))
+        category = request.form.get('category')
+        gender = request.form.get('gender')
+        
+        # Filtering Logic
+        for sch in SCHOLARSHIP_DB:
+            # Check Income
+            if income > sch['max_income']:
+                continue
+                
+            # Check Category
+            if category not in sch['categories']:
+                continue
+                
+            # Check Gender
+            if gender not in sch['genders']:
+                continue
+                
+            results.append(sch)
+            
+    return render_template('student/scholarship.html', student=student, results=results, searched=searched)
 
 @student_bp.route('/settings')
 @login_required
