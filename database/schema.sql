@@ -182,3 +182,29 @@ CREATE TABLE fee_record (
     transaction_reference VARCHAR(100),
     FOREIGN KEY (student_id) REFERENCES student_profile (id)
 );
+
+-- Student Query (Support) Schema
+CREATE TABLE student_query (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL,
+    subject_id INTEGER,
+    title VARCHAR(200) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES student_profile (id),
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id),
+    FOREIGN KEY (subject_id) REFERENCES subject (id)
+);
+
+CREATE TABLE query_message (
+    id SERIAL PRIMARY KEY,
+    query_id INTEGER NOT NULL,
+    sender_type VARCHAR(20) NOT NULL,
+    content TEXT,
+    image_data BYTEA,
+    image_mimetype VARCHAR(50),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (query_id) REFERENCES student_query (id)
+);

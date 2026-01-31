@@ -5,7 +5,7 @@ from datetime import date, timedelta, datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult, UniversityEvent, EventRegistration, FeeRecord
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult, UniversityEvent, EventRegistration, FeeRecord, StudentQuery, QueryMessage
 
 app = create_app('development')
 
@@ -202,6 +202,39 @@ with app.app_context():
             status='Pending'
         )
         db.session.add_all([fee1, fee2])
+        db.session.flush()
+
+        db.session.add_all([fee1, fee2])
+        db.session.flush()
+
+        # --- Support Queries ---
+        print("5.9 Creating Support Queries...")
+        q1 = StudentQuery(
+            student_id=sp1.id,
+            faculty_id=fp1.id, # Alice Smith
+            subject_id=s2.id, # Physics
+            title='Clarification on Quantum Mechanics',
+            status='Answered'
+        )
+        db.session.add(q1)
+        db.session.flush()
+
+        # Seed Image Logic
+        img_path = os.path.join(app.root_path, 'static', 'uploads', 'faculty', '133881789213445879.jpg')
+        img_data = None
+        if os.path.exists(img_path):
+            with open(img_path, 'rb') as f:
+                img_data = f.read()
+
+        qm1 = QueryMessage(query_id=q1.id, sender_type='student', content='Prof, I have a doubt regarding the Wave function topic discussed today.')
+        
+        # Attach image to first message if found
+        if img_data:
+            qm1.image_data = img_data
+            qm1.image_mimetype = 'image/jpeg'
+            
+        qm2 = QueryMessage(query_id=q1.id, sender_type='faculty', content='Sure, please specify which part exactly you did not understand.')
+        db.session.add_all([qm1, qm2])
         db.session.flush()
 
         # --- Semester 1 Exams ---

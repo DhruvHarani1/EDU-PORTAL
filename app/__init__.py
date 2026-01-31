@@ -10,6 +10,14 @@ def create_app(config_name='default'):
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+    # Register Filters
+    import base64
+    @app.template_filter('b64encode')
+    def b64encode_filter(data):
+        if not data:
+            return ''
+        return base64.b64encode(data).decode('utf-8')
+
     # Register Blueprints
     from app.main import main_bp
     app.register_blueprint(main_bp)

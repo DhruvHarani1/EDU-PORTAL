@@ -1,9 +1,11 @@
 from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
 import io
+from datetime import datetime
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice, FeeRecord
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile
 from app.extensions import db
+from flask import render_template, request, redirect, url_for, flash, jsonify
 
 @student_bp.route('/dashboard')
 @login_required
@@ -342,7 +344,145 @@ def fee_receipt(fee_id):
 @student_bp.route('/queries')
 @login_required
 def queries():
-    return render_template('student_dashboard.html') # TODO: Create queries.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    status_filter = request.args.get('status', 'all')
+    
+    query = StudentQuery.query.filter_by(student_id=student.id)
+    
+    if status_filter != 'all':
+        query = query.filter_by(status=status_filter.capitalize())
+        
+    queries = query.order_by(StudentQuery.updated_at.desc()).all()
+    
+    # Pre-fetch subjects and faculty for the "Ask Query" modal
+    subjects = Subject.query.filter_by(course_name=student.course_name, semester=student.semester).all()
+    
+    return render_template('student/queries.html', student=student, queries=queries, filter=status_filter, subjects=subjects)
+
+@student_bp.route('/queries/create', methods=['POST'])
+@login_required
+def create_query():
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    subject_id = request.form.get('subject_id')
+    title = request.form.get('title')
+    content = request.form.get('content')
+    
+    # Resolve Faculty from Subject
+    subject = Subject.query.get(subject_id)
+    if not subject or not subject.faculty_id:
+        flash('Invalid Subject or No Faculty assigned.', 'error')
+        return redirect(url_for('student.queries'))
+
+    # Create Query
+    new_query = StudentQuery(
+        student_id=student.id,
+        faculty_id=subject.faculty_id,
+        subject_id=subject.id,
+        title=title,
+        status='Pending'
+    )
+    db.session.add(new_query)
+    db.session.flush()
+    
+    # Add Initial Message
+    initial_msg = QueryMessage(
+        query_id=new_query.id,
+        sender_type='student',
+        content=content
+    )
+    
+    # Handle Image Upload (Optional)
+    image = request.files.get('image')
+    if image and image.filename:
+        image.stream.seek(0)
+        file_data = image.read()
+        if len(file_data) > 0:
+            print(f"DEBUG: Creating Query Image. Name: {image.filename}, Size: {len(file_data)} bytes")
+            initial_msg.image_data = file_data
+            initial_msg.image_mimetype = image.mimetype
+        else:
+            print("DEBUG: Image file is empty")
+        
+    db.session.add(initial_msg)
+    db.session.commit()
+    
+    return redirect(url_for('student.query_chat', query_id=new_query.id))
+
+@student_bp.route('/queries/<int:query_id>')
+@login_required
+def query_chat(query_id):
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    query = StudentQuery.query.get_or_404(query_id)
+    
+    # Security Check
+    if query.student_id != student.id:
+        return "Unauthorized", 403
+        
+    return render_template('student/query_chat.html', student=student, query=query)
+
+@student_bp.route('/queries/<int:query_id>/message', methods=['POST'])
+@login_required
+def send_message(query_id):
+    query = StudentQuery.query.get_or_404(query_id)
+    
+    # Prevent chatting if resolved
+    if query.status == 'Resolved':
+        flash('This query is resolved and cannot be reopened.', 'error')
+        return redirect(url_for('student.query_chat', query_id=query_id))
+        
+    content = request.form.get('content')
+    
+    new_msg = QueryMessage(
+        query_id=query.id,
+        sender_type='student',
+        content=content
+    )
+    
+    image = request.files.get('image')
+    if image and image.filename:
+        image.stream.seek(0)
+        file_data = image.read()
+        if len(file_data) > 0:
+            print(f"DEBUG: Receiving Image. Name: {image.filename}, Size: {len(file_data)} bytes, Type: {image.mimetype}")
+            new_msg.image_data = file_data
+            new_msg.image_mimetype = image.mimetype
+        else:
+             print("DEBUG: Image file is empty")
+        
+    db.session.add(new_msg)
+    
+    # Update Query Status to Pending if it was Answered
+    if query.status == 'Answered':
+        query.status = 'Pending'
+    
+    query.updated_at = datetime.utcnow()
+    db.session.commit()
+    
+    return redirect(url_for('student.query_chat', query_id=query_id))
+
+@student_bp.route('/queries/<int:query_id>/resolve', methods=['POST'])
+@login_required
+def resolve_query(query_id):
+    query = StudentQuery.query.get_or_404(query_id)
+    query.status = 'Resolved'
+    db.session.commit()
+    return redirect(url_for('student.query_chat', query_id=query_id))
+
+@student_bp.route('/queries/image/<int:message_id>')
+@login_required
+def message_image(message_id):
+    msg = QueryMessage.query.get_or_404(message_id)
+    if not msg.image_data:
+        print(f"DEBUG: No image data for message {message_id}")
+        return "No image", 404
+    
+    # Simple serve without download_name to avoid forcing download/icon behavior
+    return send_file(
+        io.BytesIO(msg.image_data),
+        mimetype=msg.image_mimetype or 'image/jpeg'
+    )
 
 @student_bp.route('/exams')
 @login_required
