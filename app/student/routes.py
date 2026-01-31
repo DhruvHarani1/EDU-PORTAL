@@ -515,15 +515,23 @@ def exams():
         
     return render_template('student/exams.html', student=student, upcoming_events=upcoming_events, result_history=history)
 
+@student_bp.route('/id-card')
+@login_required
+def id_card():
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Inject Mock Data for ID Card Display (Schema Limitation)
+    student.date_of_birth = datetime(2003, 5, 15) # Example DOB
+    student.batch_year = "2023-2027"
+    
+    return render_template('student/id_card.html', student=student)
+
 @student_bp.route('/clubs')
 @login_required
 def clubs():
     return render_template('student_dashboard.html') # TODO: Create clubs.html
 
-@student_bp.route('/id-card')
-@login_required
-def id_card():
-    return render_template('student_dashboard.html') # TODO: Create id_card.html
+
 
 @student_bp.route('/timetable')
 @login_required
