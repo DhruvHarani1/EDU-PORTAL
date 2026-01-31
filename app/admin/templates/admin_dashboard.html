@@ -169,13 +169,22 @@
     </div>
 </div>
 
-<!-- Chart Config -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById('courseChart').getContext('2d');
-        const labels = {{ course_labels|tojson }};
-        const activeData = {{ course_counts|tojson }};
+    <!-- Hidden Data Container for Charts (Linter Safe) -->
+    <div id="chartData" 
+         data-labels='{{ course_labels|tojson|safe }}' 
+         data-counts='{{ course_counts|tojson|safe }}'>
+    </div>
+
+    <!-- Chart Config -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Read data safely from DOM
+            const dataContainer = document.getElementById('chartData');
+            const labels = JSON.parse(dataContainer.dataset.labels);
+            const activeData = JSON.parse(dataContainer.dataset.counts);
+            
+            var ctx = document.getElementById('courseChart').getContext('2d');
 
         // Modern Chart Config
         new Chart(ctx, {
