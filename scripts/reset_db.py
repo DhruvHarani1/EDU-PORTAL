@@ -1,11 +1,11 @@
 import sys
 import os
 import random
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult
 
 app = create_app('development')
 
@@ -119,6 +119,96 @@ with app.app_context():
         # Add Notices
         n1 = Notice(title='Welcome', content='Welcome to the new semester', category='university')
         db.session.add(n1)
+        db.session.flush()
+
+        # --- Semester 1 Exams ---
+        print("6. Simulating Sem 1 Exams...")
+        exam_event = ExamEvent(
+            name='Winter Semester End Exams 2025',
+            academic_year='2025-2026',
+            course_name='B.Tech',
+            semester=1,
+            start_date=start_date + timedelta(days=50),
+            end_date=start_date + timedelta(days=60),
+            is_published=True
+        )
+        db.session.add(exam_event)
+        db.session.flush()
+
+        papers = []
+        # Reuse S1-S5
+        for i, sub in enumerate([s1, s2, s3, s4, s5]):
+            paper = ExamPaper(
+                exam_event_id=exam_event.id,
+                subject_id=sub.id,
+                date=exam_event.start_date + timedelta(days=i*2),
+                start_time=datetime.strptime('10:00', '%H:%M').time(),
+                end_time=datetime.strptime('13:00', '%H:%M').time(),
+                total_marks=100
+            )
+            db.session.add(paper)
+            papers.append(paper)
+        db.session.flush()
+
+        # Sem 1 Results
+        marks_data = [92, 78, 88, 85, 90]
+        for i, paper in enumerate(papers):
+            res = StudentResult(
+                exam_paper_id=paper.id,
+                student_id=sp1.id,
+                marks_obtained=marks_data[i],
+                status='Present',
+                is_fail=False
+            )
+            db.session.add(res)
+
+        # --- Semester 2 Exams ---
+        print("7. Simulating Sem 2 Exams...")
+        
+        # Create Sem 2 Subjects
+        s6 = Subject(name='Data Structures', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=4)
+        s7 = Subject(name='Digital Electronics', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=3)
+        s8 = Subject(name='Discrete Math', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=3)
+        db.session.add_all([s6, s7, s8])
+        db.session.flush()
+
+        exam_event_2 = ExamEvent(
+            name='Summer Semester End Exams 2026',
+            academic_year='2025-2026',
+            course_name='B.Tech',
+            semester=2,
+            start_date=start_date + timedelta(days=200),
+            end_date=start_date + timedelta(days=210),
+            is_published=True
+        )
+        db.session.add(exam_event_2)
+        db.session.flush()
+
+        papers_2 = []
+        for i, sub in enumerate([s6, s7, s8]):
+            paper = ExamPaper(
+                exam_event_id=exam_event_2.id,
+                subject_id=sub.id,
+                date=exam_event_2.start_date + timedelta(days=i*2),
+                start_time=datetime.strptime('10:00', '%H:%M').time(),
+                end_time=datetime.strptime('13:00', '%H:%M').time(),
+                total_marks=100
+            )
+            db.session.add(paper)
+            papers_2.append(paper)
+        db.session.flush()
+
+        # Sem 2 Results
+        marks_data_2 = [85, 88, 95] 
+        for i, paper in enumerate(papers_2):
+            res = StudentResult(
+                exam_paper_id=paper.id,
+                student_id=sp1.id,
+                marks_obtained=marks_data_2[i],
+                status='Present',
+                is_fail=False
+            )
+            db.session.add(res)
 
         db.session.commit()
         print("Seed Complete!")

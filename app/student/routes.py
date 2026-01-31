@@ -1,6 +1,8 @@
 from flask import render_template
 from flask_login import login_required, current_user
 from . import student_bp
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper
+from app.extensions import db
 
 @student_bp.route('/dashboard')
 @login_required
@@ -103,7 +105,130 @@ def attendance():
 @student_bp.route('/academics')
 @login_required
 def academics():
-    return render_template('student_dashboard.html') # TODO: Create academics.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch all results
+    results = StudentResult.query.filter_by(student_id=student.id).all()
+    
+    # Group by Exam Event
+    exams_data = {}
+    
+    for res in results:
+        exam_event = res.paper.exam_event
+        if exam_event.id not in exams_data:
+            exams_data[exam_event.id] = {
+                'event': exam_event,
+                'results': [],
+                'total_credits': 0,
+                'total_points': 0,
+                'spi': 0.0
+            }
+        
+        # Calculate Grade Points (Simple Logic for now)
+        # >90: 10, >80: 9, >70: 8, >60: 7, >50: 6, >40: 5, <40: 0
+        marks = res.marks_obtained or 0
+        points = 0
+        grade = 'F'
+        if marks >= 90: points, grade = 10, 'AA'
+        elif marks >= 80: points, grade = 9, 'AB'
+        elif marks >= 70: points, grade = 8, 'BB'
+        elif marks >= 60: points, grade = 7, 'BC'
+        elif marks >= 50: points, grade = 6, 'CC'
+        elif marks >= 40: points, grade = 5, 'CD'
+        else: points, grade = 0, 'FF'
+        
+        # Assuming 3 credits per subject for simplicity if not defined
+        credits = res.paper.subject.weekly_lectures or 3
+        
+        exams_data[exam_event.id]['results'].append({
+            'subject': res.paper.subject.name,
+            'marks': marks,
+            'total': res.paper.total_marks,
+            'grade': grade,
+            'points': points,
+            'credits': credits
+        })
+        
+        exams_data[exam_event.id]['total_credits'] += credits
+        exams_data[exam_event.id]['total_points'] += (points * credits)
+
+    # Calculate SPI for each exam
+    overall_points = 0
+    overall_credits = 0
+    
+    events_list = []
+    for eid, data in exams_data.items():
+        if data['total_credits'] > 0:
+            data['spi'] = round(data['total_points'] / data['total_credits'], 2)
+        
+        overall_points += data['total_points']
+        overall_credits += data['total_credits']
+        events_list.append(data)
+        
+    cgpi = round(overall_points / overall_credits, 2) if overall_credits > 0 else 0.0
+
+    return render_template('student/academics.html', 
+                           student=student, 
+                           exams=events_list, 
+                           cgpi=cgpi)
+
+@student_bp.route('/academics/marksheet/<int:exam_id>')
+@login_required
+def download_marksheet(exam_id):
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    results = StudentResult.query.filter_by(student_id=student.id).join(ExamPaper).filter(ExamPaper.exam_event_id == exam_id).all()
+    
+    if not results:
+        return "Marksheet not found", 404
+        
+    exam_event = results[0].paper.exam_event
+    
+    processed_results = []
+    total_credits = 0
+    total_points = 0
+    total_marks_obtained = 0
+    total_max_marks = 0
+    
+    for res in results:
+        marks = res.marks_obtained or 0
+        points = 0
+        grade = 'F'
+        if marks >= 90: points, grade = 10, 'AA'
+        elif marks >= 80: points, grade = 9, 'AB'
+        elif marks >= 70: points, grade = 8, 'BB'
+        elif marks >= 60: points, grade = 7, 'BC'
+        elif marks >= 50: points, grade = 6, 'CC'
+        elif marks >= 40: points, grade = 5, 'CD'
+        else: points, grade = 0, 'FF'
+        
+        # Assuming credits based on weekly lectures
+        credits = res.paper.subject.weekly_lectures or 3
+        
+        processed_results.append({
+            'code': f"SUB{res.paper.subject.id}",
+            'subject': res.paper.subject.name,
+            'marks': marks,
+            'max_marks': res.paper.total_marks,
+            'grade': grade,
+            'points': points,
+            'credits': credits
+        })
+        
+        total_credits += credits
+        total_points += (points * credits)
+        total_marks_obtained += marks
+        total_max_marks += res.paper.total_marks
+
+    spi = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
+    
+    return render_template('student/marksheet_print.html',
+                           student=student,
+                           exam=exam_event,
+                           results=processed_results,
+                           spi=spi,
+                           total_marks_obtained=total_marks_obtained,
+                           total_max_marks=total_max_marks)
 
 @student_bp.route('/notes')
 @login_required
