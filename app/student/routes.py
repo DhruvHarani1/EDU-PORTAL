@@ -10,7 +10,31 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 @student_bp.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('student_dashboard.html')
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # 1. Attendance Stats
+    total_days = Attendance.query.filter_by(student_id=student.id).count()
+    present_days = Attendance.query.filter_by(student_id=student.id, status='Present').count()
+    attendance_pct = round((present_days / total_days * 100), 1) if total_days > 0 else 0
+    
+    # 2. Recent Notices
+    notices = Notice.query.order_by(Notice.created_at.desc()).limit(4).all()
+    
+    # 3. Upcoming Event
+    from datetime import date
+    next_event = UniversityEvent.query.filter(
+        UniversityEvent.date >= date.today()
+    ).order_by(UniversityEvent.date).first()
+    
+    # 4. Pending Fee Count
+    pending_fees = FeeRecord.query.filter_by(student_id=student.id, status='Pending').count()
+
+    return render_template('student_dashboard.html', 
+                           student=student, 
+                           attendance_pct=attendance_pct, 
+                           notices=notices, 
+                           next_event=next_event, 
+                           pending_fees=pending_fees)
 
 # Placeholder Routes for Sidebar Navigation
 @student_bp.route('/attendance')
