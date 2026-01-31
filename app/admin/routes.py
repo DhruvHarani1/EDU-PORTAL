@@ -40,51 +40,28 @@ def dashboard():
         recent_notices=recent_notices
     )
 
-@admin_bp.route('/dashboard/download_report')
+@admin_bp.route('/dashboard/system_report_print')
 @login_required
-def download_dashboard_report():
-    import csv
-    import io
-    from flask import Response
+def system_report_print():
     from datetime import datetime
     
-    # Gather Data
+    # 1. Gather Data
     total_students = StudentProfile.query.count()
     total_faculty = FacultyProfile.query.count()
+    total_courses = db.session.query(StudentProfile.course_name).distinct().count()
+    
+    # Detailed stats
     courses = db.session.query(StudentProfile.course_name, func.count(StudentProfile.id)).group_by(StudentProfile.course_name).all()
+    notices = Notice.query.order_by(Notice.created_at.desc()).limit(10).all()
     
-    # Create CSV in memory
-    output = io.StringIO()
-    writer = csv.writer(output)
+    generated_at = datetime.now()
     
-    # Header
-    writer.writerow(['EduPortal System Report', f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'])
-    writer.writerow([])
-    
-    # Section 1: Key Metrics
-    writer.writerow(['--- KEY METRICS ---'])
-    writer.writerow(['Metric', 'Value'])
-    writer.writerow(['Total Students', total_students])
-    writer.writerow(['Total Faculty', total_faculty])
-    writer.writerow([])
-    
-    # Section 2: Enrollment
-    writer.writerow(['--- ENROLLMENT DISTRIBUTION ---'])
-    writer.writerow(['Course', 'Count'])
-    for c in courses:
-        writer.writerow([c[0], c[1]])
-    writer.writerow([])
-    
-    # Section 3: Recent Notices
-    writer.writerow(['--- RECENT ACTIVITY ---'])
-    notices = Notice.query.order_by(Notice.created_at.desc()).limit(5).all()
-    writer.writerow(['Date', 'Title', 'Audience'])
-    for n in notices:
-        writer.writerow([n.created_at.strftime('%Y-%m-%d'), n.title, n.category])
-        
-    # Return Response
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-disposition": "attachment; filename=eduportal_summary_report.csv"}
+    return render_template(
+        'reports/system_report_print.html',
+        total_students=total_students,
+        total_faculty=total_faculty,
+        total_courses=total_courses,
+        courses=courses,
+        notices=notices,
+        generated_at=generated_at
     )
