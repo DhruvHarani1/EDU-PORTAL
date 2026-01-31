@@ -117,8 +117,12 @@ with app.app_context():
             db.session.add(att)
 
         # Add Notices
-        n1 = Notice(title='Welcome', content='Welcome to the new semester', category='university')
-        db.session.add(n1)
+        n1 = Notice(title='Welcome to New Semester', content='We are excited to begin the new academic session. Attendance is mandatory from Day 1.', category='university')
+        n2 = Notice(title='Mid-Semester Exam Schedule', content='The mid-semester exams will commence from 15th next month. Please check the Exam section for the detailed timetable.', category='exam')
+        n3 = Notice(title='Library Holiday', content='The central library will remain closed this Sunday for maintenance.', category='general')
+        n4 = Notice(title='Fee Payment Deadline', content='Last date to pay the semester fee is 30th of this month. Late fees will apply thereafter.', category='admin')
+        
+        db.session.add_all([n1, n2, n3, n4])
         db.session.flush()
 
         # --- University Events ---

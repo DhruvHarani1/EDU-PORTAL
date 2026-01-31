@@ -2,7 +2,7 @@ from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
 import io
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration, Notice
 from app.extensions import db
 
 @student_bp.route('/dashboard')
@@ -292,7 +292,12 @@ def register_event(event_id):
 @student_bp.route('/notices')
 @login_required
 def notices():
-    return render_template('student_dashboard.html') # TODO: Create notices.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch all notices, ordered by latest first
+    all_notices = Notice.query.order_by(Notice.created_at.desc()).all()
+    
+    return render_template('student/notices.html', student=student, notices=all_notices)
 
 @student_bp.route('/fees')
 @login_required
