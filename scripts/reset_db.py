@@ -1,10 +1,11 @@
 import sys
 import os
+import random
+from datetime import date, timedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, ScheduleSettings, ExamEvent, ExamPaper, StudentResult
-from sqlalchemy import text
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance
 
 app = create_app('development')
 
@@ -15,163 +16,114 @@ with app.app_context():
         print("Creating all tables...")
         db.create_all()
         
-        print("Seeding users...")
+        print("1. Creating Users...")
         # Admin
         admin = User(email='admin@edu.com', role='admin')
         admin.set_password('password')
-        db.session.add(admin)
         
-        faculty = User(email='faculty@edu.com', role='faculty')
-        faculty.set_password('password')
-        db.session.add(faculty)
+        # Faculty
+        fac1 = User(email='faculty@edu.com', role='faculty')
+        fac1.set_password('password')
+        
+        # Student
+        stu1 = User(email='student@edu.com', role='student')
+        stu1.set_password('password')
+        
+        db.session.add_all([admin, fac1, stu1])
         db.session.flush()
 
-        # Helper to get default image data
-        import os
-        default_img_path = os.path.join(app.root_path, 'static', 'img', 'default_user.png')
-        if not os.path.exists(default_img_path):
-             # Create a dummy file if not exists for seeding purpose or just pass None
-             # For now let's assume we skip or use None
-             photo_data = None
-             mimetype = None
-        else:
-             with open(default_img_path, 'rb') as f:
-                 photo_data = f.read()
-             mimetype = 'image/png'
-
-        faculty_profile = FacultyProfile(
-             user_id=faculty.id,
-             display_name='Dr. Alice Smith',
-             designation='Professor',
-             department='Computer Science',
-             experience=10,
-             specialization='Artificial Intelligence',
-             assigned_subject='Introduction to AI',
-             photo_data=photo_data,
-             photo_mimetype=mimetype
-        )
-        db.session.add(faculty_profile)
-        
-        # Additional Faculty 1
-        faculty2 = User(email='faculty2@edu.com', role='faculty')
-        faculty2.set_password('password')
-        db.session.add(faculty2)
-        
-        # Additional Faculty 2
-        faculty3 = User(email='faculty3@edu.com', role='faculty')
-        faculty3.set_password('password')
-        db.session.add(faculty3)
-        
+        print("2. Creating Profiles...")
+        # Faculty Profile
+        fp1 = FacultyProfile(user_id=fac1.id, display_name='Dr. Smith', designation='Professor', department='CS')
+        db.session.add(fp1)
         db.session.flush()
 
-        faculty_profile2 = FacultyProfile(
-             user_id=faculty2.id,
-             display_name='Prof. Bob Johnson',
-             designation='Associate Professor',
-             department='Mechanical Engineering',
-             experience=15,
-             specialization='Thermodynamics',
-             assigned_subject='Thermodynamics I',
-             photo_data=photo_data,
-             photo_mimetype=mimetype
-        )
-        db.session.add(faculty_profile2)
-
-        faculty_profile3 = FacultyProfile(
-             user_id=faculty3.id,
-             display_name='Dr. Clara Oswald',
-             designation='Assistant Professor',
-             department='Computer Science',
-             experience=5,
-             specialization='Machine Learning',
-             assigned_subject='Deep Learning',
-             photo_data=photo_data,
-             photo_mimetype=mimetype
-        )
-        db.session.add(faculty_profile3)
-        
-        # Student 1
-        student = User(email='student@edu.com', role='student')
-        student.set_password('password')
-        db.session.add(student)
-        
-        # Student 2
-        student2 = User(email='student2@edu.com', role='student')
-        student2.set_password('password')
-        db.session.add(student2)
-
-        # Student 3
-        student3 = User(email='student3@edu.com', role='student')
-        student3.set_password('password')
-        db.session.add(student3)
-
-        db.session.flush()
-        
-        # Seed Profile for Student 1
-        student_profile = StudentProfile(
-            user_id=student.id,
-            display_name='John Doe',
-            enrollment_number='STU001',
-            course_name='B.Tech',
-            semester=1
-        )
-        db.session.add(student_profile)
-
-        # Seed Profile for Student 2
-        student_profile2 = StudentProfile(
-            user_id=student2.id,
-            display_name='Jane Smith',
-            enrollment_number='STU002',
-            course_name='B.Tech',
-            semester=2
-        )
-        db.session.add(student_profile2)
-
-        # Seed Profile for Student 3
-        student_profile3 = StudentProfile(
-            user_id=student3.id,
-            display_name='Mike Ross',
-            enrollment_number='MBA001',
-            course_name='MBA',
-            semester=1
-        )
-        db.session.add(student_profile3)
-
-        # Seed Profile for Faculty
-        # Start by finding the faculty user created earlier
-        # But wait, I can just create profile right after user
-        # Seed Notices
-        db.session.flush() # Ensure faculty_profile.id is available
-
-        n1 = Notice(title='Welcome to New Term', content='Classes start next week.', category='university')
-        n2 = Notice(title='Fire Drill', content='Evacuate immediately.', category='emergency')
-        n3 = Notice(title='B.Tech Schedule', content='Exam schedule released.', category='course', target_course='B.Tech')
-        
-        
-        db.session.add_all([n1, n2, n3])
+        # Student Profile
+        sp1 = StudentProfile(user_id=stu1.id, display_name='John Doe', enrollment_number='STU001', course_name='B.Tech', semester=1)
+        db.session.add(sp1)
         db.session.flush()
 
-        # Seed Subjects for B.Tech Sem 1
-        s1 = Subject(name='Mathematics-I', course_name='B.Tech', semester=1, faculty_id=faculty_profile.id, weekly_lectures=4)
-        s2 = Subject(name='Physics', course_name='B.Tech', semester=1, faculty_id=faculty_profile.id, weekly_lectures=3)
-        s3 = Subject(name='Intro to Programming', course_name='B.Tech', semester=1, faculty_id=faculty_profile.id, weekly_lectures=4)
+        print("3. Creating Subjects (B.Tech Sem 1)...")
+        # 5 Subjects
+        s1 = Subject(name='Mathematics-I', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4)
+        s2 = Subject(name='Physics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=3)
+        s3 = Subject(name='Programming in C', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4)
+        s4 = Subject(name='Engineering Graphics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2)
+        s5 = Subject(name='Communication Skills', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2)
         
-        db.session.add_all([s1, s2, s3])
+        db.session.add_all([s1, s2, s3, s4, s5])
+        db.session.flush()
 
-        # Seed Subjects for B.Tech Sem 2
-        s4 = Subject(name='Data Structures', course_name='B.Tech', semester=2, faculty_id=faculty_profile.id, weekly_lectures=4)
-        s5 = Subject(name='Digital Electronics', course_name='B.Tech', semester=2, faculty_id=faculty_profile2.id, weekly_lectures=3)
-        s6 = Subject(name='Discrete Math', course_name='B.Tech', semester=2, faculty_id=faculty_profile3.id, weekly_lectures=3)
+        print("4. Creating Timetable...")
+        # Mon: Math, Phy
+        # Tue: Prog, Graph
+        # Wed: Math, Comm
+        # Thu: Phy, Prog
+        # Fri: Math, Prog
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+        tt_entries = [
+            (s1, 'Mon', 1), (s2, 'Mon', 2),
+            (s3, 'Tue', 1), (s4, 'Tue', 2),
+            (s1, 'Wed', 1), (s5, 'Wed', 2),
+            (s2, 'Thu', 1), (s3, 'Thu', 2),
+            (s1, 'Fri', 1), (s3, 'Fri', 2)
+        ]
         
-        # Seed Subjects for MBA Sem 1
-        s7 = Subject(name='Management Principles', course_name='MBA', semester=1, faculty_id=faculty_profile2.id, weekly_lectures=3)
-        s8 = Subject(name='Business Stats', course_name='MBA', semester=1, faculty_id=faculty_profile.id, weekly_lectures=3)
+        for sub, day, period in tt_entries:
+            t = Timetable(
+                course_name='B.Tech', semester=1, day_of_week=day, period_number=period,
+                subject_id=sub.id, faculty_id=fp1.id
+            )
+            db.session.add(t)
+        db.session.flush()
 
-        db.session.add_all([s4, s5, s6, s7, s8])
+        print("5. Simulating Attendance (Last 60 Days)...")
+        start_date = date.today() - timedelta(days=60)
+        
+        for i in range(60):
+            current_date = start_date + timedelta(days=i)
+            day_idx = current_date.weekday() # 0=Mon, 6=Sun
+            
+            if day_idx > 4: continue # Skip Weekends
+            
+            # Attendance Logic to create variety
+            # Math (Mon, Wed, Fri) -> High Attendance
+            # Physics (Mon, Thu) -> Medium
+            # Programming (Tue, Thu, Fri) -> LOW Attendance (Critical)
+            
+            status = 'Present'
+            
+            # Randomization with Bias
+            chance = random.random()
+            
+            # If Mon/Wed/Fri (Math days mainly), he attends 90%
+            if day_idx in [0, 2, 4]:
+                if chance > 0.9: status = 'Absent'
+            
+            # If Thu (Physics/Prog), he skips often (60% attendance)
+            elif day_idx == 3:
+                if chance > 0.6: status = 'Absent'
+                
+            # If Tue (Prog/Graphics), he skips very often (40% attendance)
+            elif day_idx == 1:
+                if chance > 0.4: status = 'Absent'
+
+            att = Attendance(
+                student_id=sp1.id,
+                course_name='B.Tech',
+                date=current_date,
+                status=status
+            )
+            db.session.add(att)
+
+        # Add Notices
+        n1 = Notice(title='Welcome', content='Welcome to the new semester', category='university')
+        db.session.add(n1)
 
         db.session.commit()
-        print("Database reset and seeded successfully!")
-        print("Credentials: admin@edu.com / password")
+        print("Seed Complete!")
+        print("Student Credentials: student@edu.com / password")
+
     except Exception as e:
         db.session.rollback()
         print(f"Error: {e}")
