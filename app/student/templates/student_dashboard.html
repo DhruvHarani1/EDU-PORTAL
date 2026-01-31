@@ -1,16 +1,32 @@
-{% extends "base.html" %}
+{% extends "base_student.html" %}
 
-{% block title %}Student Dashboard - EduPortal{% endblock %}
+{% block title %}Dashboard | Student Portal{% endblock %}
+{% block header_title %}Overview{% endblock %}
 
-{% block content %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Student Dashboard</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">My Courses</p>
+{% block student_content %}
+<div class="px-4 sm:px-0">
+    <!-- Welcome Panel -->
+    <div class="bg-white overflow-hidden shadow sm:rounded-lg mb-8">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-5">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Welcome back, Student!</h3>
+                    <div class="mt-2 max-w-xl text-sm text-gray-500">
+                        <p>Your portal is setup. Use the sidebar to navigate to your attendance, results, and more.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-         <!-- Content here -->
-         <p class="p-6 text-gray-500">No courses enrolled.</p>
+    
+    <!-- Placeholder Content -->
+    <div class="border-4 border-dashed border-gray-200 rounded-lg h-96 flex justify-center items-center text-gray-400">
+        Dashboard Widgets Coming Soon
     </div>
 </div>
 {% endblock %}
