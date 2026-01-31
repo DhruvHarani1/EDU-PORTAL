@@ -311,6 +311,34 @@ def fees():
     
     return render_template('student/fees.html', student=student, pending_fees=pending_fees, history_fees=history_fees)
 
+@student_bp.route('/fees/pay/<int:fee_id>', methods=['POST'])
+@login_required
+def pay_fee(fee_id):
+    fee = FeeRecord.query.get_or_404(fee_id)
+    if fee.status == 'Paid':
+        return {'status': 'already_paid'}, 200
+    
+    # Simulate Payment
+    fee.status = 'Paid'
+    fee.payment_date = datetime.utcnow()
+    fee.payment_mode = 'Online'
+    fee.amount_paid = fee.amount_due
+    fee.transaction_reference = f"TXN{int(datetime.utcnow().timestamp())}{fee.id}"
+    
+    db.session.commit()
+    return {'status': 'success', 'message': 'Payment successful!'}, 200
+
+@student_bp.route('/fees/receipt/<int:fee_id>')
+@login_required
+def fee_receipt(fee_id):
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    fee = FeeRecord.query.get_or_404(fee_id)
+    
+    if fee.status != 'Paid':
+        return "Receipt not available for pending fees.", 403
+        
+    return render_template('student/receipt.html', student=student, fee=fee)
+
 @student_bp.route('/queries')
 @login_required
 def queries():
