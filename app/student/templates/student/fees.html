@@ -34,10 +34,13 @@
                 </div>
 
                 <div class="mt-6">
-                    <button onclick="processPayment(this, '{{ fee.id }}')" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Pay Now
-                    </button>
-                    <p class="text-xs text-center text-gray-400 mt-2">Secure payment via Stripe/Razorpay</p>
+                    <div class="w-full flex justify-center items-center px-4 py-3 border border-orange-200 rounded-xl bg-orange-50 text-orange-800 text-sm font-medium">
+                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pending Payment
+                    </div>
+                    <p class="text-xs text-center text-gray-400 mt-2">Please visit the administrative office to clear your dues.</p>
                 </div>
             </div>
         </div>
@@ -110,42 +113,4 @@
     </div>
 
 </div>
-
-<script>
-function processPayment(btn, feeId) {
-    const originalText = btn.innerText;
-    
-    // Simulate Loading
-    btn.disabled = true;
-    btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-    btn.classList.add('cursor-not-allowed', 'opacity-75');
-
-    setTimeout(() => {
-        // Call Backend
-        fetch(`/student/fees/pay/${feeId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Payment Successful! generating receipt...');
-                window.location.reload();
-            } else {
-                alert('Detailed Error: ' + data.status);
-                btn.disabled = false;
-                btn.innerText = originalText;
-                btn.classList.remove('cursor-not-allowed', 'opacity-75');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-             btn.disabled = false;
-             btn.innerText = originalText;
-             btn.classList.remove('cursor-not-allowed', 'opacity-75');
-             alert('Payment process failed. Please try again.');
-        });
-    }, 1500); // 1.5s delay to simulate gateway
-}
-</script>
 {% endblock %}
