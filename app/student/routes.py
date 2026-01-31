@@ -1,7 +1,8 @@
-from flask import render_template
+from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
+import io
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent
 from app.extensions import db
 
 @student_bp.route('/dashboard')
@@ -249,7 +250,24 @@ def notes():
 @student_bp.route('/events')
 @login_required
 def events():
-    return render_template('student_dashboard.html') # TODO: Create events.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch upcoming events
+    events_list = UniversityEvent.query.filter_by(is_upcoming=True).order_by(UniversityEvent.date).all()
+    
+    return render_template('student/events.html', student=student, events=events_list)
+
+@student_bp.route('/events/image/<int:event_id>')
+def event_image(event_id):
+    event = UniversityEvent.query.get_or_404(event_id)
+    if event.image_data:
+        return send_file(
+            io.BytesIO(event.image_data),
+            mimetype=event.image_mimetype or 'image/png',
+            as_attachment=False,
+            download_name=f"event_{event.id}.png"
+        )
+    return '', 404
 
 @student_bp.route('/notices')
 @login_required

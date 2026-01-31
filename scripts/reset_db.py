@@ -5,7 +5,7 @@ from datetime import date, timedelta, datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult
+from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult, UniversityEvent
 
 app = create_app('development')
 
@@ -119,6 +119,54 @@ with app.app_context():
         # Add Notices
         n1 = Notice(title='Welcome', content='Welcome to the new semester', category='university')
         db.session.add(n1)
+        db.session.flush()
+
+        # --- University Events ---
+        print("5.5 Creating Events...")
+        
+        # Helper to read image bytes
+        DEFAULT_ARTIFACT_PATH = r"C:\Users\TEST\.gemini\antigravity\brain\ea4b25ed-125c-45de-b3a1-50f6629eceb7"
+        
+        def get_image_data(filename):
+            try:
+                path = os.path.join(DEFAULT_ARTIFACT_PATH, filename)
+                with open(path, 'rb') as f:
+                    return f.read()
+            except Exception as e:
+                print(f"Warning: Could not read image {filename}: {e}")
+                return None
+
+        ev1 = UniversityEvent(
+            title='TechNova 2026',
+            description='Annual Technical Symposium featuring Hackathons, Robotics workshops, and AI seminars.',
+            date=start_date + timedelta(days=10),
+            time=datetime.strptime('09:00', '%H:%M').time(),
+            location='Main Auditorium',
+            category='Tech',
+            image_data=get_image_data('event_tech_symposium_1769855435285.png'),
+            image_mimetype='image/png'
+        )
+        ev2 = UniversityEvent(
+            title='Inter-College Cricket Tournament',
+            description='The biggest sports showdown of the year.',
+            date=start_date + timedelta(days=15),
+            time=datetime.strptime('14:00', '%H:%M').time(),
+            location='University Stadium',
+            category='Sports',
+            image_data=get_image_data('event_sports_tournament_1769855453905.png'),
+            image_mimetype='image/png'
+        )
+        ev3 = UniversityEvent(
+            title='Cultural Night: Rhythm 2026',
+            description='A night of music, dance, and drama.',
+            date=start_date + timedelta(days=25),
+            time=datetime.strptime('18:00', '%H:%M').time(),
+            location='Open Air Theatre',
+            category='Cultural',
+            image_data=get_image_data('event_cultural_night_1769855474733.png'),
+            image_mimetype='image/png'
+        )
+        db.session.add_all([ev1, ev2, ev3])
         db.session.flush()
 
         # --- Semester 1 Exams ---

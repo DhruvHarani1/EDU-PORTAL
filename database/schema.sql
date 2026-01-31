@@ -140,3 +140,18 @@ CREATE TABLE student_result (
     FOREIGN KEY (exam_paper_id) REFERENCES exam_paper (id),
     FOREIGN KEY (student_id) REFERENCES student_profile (id)
 );
+
+-- University Event Schema
+CREATE TABLE university_event (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    date DATE NOT NULL,
+    time TIME WITHOUT TIME ZONE,
+    location VARCHAR(100),
+    organizer VARCHAR(100) DEFAULT 'University Admin',
+    category VARCHAR(50) DEFAULT 'General',
+    image_data BYTEA,
+    image_mimetype VARCHAR(50),
+    is_upcoming BOOLEAN DEFAULT TRUE
+);
