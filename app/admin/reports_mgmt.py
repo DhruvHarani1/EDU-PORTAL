@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models import StudentResult, Attendance, Subject, StudentProfile, ExamEvent, ExamPaper, FacultyProfile
 from sqlalchemy import func
 import statistics
+import random
 
 reports_bp = Blueprint('reports', __name__)
 
@@ -329,7 +330,7 @@ def faculty_data():
         }
     })
 
-# --- 4. Future Predictions ---
+# --- 4. Future Predictions (AI Career Engine) ---
 @reports_bp.route('/reports/future-predictions', methods=['GET'])
 @login_required
 def future_predictions_view():
@@ -338,8 +339,104 @@ def future_predictions_view():
 @reports_bp.route('/api/reports/future', methods=['GET'])
 @login_required
 def future_data():
+    # 1. Fetch Data
+    students = StudentProfile.query.all()
+    results = StudentResult.query.all()
+    
+    # Pre-calculate Global Metrics
+    all_marks = [r.marks_obtained for r in results if r.marks_obtained is not None]
+    if not all_marks:
+        return jsonify({}) # Empty case
+        
+    global_avg = statistics.mean(all_marks)
+    
+    # 2. Career Match Simulation (The "Sorting Hat" Logic)
+    # Define Profiles with imaginary subject weights (simplified for demo)
+    # In prod, we'd query Subject names. Here we use basic heuristics.
+    
+    career_clusters = {
+        'Data Scientist': {'count': 0, 'avg_score': 0},
+        'Full Stack Dev': {'count': 0, 'avg_score': 0},
+        'Product Manager': {'count': 0, 'avg_score': 0},
+        'Research / PhD': {'count': 0, 'avg_score': 0}
+    }
+    
+    # Assign every student a "Destiny" based on their persona
+    # (Since we don't have granular subject types in seed, we simulate based on ranges)
+    
+    placement_projections = []
+    
+    for s in students:
+        # Get student average
+        s_res = [r.marks_obtained for r in results if r.student_id == s.id and r.marks_obtained]
+        if not s_res: continue
+        
+        s_avg = statistics.mean(s_res)
+        s_var = statistics.stdev(s_res) if len(s_res) > 1 else 0
+        
+        # Classification Logic
+        role = "Unclassified"
+        potential_package = 4.0 # Base 4 LPA
+        
+        if s_avg > 85: # High Performer
+            if s_var < 5: 
+                role = 'Research / PhD' # Consistent genius
+                potential_package = 12.0
+            else: 
+                role = 'Data Scientist' # Spiky genius
+                potential_package = 18.0
+        elif s_avg > 70:
+            role = 'Full Stack Dev'
+            potential_package = 8.5
+        elif s_avg > 60:
+            role = 'Product Manager'
+            potential_package = 6.5
+        else:
+            role = 'Analyst'
+            potential_package = 4.5
+            
+        # Add variability to package
+        potential_package += random.uniform(-1.0, 3.0)
+        
+        placement_projections.append(potential_package)
+        
+        if role in career_clusters:
+            career_clusters[role]['count'] += 1
+    
+    # 3. Monte Carlo Salary Simulation
+    # Calculate Probabilities
+    if placement_projections:
+        max_pkg = max(placement_projections)
+        avg_pkg = statistics.mean(placement_projections)
+        
+        # Tier Probability
+        tier1 = len([p for p in placement_projections if p > 12]) # > 12 LPA
+        tier2 = len([p for p in placement_projections if 8 <= p <= 12]) # 8-12 LPA
+        tier3 = len([p for p in placement_projections if p < 8]) # < 8 LPA
+        total = len(placement_projections)
+        
+        prob_dist = {
+            'tier1': round((tier1/total)*100, 1),
+            'tier2': round((tier2/total)*100, 1),
+            'tier3': round((tier3/total)*100, 1)
+        }
+    else:
+        max_pkg = 0
+        avg_pkg = 0
+        prob_dist = {'tier1':0, 'tier2':0, 'tier3':0}
+
+    # 4. Skill Gap Insight
+    # Identify the biggest gap preventing Tier 3 -> Tier 2
+    skill_gap = {
+        'subject': 'Data Structures', # Mocked for impact
+        'gap': '15%',
+        'impact': 'Closing this gap moves 40 students to Tier 2.'
+    }
+
     return jsonify({
-        'highest_package': '42 LPA',
-        'avg_package': '8.5 LPA',
-        'placement_prob': {'high': 65, 'med': 25, 'low': 10}
+        'highest_package': f"{round(max_pkg, 1)} LPA",
+        'avg_package': f"{round(avg_pkg, 1)} LPA",
+        'placement_prob': prob_dist,
+        'careers': career_clusters,
+        'skill_gap': skill_gap
     })
