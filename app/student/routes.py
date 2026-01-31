@@ -536,7 +536,67 @@ def clubs():
 @student_bp.route('/timetable')
 @login_required
 def timetable():
-    return render_template('student_dashboard.html') # TODO: Create timetable.html
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch Timetable entries
+    entries = Timetable.query.filter_by(
+        course_name=student.course_name,
+        semester=student.semester
+    ).order_by(Timetable.period_number).all()
+    
+    # Structure Data: Days -> Slots
+    days_order = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    schedule = {day: [] for day in days_order}
+
+    # Fetch Schedule Settings (Fall back if missing)
+    # Assumes one setting per course/semester
+    from app.models import ScheduleSettings
+    settings = ScheduleSettings.query.filter_by(
+        course_name=student.course_name, 
+        semester=student.semester
+    ).first()
+    
+    # Default: Start 09:00 AM, 1 hour duration if no settings
+    base_start_hour = 9
+    base_start_min = 0
+    slot_duration_min = 60 
+
+    if settings:
+        base_start_hour = settings.start_time.hour
+        base_start_min = settings.start_time.minute
+        # Simplified: derive duration from total time / slots (heuristic)
+        # For now, let's stick to fixed 60 mins or implement better logic if needed
+    
+    from datetime import timedelta, datetime, date
+    
+    for entry in entries:
+        if entry.day_of_week in schedule:
+            # Calculate Time
+            # P1 starts at base, P2 at base + 1*duration, etc.
+            # entry.period_number is 1-based usually
+            p_idx = entry.period_number - 1
+            start_minutes = (base_start_hour * 60) + base_start_min + (p_idx * slot_duration_min)
+            
+            start_dt = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
+            end_dt = start_dt + timedelta(minutes=slot_duration_min)
+            
+            # Attach temporary attributes for template
+            entry.start_time = start_dt.time()
+            entry.end_time = end_dt.time()
+            # Fake room number if missing
+            entry.room_number = "Main Block" 
+            
+            schedule[entry.day_of_week].append(entry)
+            
+    # Remove Sunday if empty
+    if not schedule['Sun']:
+        del schedule['Sun']
+        
+    # Sort slots within days by period_number
+    for day in schedule:
+        schedule[day].sort(key=lambda x: x.period_number)
+            
+    return render_template('student/timetable.html', student=student, schedule=schedule)
 
 @student_bp.route('/scholarship')
 @login_required
