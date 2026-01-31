@@ -155,3 +155,14 @@ CREATE TABLE university_event (
     image_mimetype VARCHAR(50),
     is_upcoming BOOLEAN DEFAULT TRUE
 );
+
+-- Event Registration Schema
+CREATE TABLE event_registration (
+    id SERIAL PRIMARY KEY,
+    event_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES university_event (id),
+    FOREIGN KEY (student_id) REFERENCES student_profile (id),
+    UNIQUE(event_id, student_id)
+);

@@ -2,7 +2,7 @@ from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
 import io
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, UniversityEvent, EventRegistration
 from app.extensions import db
 
 @student_bp.route('/dashboard')
@@ -255,7 +255,11 @@ def events():
     # Fetch upcoming events
     events_list = UniversityEvent.query.filter_by(is_upcoming=True).order_by(UniversityEvent.date).all()
     
-    return render_template('student/events.html', student=student, events=events_list)
+    # Check registrations
+    registrations = EventRegistration.query.filter_by(student_id=student.id).all()
+    registered_ids = {r.event_id for r in registrations}
+    
+    return render_template('student/events.html', student=student, events=events_list, registered_ids=registered_ids)
 
 @student_bp.route('/events/image/<int:event_id>')
 def event_image(event_id):
@@ -268,6 +272,22 @@ def event_image(event_id):
             download_name=f"event_{event.id}.png"
         )
     return '', 404
+
+@student_bp.route('/events/register/<int:event_id>', methods=['POST'])
+@login_required
+def register_event(event_id):
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Check if existing
+    existing = EventRegistration.query.filter_by(student_id=student.id, event_id=event_id).first()
+    if existing:
+        return {'status': 'already_registered'}, 200
+        
+    new_reg = EventRegistration(student_id=student.id, event_id=event_id)
+    db.session.add(new_reg)
+    db.session.commit()
+    
+    return {'status': 'success', 'message': 'Registered successfully'}, 200
 
 @student_bp.route('/notices')
 @login_required

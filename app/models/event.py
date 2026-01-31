@@ -13,6 +13,21 @@ class UniversityEvent(db.Model):
     image_data = db.Column(db.LargeBinary, nullable=True)
     image_mimetype = db.Column(db.String(50), nullable=True) # e.g. 'image/png'
     is_upcoming = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    registrations = db.relationship('EventRegistration', backref='event', lazy=True)
 
     def __repr__(self):
         return f'<UniversityEvent {self.title}>'
+
+class EventRegistration(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('university_event.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_profile.id'), nullable=False)
+    registered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    student = db.relationship('StudentProfile', backref=db.backref('event_registrations', lazy=True))
+
+    def __repr__(self):
+        return f'<Registration {self.student_id} -> {self.event_id}>'

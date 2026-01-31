@@ -88,18 +88,28 @@
                         <span class="text-xs text-gray-400 font-medium">+124 Going</span>
                     </div>
                     
-                    <button class="text-indigo-600 text-sm font-bold hover:text-indigo-800 transition-colors flex items-center group/btn">
-                        Register
+                    {% if ev.id in registered_ids %}
+                    <button disabled class="text-green-600 text-sm font-bold flex items-center cursor-not-allowed opacity-75">
+                        <span>Registered</span>
+                        <svg class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    {% else %}
+                    <button onclick="registerForEvent(this, '{{ ev.title }}', '{{ ev.id }}')" class="text-indigo-600 text-sm font-bold hover:text-indigo-800 transition-colors flex items-center group/btn focus:outline-none">
+                        <span>Register</span>
                         <svg class="h-4 w-4 ml-1 transform group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
-                    </button>
+                    </button> 
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
+    <!-- ... (Empty state remains same) ... -->
     <div class="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-300">
         <div class="inline-flex items-center justify-center p-4 bg-indigo-50 rounded-full mb-4">
              <svg class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,4 +122,53 @@
     {% endif %}
 
 </div>
+
+<script>
+function registerForEvent(btn, eventName, eventId) {
+    // Visual Feedback Immediately
+    const span = btn.querySelector('span');
+    const icon = btn.querySelector('svg');
+    
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    span.innerText = 'Processing...';
+
+    // Call Backend
+    fetch(`/student/events/register/${eventId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' || data.status === 'already_registered') {
+             // Success State
+            btn.classList.remove('text-indigo-600', 'hover:text-indigo-800', 'opacity-50');
+            btn.classList.add('text-green-600', 'hover:text-green-700');
+            span.innerText = 'Registered';
+            
+            // Change icon to checkmark
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />';
+            icon.classList.remove('group-hover/btn:translate-x-1');
+            
+            alert(`Successfully registered for ${eventName}!`);
+        } else {
+             alert('Registration failed. Please try again.');
+             // Revert state
+             btn.disabled = false;
+             btn.classList.remove('opacity-50', 'cursor-not-allowed');
+             span.innerText = 'Register';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred.');
+        // Revert state
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        span.innerText = 'Register';
+    });
+}
+</script>
 {% endblock %}
