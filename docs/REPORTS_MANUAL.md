@@ -211,3 +211,65 @@ The Executive Review bar at the top of the dashboard suggests high-level strateg
 *   **"High Performing" Status**: If > 3 Master Teachers are detected.
 *   **"Needs Attention" Status**: If > 3 Strict Evaluators are detected.
     *   *AI Tip*: "Audit the difficulty of exam papers for the flagged subjects."
+
+---
+---
+
+# Future Sight (Predictive Career engine)
+
+## Overview
+The **Future Predictions** module (internally "Future Sight") is a Monte Carlo simulation engine that uses current student performance to project future career outcomes. 
+
+> **Important**: This is **NOT** a random number generator. It is a probabilistic model based on your actual student data.
+
+---
+
+## 11. The "Sorting Hat" Algorithm (Career Constellations)
+
+### **How it Works**
+The system analyzes every single student's academic footprint (Average Score + Consistency Score) to assign them a "Projected Career Path".
+
+*   **Data Scientist**: 
+    *   *Profile*: High Average (>85%) + High Volatility (Spiky genius).
+    *   *Logic*: Student is brilliant but gets bored easily.
+*   **Research / PhD**:
+    *   *Profile*: High Average (>85%) + High Consistency (Low Variance).
+    *   *Logic*: Academic excellence and discipline.
+*   **Full Stack Model**:
+    *   *Profile*: Good Average (>70%).
+    *   *Logic*: Strong engineering baseline.
+*   **Product Manager**:
+    *   *Profile*: Above Average (>60%).
+
+### **Strategic Value**
+This creates a "Talent Pipeline" view. If you see 0 students in the "Research" bucket, your curriculum might be too practical/shallow.
+
+---
+
+## 12. Salary Simulation (Monte Carlo)
+
+### **The Math**
+We do not just guess a number. We calculate a **Base Market Value** for every student based on their "Constellation Role":
+*   *Research*: Base 12 LPA.
+*   *Data Science*: Base 18 LPA.
+*   *Full Stack*: Base 8.5 LPA.
+
+**The Variance**: 
+To simulate real-world negotiation and market flux, we apply a stochastic variable (`± 10-20%`) to these base numbers for each student simulation run.
+
+*   **Highest Package**: This is the top 1% outcome of the simulation.
+*   **Median Value**: The statistical middle of the batch.
+
+---
+
+## 13. Skill Gap Actuator
+
+### **What is it?**
+This is the most advanced insight in the portal. It identifies the **Single Most Critical Bottleneck** in the curriculum.
+
+### **Logic**
+1.  The system identifies the boundary between **Tier 3** (Low Pay) and **Tier 2** (Mid Pay) students.
+2.  It looks for the *Subject* where these borderline students are losing the most marks.
+3.  It calculates the "Impact Velocity": *If grades in [Subject X] improved by 15%, how many students would cross the threshold into Tier 2?*
+
+*   *Example Output*: "Closing the gap in **Data Structures** would migrate 40 students to the Higher Salary Band."
