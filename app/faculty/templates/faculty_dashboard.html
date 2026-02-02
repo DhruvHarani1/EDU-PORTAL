@@ -1,16 +1,40 @@
-{% extends "base.html" %}
+{% extends "base_faculty.html" %}
 
-{% block title %}Faculty Dashboard - EduPortal{% endblock %}
+{% block title %}Faculty Dashboard | EduPortal{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
 
-{% block content %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Faculty Dashboard</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Class Management</p>
-    </div>
-    <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-        <!-- Content here -->
-        <p class="p-6 text-gray-500">No classes assigned yet.</p>
+{% block faculty_content %}
+<div class="px-4 sm:px-0 max-w-7xl mx-auto">
+    <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Welcome to Faculty Portal
+            </h3>
+            <p class="mt-1 text-sm text-gray-500">
+                Manage your classes, student queries, and academic schedule.
+            </p>
+        </div>
+        <div class="px-4 py-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Quick Stats Placeholders -->
+             <div class="bg-indigo-50 overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-indigo-500 truncate">Total Classes Today</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-indigo-900">4</dd>
+                </div>
+            </div>
+            <div class="bg-green-50 overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-green-500 truncate">Pending Queries</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-green-900">2</dd>
+                </div>
+            </div>
+             <div class="bg-yellow-50 overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-yellow-500 truncate">Events Updated</dt>
+                    <dd class="mt-1 text-3xl font-semibold text-yellow-900">1</dd>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

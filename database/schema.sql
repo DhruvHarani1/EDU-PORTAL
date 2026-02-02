@@ -82,8 +82,19 @@ CREATE TABLE subject (
     academic_year VARCHAR(20),
     faculty_id INTEGER,
     weekly_lectures INTEGER DEFAULT 3,
+    credits INTEGER DEFAULT 3,
     resource_link VARCHAR(500),
     FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+);
+
+-- Syllabus Schema
+CREATE TABLE syllabus (
+    id SERIAL PRIMARY KEY,
+    subject_id INTEGER NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    file_data BYTEA NOT NULL,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subject (id)
 );
 
 -- Timetable Schema

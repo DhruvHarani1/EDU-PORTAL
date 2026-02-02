@@ -34,6 +34,7 @@ class Subject(db.Model):
     academic_year = db.Column(db.String(20), nullable=True) # e.g. "2025-2026"
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True)
     weekly_lectures = db.Column(db.Integer, default=3)
+    credits = db.Column(db.Integer, default=3) # Added Credits
     resource_link = db.Column(db.String(500), nullable=True) # Google Drive Link
     
     # Relationship
@@ -41,6 +42,18 @@ class Subject(db.Model):
 
     def __repr__(self):
         return f'<Subject {self.name}>'
+
+class Syllabus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    file_data = db.Column(db.LargeBinary, nullable=False) # Storing PDF as BLOB
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    subject = db.relationship('Subject', backref=db.backref('syllabus', uselist=False, cascade="all, delete-orphan"))
+
+    def __repr__(self):
+        return f'<Syllabus {self.filename} for Subject {self.subject_id}>'
 
 class Timetable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
