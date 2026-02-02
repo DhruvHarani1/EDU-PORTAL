@@ -62,6 +62,30 @@
         0% { transform: translateX(0); }
         100% { transform: translateX(-50%); }
     }
+
+    .marquee-container-slow {
+        animation: marquee 40s linear infinite;
+    }
+
+    /* --- Vertical Scroll (Testimonials) --- */
+    @keyframes scrollUp {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0); }
+    } 
+    /* Actually for infinite effect we need better logic or just simple hover float for now */
+    /* Since we don't have enough content for true infinite loop with JS duplication, let's use a gentle float */
+    .animate-scroll-up {
+        animation: float 6s ease-in-out infinite;
+    }
+    .animate-scroll-down {
+        animation: float 6s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0); }
+    }
     
     /* --- Sticky Cards --- */
     .sticky-card {
@@ -192,6 +216,135 @@
         </div>
     </div>
 
+</section>
+
+<!-- --- TRUST STRIP --- -->
+<section class="py-12 border-y border-zinc-900 bg-black/50 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
+        <span class="text-zinc-500 text-xs font-bold uppercase tracking-widest text-nowrap">Trusted by Innovators</span>
+        <div class="flex gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500 marquee-container-slow">
+            <!-- Mock Logos -->
+            <div class="text-xl font-bold font-serif hover:text-white transition-colors cursor-pointer">HARVARD</div>
+            <div class="text-xl font-bold font-mono hover:text-white transition-colors cursor-pointer">MIT_MEDIA_LAB</div>
+            <div class="text-xl font-bold font-sans italic hover:text-white transition-colors cursor-pointer">Stanford</div>
+            <div class="text-xl font-bold hover:text-white transition-colors cursor-pointer">YCombinator</div>
+            <div class="text-xl font-bold font-serif hover:text-white transition-colors cursor-pointer">OXFORD</div>
+        </div>
+    </div>
+</section>
+
+<!-- --- NETWORK ACTIVITY (REPLACING PULSE) --- -->
+<section class="py-32 overflow-hidden border-t border-zinc-800 bg-[#050505] relative">
+    
+    <!-- Background Grid -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+    
+    <div class="px-4 mb-20 flex items-end justify-between max-w-7xl mx-auto relative z-10">
+        <div>
+            <h2 class="text-sm font-bold text-lime-400 uppercase tracking-[0.2em] mb-4 font-mono shadow-lime-500/50 drop-shadow-sm">:: SYSTEM_FEEDBACK</h2>
+            <h3 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight">
+                Operating at <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-400">Peak Performance.</span>
+            </h3>
+        </div>
+    </div>
+    
+    <!-- Horizontal Scroller -->
+    <div class="marquee-container relative z-10">
+        <div class="marquee-content space-x-8 py-4">
+            
+            <!-- Card 1 -->
+            <div class="inline-block w-[450px] bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-lime-500/50 transition-colors duration-500">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-12 h-12 text-lime-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                </div>
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="https://ui-avatars.com/api/?name=IIT+Delhi&background=84cc16&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
+                    <div>
+                        <div class="text-white font-bold text-lg">IIT Delhi</div>
+                        <div class="text-lime-400 text-xs font-mono uppercase">Engineering Dept</div>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-white mb-4">"Efficiency Up 400%"</div>
+                <p class="text-zinc-400 text-base leading-relaxed">"The attendance module alone saved our faculty 150+ hours this semester. It's not just software; it's a productivity multiplier."</p>
+            </div>
+
+            <!-- Card 2 -->
+             <div class="inline-block w-[450px] bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-purple-500/50 transition-colors duration-500">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-12 h-12 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="https://ui-avatars.com/api/?name=IIM+A&background=a855f7&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
+                    <div>
+                        <div class="text-white font-bold text-lg">IIM Ahmedabad</div>
+                        <div class="text-purple-400 text-xs font-mono uppercase">Management</div>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-white mb-4">"Zero Latency."</div>
+                <p class="text-zinc-400 text-base leading-relaxed">"Onboarding 500 new students took minutes, not days. The mentorship dashboard is the cleanest we've ever used."</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="inline-block w-[450px] bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-blue-500/50 transition-colors duration-500">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                </div>
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="https://ui-avatars.com/api/?name=NIFT&background=3b82f6&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
+                    <div>
+                        <div class="text-white font-bold text-lg">NIFT Mumbai</div>
+                        <div class="text-blue-400 text-xs font-mono uppercase">Design & Arts</div>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-white mb-4">"Finally, UI that Works."</div>
+                <p class="text-zinc-400 text-base leading-relaxed">"Our previous system was a spreadsheet nightmare. EduPortal feels like using a modern app interaction on iOS."</p>
+            </div>
+            
+             <!-- Card 4 -->
+            <div class="inline-block w-[450px] bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-amber-500/50 transition-colors duration-500">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-12 h-12 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </div>
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="https://ui-avatars.com/api/?name=BITS&background=f59e0b&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
+                    <div>
+                        <div class="text-white font-bold text-lg">BITS Pilani</div>
+                        <div class="text-amber-400 text-xs font-mono uppercase">Administration</div>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-white mb-4">"Total Oversight."</div>
+                <p class="text-zinc-400 text-base leading-relaxed">"I have a pulse on the entire campus from my phone. Fees, attendance, notices—it's all synchronized perfectly."</p>
+            </div>
+
+            <!-- Duplicate for Infinity (Card 1) -->
+            <div class="inline-block w-[450px] bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-lime-500/50 transition-colors duration-500">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-12 h-12 text-lime-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                </div>
+                <div class="flex items-center gap-4 mb-8">
+                    <img src="https://ui-avatars.com/api/?name=IIT+Delhi&background=84cc16&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
+                    <div>
+                        <div class="text-white font-bold text-lg">IIT Delhi</div>
+                        <div class="text-lime-400 text-xs font-mono uppercase">Engineering Dept</div>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-white mb-4">"Efficiency Up 400%"</div>
+                <p class="text-zinc-400 text-base leading-relaxed">"The attendance module alone saved our faculty 150+ hours this semester. It's not just software; it's a productivity multiplier."</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- --- CTA SECTION --- -->
+<section class="py-32 px-4 text-center">
+    <h2 class="text-5xl md:text-8xl font-black text-white tracking-tighter mb-12">
+        Ready to <span class="bg-clip-text text-transparent bg-gradient-to-r from-lime-400 to-emerald-500">Upgrade?</span>
+    </h2>
+    <a href="{{ url_for('auth.login') }}" class="magnetic-btn inline-block px-12 py-6 bg-white text-black font-bold text-xl uppercase tracking-widest rounded-full hover:bg-lime-400 transition-colors duration-300 hover-trigger">
+        Get Started Now
+    </a>
 </section>
 
 <!-- --- FOOTER --- -->
