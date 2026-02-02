@@ -51,16 +51,16 @@
     
     /* --- Marquee Animation --- */
     .marquee-container {
-        overflow: hidden;
+        /* overflow: hidden;  <-- Removed to prevent clipping of shadows/entering cards */
         white-space: nowrap;
     }
     .marquee-content {
         display: inline-block;
-        animation: marquee 20s linear infinite;
+        animation: marquee 30s linear infinite; /* Slowed down slightly for readability */
     }
     .marquee-content-reverse {
         display: inline-block;
-        animation: marqueeReverse 20s linear infinite;
+        animation: marqueeReverse 30s linear infinite;
     }
     @keyframes marquee {
         0% { transform: translateX(0); }
@@ -269,55 +269,74 @@
         
         <!-- Row 1: Left Scroll (Fast) -->
         <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
-            <div class="marquee-content space-x-6 py-2">
-                <!-- Card 1.1 -->
-                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+            <div class="marquee-content py-6 whitespace-nowrap">
+                <!-- Set 1 -->
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-8 h-8 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center font-bold text-xs">ID</div>
                         <div class="text-white font-bold text-sm">IIT Delhi</div>
                     </div>
                     <div class="text-zinc-400 text-sm">"System latency reduced by 98%. It's instantaneous."</div>
                 </div>
-                 <!-- Card 1.2 -->
-                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">IA</div>
                         <div class="text-white font-bold text-sm">IIM Ahmedabad</div>
                     </div>
                     <div class="text-zinc-400 text-sm">"The Faculty Dashboard is a masterpiece of UX."</div>
                 </div>
-                <!-- Card 1.3 -->
-                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">NM</div>
                         <div class="text-white font-bold text-sm">NMIMS</div>
                     </div>
                     <div class="text-zinc-400 text-sm">"Student engagement metrics are up 40% since deployment."</div>
                 </div>
-                 <!-- Card 1.4 -->
-                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">BP</div>
                         <div class="text-white font-bold text-sm">BITS Pilani</div>
                     </div>
                     <div class="text-zinc-400 text-sm">"Managing 5000+ students with zero downtime."</div>
                 </div>
-                 <!-- Duplicate 1.1 -->
-                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                
+                <!-- Set 1 Duplicate (For Loop) -->
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-8 h-8 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center font-bold text-xs">ID</div>
                         <div class="text-white font-bold text-sm">IIT Delhi</div>
                     </div>
                     <div class="text-zinc-400 text-sm">"System latency reduced by 98%. It's instantaneous."</div>
                 </div>
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">IA</div>
+                        <div class="text-white font-bold text-sm">IIM Ahmedabad</div>
+                    </div>
+                    <div class="text-zinc-400 text-sm">"The Faculty Dashboard is a masterpiece of UX."</div>
+                </div>
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">NM</div>
+                        <div class="text-white font-bold text-sm">NMIMS</div>
+                    </div>
+                    <div class="text-zinc-400 text-sm">"Student engagement metrics are up 40% since deployment."</div>
+                </div>
+                <div class="inline-block w-[350px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl align-top">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">BP</div>
+                        <div class="text-white font-bold text-sm">BITS Pilani</div>
+                    </div>
+                    <div class="text-zinc-400 text-sm">"Managing 5000+ students with zero downtime."</div>
+                </div>
             </div>
         </div>
 
         <!-- Row 2: Right Scroll (Slow) -->
         <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
-            <div class="marquee-content-reverse space-x-6 py-2" style="animation: marqueeReverse 40s linear infinite;">
-                <!-- Card 2.1 -->
-                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10">
+            <div class="marquee-content-reverse py-6 whitespace-nowrap" style="animation: marqueeReverse 40s linear infinite;">
+                <!-- Set 2 -->
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10 align-top">
                     <div class="flex items-center gap-3 mb-4">
                          <img src="https://ui-avatars.com/api/?name=MIT&background=000&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
                         <div class="text-white font-bold text-sm">MIT Media Lab (Partner)</div>
@@ -325,8 +344,7 @@
                     <div class="text-white font-bold text-lg mb-1">"A Kinetic Interface."</div>
                     <div class="text-zinc-500 text-xs">"The magnetic interactions feel incredibly natural."</div>
                 </div>
-                <!-- Card 2.2 -->
-                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-purple-900/10">
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-purple-900/10 align-top">
                     <div class="flex items-center gap-3 mb-4">
                          <img src="https://ui-avatars.com/api/?name=Y+C&background=f0652f&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
                         <div class="text-white font-bold text-sm">Y Combinator</div>
@@ -334,8 +352,7 @@
                     <div class="text-white font-bold text-lg mb-1">"The Standard for EdTech."</div>
                     <div class="text-zinc-500 text-xs">"Setting a new benchmark for university software."</div>
                 </div>
-                 <!-- Card 2.3 -->
-                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-blue-900/10">
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-blue-900/10 align-top">
                     <div class="flex items-center gap-3 mb-4">
                          <img src="https://ui-avatars.com/api/?name=S+U&background=b91c1c&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
                         <div class="text-white font-bold text-sm">Stanford University</div>
@@ -343,8 +360,9 @@
                     <div class="text-white font-bold text-lg mb-1">"Data Visibility: 100%"</div>
                     <div class="text-zinc-500 text-xs">"We can finally track cross-departmental attendance."</div>
                 </div>
-                 <!-- Duplicate 2.1 -->
-                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10">
+                
+                <!-- Set 2 Duplicate (For Loop) -->
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10 align-top">
                     <div class="flex items-center gap-3 mb-4">
                          <img src="https://ui-avatars.com/api/?name=MIT&background=000&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
                         <div class="text-white font-bold text-sm">MIT Media Lab (Partner)</div>
@@ -352,36 +370,62 @@
                     <div class="text-white font-bold text-lg mb-1">"A Kinetic Interface."</div>
                     <div class="text-zinc-500 text-xs">"The magnetic interactions feel incredibly natural."</div>
                 </div>
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-purple-900/10 align-top">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=Y+C&background=f0652f&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">Y Combinator</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"The Standard for EdTech."</div>
+                    <div class="text-zinc-500 text-xs">"Setting a new benchmark for university software."</div>
+                </div>
+                 <div class="inline-block w-[400px] mx-3 whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-blue-900/10 align-top">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=S+U&background=b91c1c&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">Stanford University</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"Data Visibility: 100%"</div>
+                    <div class="text-zinc-500 text-xs">"We can finally track cross-departmental attendance."</div>
+                </div>
             </div>
         </div>
 
         <!-- Row 3: Left Scroll (Medium) -->
         <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
-            <div class="marquee-content space-x-6 py-2" style="animation-duration: 30s;">
-                <!-- Card 3.1 -->
-                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+            <div class="marquee-content py-2 whitespace-nowrap" style="animation-duration: 30s;">
+                <!-- Set 3 -->
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
                      <div class="text-lime-400 font-mono text-xs mb-2">:: DEPLOYMENT_SUCCESS</div>
                      <div class="text-zinc-300 text-sm">"Rolled out to 15,000 students in 48 hours."</div>
                 </div>
-                 <!-- Card 3.2 -->
-                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
                      <div class="text-purple-400 font-mono text-xs mb-2">:: SECURITY_AUDIT</div>
                      <div class="text-zinc-300 text-sm">"Penetration testing passed with zero vulnerabilities."</div>
                 </div>
-                 <!-- Card 3.3 -->
-                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
                      <div class="text-blue-400 font-mono text-xs mb-2">:: API_INTEGRATION</div>
                      <div class="text-zinc-300 text-sm">"Seamlessly connected with our legacy Oracle DB."</div>
                 </div>
-                 <!-- Card 3.4 -->
-                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
                      <div class="text-amber-400 font-mono text-xs mb-2">:: COST_SAVINGS</div>
                      <div class="text-zinc-300 text-sm">"Reduced administrative overhead by $500k/year."</div>
                 </div>
-                 <!-- Duplicate 3.1 -->
-                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                
+                <!-- Set 3 Duplicate (For Loop) -->
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
                      <div class="text-lime-400 font-mono text-xs mb-2">:: DEPLOYMENT_SUCCESS</div>
                      <div class="text-zinc-300 text-sm">"Rolled out to 15,000 students in 48 hours."</div>
+                </div>
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
+                     <div class="text-purple-400 font-mono text-xs mb-2">:: SECURITY_AUDIT</div>
+                     <div class="text-zinc-300 text-sm">"Penetration testing passed with zero vulnerabilities."</div>
+                </div>
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
+                     <div class="text-blue-400 font-mono text-xs mb-2">:: API_INTEGRATION</div>
+                     <div class="text-zinc-300 text-sm">"Seamlessly connected with our legacy Oracle DB."</div>
+                </div>
+                <div class="inline-block w-[300px] mx-3 whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors align-top">
+                     <div class="text-amber-400 font-mono text-xs mb-2">:: COST_SAVINGS</div>
+                     <div class="text-zinc-300 text-sm">"Reduced administrative overhead by $500k/year."</div>
                 </div>
             </div>
         </div>
