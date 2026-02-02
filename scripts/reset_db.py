@@ -76,31 +76,85 @@ with app.app_context():
         # --- 3. Subjects ---
         print("3. Creating Subjects...")
         subjects = []
-        subject_names = [
-            # CSE
-            ('Data Structures', 'CS'), ('Algorithms', 'CS'), ('OS', 'CS'), ('DBMS', 'CS'), ('Networks', 'CS'),
-            # ECE
-            ('Digital Electronics', 'EC'), ('Signals', 'EC'), ('Microprocessors', 'EC'),
-            # Math
-            ('Calculus', 'Math'), ('Linear Algebra', 'Math'), ('Statistics', 'Math'),
-            # Other
-            ('English', 'Hum'), ('Economics', 'Hum'), ('Thermodynamics', 'Mech')
+        
+        # Define rich subject data
+        # (Name, Dept, Semester Logic [list of possible sems])
+        subject_pool = [
+            # Semester 1 & 2 (General)
+            ('Engineering Mathematics I', 'Math', [1]),
+            ('Engineering Physics', 'Science', [1]),
+            ('Basic Electrical Engg', 'Electrical', [1]),
+            ('Engineering Graphics', 'Mech', [1]),
+            ('Engineering Mathematics II', 'Math', [2]),
+            ('Chemistry', 'Science', [2]),
+            ('Basic Electronics', 'EC', [2]),
+            ('Computer Programming (C)', 'CS', [2]),
+            
+            # Semester 3
+            ('Data Structures', 'CS', [3]),
+            ('Digital Logic Design', 'EC', [3]),
+            ('Discrete Mathematics', 'Math', [3]),
+            ('OOPs with Java', 'CS', [3]),
+            ('Electronic Devices', 'EC', [3]),
+            
+            # Semester 4
+            ('Algorithms', 'CS', [4]),
+            ('Operating Systems', 'CS', [4]),
+            ('Database Management Systems', 'CS', [4]),
+            ('Computer Architecture', 'CS', [4]),
+            ('Signals & Systems', 'EC', [4]),
+            ('Microprocessors', 'EC', [4]),
+            
+            # Semester 5
+            ('Computer Networks', 'CS', [5]),
+            ('Theory of Computation', 'CS', [5]),
+            ('Software Engineering', 'CS', [5]),
+            ('Control Systems', 'EC', [5]),
+            ('Analog Circuits', 'EC', [5]),
+            
+            # Semester 6
+            ('Compiler Design', 'CS', [6]),
+            ('Web Technologies', 'CS', [6]),
+            ('Artificial Intelligence', 'CS', [6]),
+            ('VLSI Design', 'EC', [6]),
+            ('Digital Communication', 'EC', [6]),
+            
+             # Semester 7
+            ('Machine Learning', 'CS', [7]),
+            ('Cloud Computing', 'CS', [7]),
+            ('Cyber Security', 'CS', [7]),
+            
+             # Semester 8
+            ('Big Data Analytics', 'CS', [8]),
+            ('Internet of Things', 'CS', [8])
         ]
         
-        for name, dept in subject_names:
-            # Assign random faculty from same dept roughly, but here random is fine
-            fac = random.choice(faculty_profiles)
+        # Create these subjects
+        # Distribute them among faculty profiles based on department if possible, or random but balanced
+        
+        for name, dept, sems in subject_pool:
+            # Try to find faculty in matching department
+            matching_faculty = [f for f in faculty_profiles if dept in f.department or 'Science' in f.department or 'Math' in f.department] # Loose match
+            
+            if matching_faculty:
+                fac = random.choice(matching_faculty)
+            else:
+                fac = random.choice(faculty_profiles)
+                
+            sem = sems[0] # For now take first preferred sem
+            
             sub = Subject(
                 name=name,
                 course_name='B.Tech',
-                semester=random.choice([1, 2, 3, 4, 5, 6]),
+                semester=sem,
                 faculty_id=fac.id,
-                weekly_lectures=random.randint(2, 5),
-                credits=random.randint(2, 4),
+                weekly_lectures=random.randint(3, 4),
+                credits=random.randint(3, 4),
                 resource_link='https://google.com'
             )
             db.session.add(sub)
             subjects.append(sub)
+            
         db.session.flush()
 
         # --- 4. Students (50 Students) ---
@@ -118,8 +172,8 @@ with app.app_context():
             display_name='John Doe',
             enrollment_number='STU001',
             course_name='B.Tech',
-            semester=3, # Matches some subjects
-            batch_year='2025-2029',
+            semester=5, # Make him Sem 5 to see more interesting subjects
+            batch_year='2024-2028',
             phone_number='9999999999',
             address='123 Main St',
             guardian_name='Mr. Doe',
@@ -140,7 +194,7 @@ with app.app_context():
                 display_name=get_random_names(1)[0],
                 enrollment_number=enroll,
                 course_name='B.Tech',
-                semester=random.choice([1, 2, 3, 4, 5, 6, 7, 8]),
+                semester=random.choice([1, 2, 3, 4, 5, 6, 7, 8]), 
                 batch_year=random.choice(['2024-2028', '2025-2029', '2023-2027', '2022-2026']),
                 phone_number=str(random.randint(7000000000, 9999999999)),
                 guardian_name=f'Guardian of {enroll}',
@@ -151,25 +205,38 @@ with app.app_context():
         db.session.flush()
 
         # --- 5. Timetable ---
-        print("5. Creating Timetables...")
+        print("5. Creating Timetables with Diversity...")
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        
         for fac in faculty_profiles:
-            # Each faculty teaches 2-4 slots per day
+            # Get all subjects this faculty teaches
             fac_subs = Subject.query.filter_by(faculty_id=fac.id).all()
+            
             if not fac_subs: continue
             
+            # Simple heuristic: Faculty teaches ~3 lectures/day
+            # We want to mix the subjects they teach.
+            
             for day in days:
-                slots = random.sample(range(1, 8), random.randint(2, 5)) # Slots 1-8
+                # Pick 2-4 slots
+                num_slots = random.randint(2, 4)
+                slots = random.sample(range(1, 7), num_slots) # Periods 1-6
+                
                 for slot_num in slots:
+                    # Pick a random subject for this slot from their list
+                    # This ensures variety: 10:00 -> Algorithms, 12:00 -> Data Structures
                     sub = random.choice(fac_subs)
+                    
+                    room = f"Room {random.randint(101, 305)}"
+                    
                     tt = Timetable(
                         course_name=sub.course_name,
-                        semester=sub.semester,
+                        semester=sub.semester, # Uses the subject's semester!
                         day_of_week=day,
                         period_number=slot_num,
                         subject_id=sub.id,
                         faculty_id=fac.id,
-                        room_number=f"Room {random.randint(101, 305)}"
+                        room_number=room
                     )
                     db.session.add(tt)
         db.session.flush()
@@ -250,6 +317,7 @@ with app.app_context():
         db.session.flush()
 
         # Papers for all subjects
+        exam_papers = []
         for sub in subjects:
             # Random date within exam range
             p_date = mid_sem.start_date + timedelta(days=random.randint(0, 15))
@@ -262,46 +330,91 @@ with app.app_context():
                 total_marks=50
             )
             db.session.add(paper)
+            exam_papers.append(paper)
         db.session.flush()
 
-        # --- 10. Student Queries ---
-        print("10. Creating Student Queries...")
-        query_titles = [
-            "Doubt in Lecture 3",
-            "Assignment submission issue",
-            "Request for extra class",
-            "Clarification on syllabus",
-            "Project partner request"
+        # --- 10. Student Results (Marks) ---
+        print("10. Creating Student Results...")
+        for paper in exam_papers:
+            # Get students in this course/sem
+            # Approximating: All students for now or filter
+            target_students = [s for s in students if s.course_name == paper.subject.course_name] # Loose coupling
+            
+            # Pick 80% of students to have marks
+            marked_students = random.sample(target_students, int(len(target_students) * 0.8))
+            
+            for stu in marked_students:
+                # Randomize marks: Bell curve-ish
+                # Most between 20-40. Some high, some low.
+                base = random.randint(15, 45)
+                # Ensure within 0-50
+                marks = max(0, min(50, base))
+                
+                is_fail = marks < 17 # < 33%
+                
+                res = StudentResult(
+                    exam_paper_id=paper.id,
+                    student_id=stu.id,
+                    marks_obtained=marks,
+                    status='Present',
+                    is_fail=is_fail
+                )
+                db.session.add(res)
+        db.session.flush()
+
+        # --- 11. Student Queries ---
+        print("11. Creating Student Queries...")
+        query_topics = [
+            "Lecture clarification", "Assignment deadline", "Lab equipment", "Attendance correction", "Syllabus inquiry",
+            "Project guidance", "Reference book request", "Health leave", "Makeup exam", "Internship opportunity"
         ]
         
-        for i in range(10): # Create 10 queries
+        for i in range(30): # Create 30 queries
             stu = random.choice(students)
-            sub = random.choice(subjects) # Assume link exists or loose coupling
+            sub = random.choice(subjects) 
             fac_id = sub.faculty_id
+            
+            topic = random.choice(query_topics)
+            title = f"{topic} - {sub.name}"
             
             q = StudentQuery(
                 student_id=stu.id,
                 faculty_id=fac_id,
                 subject_id=sub.id,
-                title=random.choice(query_titles),
-                status=random.choice(['Pending', 'Answered', 'Resolved'])
+                title=title,
+                status=random.choice(['Pending', 'Answered', 'Resolved', 'Pending'])
             )
             db.session.add(q)
             db.session.flush()
             
             # Initial Message
+            contents = [
+                f"I did not understand the concept of {topic} in the last class.",
+                f"Can we get an extension for the {topic}?",
+                f"I was marked absent by mistake for {sub.name}.",
+                "Could you please share the PPT slides?",
+                "When is the next quiz scheduled?"
+            ]
+            
             m1 = QueryMessage(
                 query_id=q.id,
                 sender_type='student',
-                content=f"Hello Professor, I have a question regarding {sub.name}."
+                content=random.choice(contents)
             )
             db.session.add(m1)
             
             if q.status != 'Pending':
+                replies = [
+                    "Sure, let's discuss in class.",
+                    "Please come to my office.",
+                    "Noted. I will check.",
+                    "Check the portal notices.",
+                    "Yes, approved."
+                ]
                 m2 = QueryMessage(
                     query_id=q.id,
                     sender_type='faculty',
-                    content="Sure, please visit my cabin or ask here."
+                    content=random.choice(replies)
                 )
                 db.session.add(m2)
                 

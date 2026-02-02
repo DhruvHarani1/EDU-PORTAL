@@ -652,7 +652,40 @@ def schedule():
         
     return render_template('faculty/schedule.html', schedule=schedule_data, day_name=today_name)
 
+
 @faculty_bp.route('/timetable')
 @login_required
 def timetable():
-    return render_template('faculty/timetable.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Fetch Timetable entries
+    entries = Timetable.query.filter_by(faculty_id=faculty.id).order_by(Timetable.period_number).all()
+    
+    # Structure Data: Days -> Slots
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    schedule = {day: [] for day in days_order}
+    
+    for entry in entries:
+        if entry.day_of_week in schedule:
+            # We can calculate times if we had a settings model, but for now 
+            # we rely on period number or just display it simply.
+            # Mirroring student logic for consistency if possible, or simple list.
+            
+            # Simple Time Logic (09:00 Start, 1 hr slots)
+            base_start_hour = 9
+            start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
+            
+            start_time = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
+            end_time = start_time + timedelta(minutes=60)
+            
+            entry.start_time = start_time.time()
+            entry.end_time = end_time.time()
+            
+            schedule[entry.day_of_week].append(entry)
+            
+    # Remove empty days if desired, or keep for grid structure. 
+    # Keeping mostly full week except Sunday usually good.
+    if not schedule['Sunday']:
+        del schedule['Sunday']
+        
+    return render_template('faculty/timetable.html', faculty=faculty, schedule=schedule)
