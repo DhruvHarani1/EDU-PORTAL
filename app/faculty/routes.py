@@ -604,10 +604,73 @@ def mentorship():
     
     return render_template('faculty/mentorship.html', mentees=mentees)
 
-@faculty_bp.route('/notices')
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Notice, StudentProfile, Subject
+
+# ... (Previous imports remain, just adding models to line 4 manually if needed, 
+# but simply overwriting the notices function is safer)
+
+@faculty_bp.route('/notices', methods=['GET', 'POST'])
 @login_required
 def notices():
-    return render_template('faculty/notices.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        category = request.form.get('category')
+        target_type = request.form.get('target_type')
+        
+        target_course = request.form.get('target_course') # If type is class
+        target_semester = request.form.get('target_semester') # If type is class
+        target_student_id = request.form.get('target_student_id') # If individual
+        
+        # Handle "Mentees" logic -> Can be implemented as individual notices OR a group tag
+        # For now, if "mentees", we might create one notice with type 'mentees' 
+        # (assuming frontend filters handle it) OR create individual notices.
+        # Let's stick to storing 'mentees' in target_type for efficiency.
+        
+        notice = Notice(
+            title=title,
+            content=content,
+            category=category,
+            target_type=target_type,
+            sender_faculty_id=faculty.id,
+            target_course=target_course if target_type == 'class' else None,
+            target_semester=target_semester if target_type == 'class' else None,
+            target_student_id=target_student_id if target_type == 'individual' else None
+        )
+        
+        db.session.add(notice)
+        db.session.commit()
+        flash('Notice sent successfully!', 'success')
+        return redirect(url_for('faculty.notices'))
+
+    # Fetch Notices
+    # 1. Sent by Me
+    sent_notices = Notice.query.filter_by(sender_faculty_id=faculty.id).order_by(Notice.created_at.desc()).all()
+    
+    # 2. Received (Admin -> All or Admin -> Faculty (not implemented yet, but 'all' works))
+    # Assuming Admin senders have sender_faculty_id = None
+    received_notices = Notice.query.filter(
+        (Notice.target_type == 'all') | 
+        (Notice.target_type == 'faculty') # Future proofing
+    ).filter(Notice.sender_faculty_id == None).order_by(Notice.created_at.desc()).all()
+    
+    # Context Data for Form
+    mentees = StudentProfile.query.filter_by(mentor_id=faculty.id).all()
+    # Subjects taught for Class/Course selection
+    subjects_taught = Subject.query.filter_by(faculty_id=faculty.id).all()
+    # Unique Courses/Sems taught
+    my_classes = set()
+    for sub in subjects_taught:
+        if sub.course_name and sub.semester:
+            my_classes.add((sub.course_name, sub.semester))
+    
+    return render_template('faculty/notices.html', 
+                           sent_notices=sent_notices, 
+                           received_notices=received_notices,
+                           mentees=mentees,
+                           my_classes=sorted(list(my_classes)))
 
 @faculty_bp.route('/schedule')
 @login_required
