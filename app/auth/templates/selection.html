@@ -1,61 +1,83 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Select Your Role</h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-            Choose your portal to continue
-        </p>
+{% block layout %}
+<div class="min-h-screen bg-zinc-950 relative overflow-hidden font-sans flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    
+    <!-- Back Button -->
+    <a href="{{ url_for('main.index') }}" class="absolute top-6 left-6 z-50 flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group">
+        <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <span class="text-xs font-mono font-bold tracking-widest uppercase">Return_to_Root</span>
+    </a>
+    
+    <!-- Background Grid -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center mb-16">
+        <a href="{{ url_for('main.index') }}" class="inline-block group mb-8">
+            <h2 class="text-3xl font-black tracking-tighter text-white group-hover:text-lime-400 transition-colors duration-300">
+                EDU<span class="text-zinc-600 group-hover:text-lime-600 transition-colors">PORTAL</span>
+            </h2>
+        </a>
+        <h2 class="text-xs font-bold text-zinc-500 uppercase tracking-[0.3em] font-mono mb-2">:: IDENTITY_VERIFICATION ::</h2>
+        <h3 class="text-4xl md:text-5xl font-black text-white tracking-tight">Select Protocol.</h3>
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-4xl">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+    <div class="relative z-10 max-w-5xl mx-auto w-full">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
             <!-- Student Card -->
-            <a href="{{ url_for('auth.login', role='student') }}" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 transition-all duration-200 ease-in-out transform hover:-translate-y-1">
-                <div class="flex-1 min-w-0">
-                    <span class="absolute inset-0" aria-hidden="true"></span>
-                    <div class="flex justify-center mb-4">
-                        <svg class="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                        </svg>
+            <a href="{{ url_for('auth.login', role='student') }}" class="group relative bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-3xl p-8 hover:bg-zinc-900/80 hover:border-lime-500/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                <div class="absolute inset-0 bg-lime-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="relative z-10 flex flex-col items-center text-center h-full">
+                    <div class="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 group-hover:border-lime-500 transition-colors duration-500 shadow-xl">
+                        <svg class="w-10 h-10 text-zinc-400 group-hover:text-lime-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
-                    <p class="text-sm font-medium text-gray-900 text-center">Student</p>
-                    <p class="text-sm text-gray-500 text-center truncate">Access courses & grades</p>
+                    <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-lime-400 transition-colors">Student</h3>
+                    <p class="text-zinc-500 text-sm mb-6">Knowledge Acquisition Interface</p>
+                    <div class="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <span class="text-xs font-mono text-lime-500 border border-lime-500/30 px-3 py-1 rounded-full bg-lime-500/10">ACCESS_GRANTED</span>
+                    </div>
                 </div>
             </a>
 
             <!-- Faculty Card -->
-            <a href="{{ url_for('auth.login', role='faculty') }}" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 transition-all duration-200 ease-in-out transform hover:-translate-y-1">
-                <div class="flex-1 min-w-0">
-                    <span class="absolute inset-0" aria-hidden="true"></span>
-                    <div class="flex justify-center mb-4">
-                        <svg class="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
+            <a href="{{ url_for('auth.login', role='faculty') }}" class="group relative bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-3xl p-8 hover:bg-zinc-900/80 hover:border-purple-500/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                <div class="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="relative z-10 flex flex-col items-center text-center h-full">
+                    <div class="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 group-hover:border-purple-500 transition-colors duration-500 shadow-xl">
+                        <svg class="w-10 h-10 text-zinc-400 group-hover:text-purple-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                     </div>
-                    <p class="text-sm font-medium text-gray-900 text-center">Faculty</p>
-                    <p class="text-sm text-gray-500 text-center truncate">Manage classes & grades</p>
+                    <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Faculty</h3>
+                    <p class="text-zinc-500 text-sm mb-6">Academic Oversight & Grading</p>
+                    <div class="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                         <span class="text-xs font-mono text-purple-500 border border-purple-500/30 px-3 py-1 rounded-full bg-purple-500/10">ACCESS_GRANTED</span>
+                    </div>
                 </div>
             </a>
 
             <!-- Admin Card -->
-            <a href="{{ url_for('auth.login', role='admin') }}" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 transition-all duration-200 ease-in-out transform hover:-translate-y-1">
-                <div class="flex-1 min-w-0">
-                    <span class="absolute inset-0" aria-hidden="true"></span>
-                    <div class="flex justify-center mb-4">
-                        <svg class="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+            <a href="{{ url_for('auth.login', role='admin') }}" class="group relative bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-3xl p-8 hover:bg-zinc-900/80 hover:border-blue-500/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="relative z-10 flex flex-col items-center text-center h-full">
+                     <div class="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 group-hover:border-blue-500 transition-colors duration-500 shadow-xl">
+                        <svg class="w-10 h-10 text-zinc-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     </div>
-                    <p class="text-sm font-medium text-gray-900 text-center">Admin</p>
-                    <p class="text-sm text-gray-500 text-center truncate">System configuration</p>
+                    <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Admin</h3>
+                    <p class="text-zinc-500 text-sm mb-6">System Configuration & Logs</p>
+                    <div class="mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                         <span class="text-xs font-mono text-blue-500 border border-blue-500/30 px-3 py-1 rounded-full bg-blue-500/10">ACCESS_GRANTED</span>
+                    </div>
                 </div>
             </a>
+
         </div>
+    </div>
+
+    <!-- Footer Status -->
+    <div class="absolute bottom-8 left-0 w-full text-center">
+        <p class="text-zinc-700 text-[10px] font-mono uppercase tracking-widest">
+            System status: online • lat: 14ms • secure
+        </p>
     </div>
 </div>
 {% endblock %}
