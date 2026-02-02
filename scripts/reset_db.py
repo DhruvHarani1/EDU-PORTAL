@@ -2,6 +2,8 @@ import sys
 import os
 import random
 from datetime import date, timedelta, datetime
+from sqlalchemy import text
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
@@ -20,6 +22,13 @@ def get_random_names(count):
 with app.app_context():
     try:
         print("Dropping all tables...")
+        # Force drop legacy/removed tables
+        try:
+            db.session.execute(text("DROP TABLE IF EXISTS study_material CASCADE"))
+            db.session.commit()
+        except:
+            pass
+            
         db.drop_all()
         print("Creating all tables...")
         db.create_all()
@@ -223,6 +232,36 @@ with app.app_context():
         for t, cat in notice_titles:
             n = Notice(title=t, content=f"This is a detail content for {t}.", category=cat)
             db.session.add(n)
+        db.session.flush()
+
+        # --- 9. Exams ---
+        print("9. Creating Exams...")
+        # Event
+        mid_sem = ExamEvent(
+            name="Mid Semester Exam 2026",
+            academic_year="2025-2026",
+            course_name="B.Tech",
+            semester=3, # Mixed, but flagging mainly
+            start_date=date.today() - timedelta(days=5),
+            end_date=date.today() + timedelta(days=10),
+            is_published=True
+        )
+        db.session.add(mid_sem)
+        db.session.flush()
+
+        # Papers for all subjects
+        for sub in subjects:
+            # Random date within exam range
+            p_date = mid_sem.start_date + timedelta(days=random.randint(0, 15))
+            paper = ExamPaper(
+                exam_event_id=mid_sem.id,
+                subject_id=sub.id,
+                date=p_date,
+                start_time=datetime.strptime("10:00", "%H:%M").time(),
+                end_time=datetime.strptime("13:00", "%H:%M").time(),
+                total_marks=50
+            )
+            db.session.add(paper)
         db.session.flush()
 
         db.session.commit()

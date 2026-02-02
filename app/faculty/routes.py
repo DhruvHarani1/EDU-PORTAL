@@ -78,7 +78,7 @@ def query_chat(query_id):
 
 # --- New Faculty Routes Placeholders ---
 
-from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile, Timetable, Attendance
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile, Timetable, Attendance, ExamEvent, ExamPaper, StudentResult
 from werkzeug.utils import secure_filename
 
 # ... (existing imports)
@@ -474,10 +474,118 @@ def material():
 
 # Delete route removed (Managed via update)
 
-@faculty_bp.route('/marks')
+@faculty_bp.route('/marks', methods=['GET', 'POST'])
 @login_required
 def marks():
-    return render_template('faculty/marks.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # 1. Fetch Active Exams
+    # For now, fetching all. In real app, filter by date or 'is_active'
+    exam_events = ExamEvent.query.order_by(ExamEvent.start_date.desc()).all()
+    
+    selected_exam_id = request.args.get('exam_id', type=int)
+    selected_paper_id = request.args.get('paper_id', type=int)
+    
+    papers = []
+    selected_exam = None
+    selected_paper = None
+    students_data = [] # List of {student, result_obj_or_none}
+    
+    # 2. If Exam Selected, Fetch Papers for this Faculty
+    if selected_exam_id:
+        selected_exam = ExamEvent.query.get_or_404(selected_exam_id)
+        
+        # Get subjects taught by faculty
+        faculty_subject_ids = [s.id for s in faculty.subjects_taught]
+        
+        # Fetch papers for this exam AND taught by faculty
+        papers = ExamPaper.query.filter(
+            ExamPaper.exam_event_id == selected_exam_id,
+            ExamPaper.subject_id.in_(faculty_subject_ids)
+        ).all()
+        
+    # 3. If Paper Selected, Fetch Students and Results
+    if selected_paper_id:
+        selected_paper = ExamPaper.query.get_or_404(selected_paper_id)
+        
+        # Security: Ensure faculty teaches this subject
+        if selected_paper.subject.faculty_id != faculty.id:
+            flash('Unauthorized access to this paper.', 'error')
+            return redirect(url_for('faculty.marks'))
+            
+        # Fetch Students (Course/Sem matches Paper's Subject)
+        students = StudentProfile.query.filter_by(
+            course_name=selected_paper.subject.course_name,
+            semester=selected_paper.subject.semester
+        ).order_by(StudentProfile.enrollment_number).all()
+        
+        # Fetch Existing Results
+        existing_results = StudentResult.query.filter_by(exam_paper_id=selected_paper_id).all()
+        result_map = {res.student_id: res for res in existing_results}
+        
+        for stu in students:
+            students_data.append({
+                'student': stu,
+                'result': result_map.get(stu.id)
+            })
+
+    # 4. Handle POST (Save Marks)
+    if request.method == 'POST':
+        if not selected_paper:
+             flash('No paper selected.', 'error')
+             return redirect(url_for('faculty.marks'))
+             
+        count = 0
+        for data in students_data:
+            stu = data['student']
+            input_name = f'marks_{stu.id}'
+            
+            if input_name in request.form:
+                marks_val = request.form.get(input_name)
+                
+                # Logic: If empty, maybe treat as Absent or None?
+                # If present, update or create
+                
+                res = data['result']
+                if not res:
+                    res = StudentResult(
+                        exam_paper_id=selected_paper.id,
+                        student_id=stu.id
+                    )
+                    db.session.add(res)
+                
+                if marks_val and marks_val.strip() != '':
+                    try:
+                        val = float(marks_val)
+                        if val < 0 or val > selected_paper.total_marks:
+                            flash(f'Invalid marks for {stu.enrollment_number}. Max is {selected_paper.total_marks}', 'error')
+                            continue
+                        res.marks_obtained = val
+                        res.status = 'Present'
+                        # Fail logic? If < 33%?
+                        res.is_fail = (val < (selected_paper.total_marks * 0.33)) # Simple rule
+                    except ValueError:
+                         flash(f'Invalid number for {stu.enrollment_number}', 'error')
+                else:
+                    # If empty, mark as Null or Absent? 
+                    # Let's say if unchecked 'present', it's absent.
+                    # Simplified: If empty string, do nothing or set None
+                    pass # Keep previous or ignore
+                
+                count += 1
+        
+        db.session.commit()
+        flash(f'Updated marks for {count} students.', 'success')
+        return redirect(url_for('faculty.marks', exam_id=selected_exam_id, paper_id=selected_paper_id))
+
+    return render_template(
+        'faculty/marks.html', 
+        exam_events=exam_events, 
+        papers=papers, 
+        selected_exam=selected_exam,
+        selected_paper=selected_paper,
+        students_data=students_data
+    )
 
 @faculty_bp.route('/mentorship')
 @login_required
