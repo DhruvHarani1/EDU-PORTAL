@@ -259,6 +259,34 @@ def attendance():
         if stats['total'] > 0:
             stats['percentage'] = round((stats['present'] / stats['total']) * 100, 1)
 
+        # 4. Calculate Low Attendance List (< 75%)
+        # Fetch ALL historical attendance for this subject
+        low_attendance_list = []
+        all_subject_attendance = Attendance.query.filter_by(subject_id=selected_subject_id).all()
+        
+        # Aggregation
+        student_stats = {} # { id: {total: 0, present: 0} }
+        for rec in all_subject_attendance:
+            if rec.student_id not in student_stats: student_stats[rec.student_id] = {'total': 0, 'present': 0}
+            student_stats[rec.student_id]['total'] += 1
+            if rec.status == 'Present':
+                student_stats[rec.student_id]['present'] += 1
+        
+        for student in students:
+            s_stat = student_stats.get(student.id, {'total': 0, 'present': 0})
+            if s_stat['total'] > 0:
+                pct = (s_stat['present'] / s_stat['total']) * 100
+            else:
+                pct = 100.0 # Default safe
+            
+            if pct < 75:
+                low_attendance_list.append({
+                    'student': student,
+                    'percentage': round(pct, 1),
+                    'attended': s_stat['present'],
+                    'total': s_stat['total']
+                })
+
     else:
         # Load Dashboard View: Recent Lectures Table
         # Generate last 30 days history
@@ -320,7 +348,8 @@ def attendance():
         selected_date=selected_date_str, # Keep valid if selected
         attendance_data=attendance_data,
         stats=stats,
-        pending_count=pending_count
+        pending_count=pending_count,
+        low_attendance_list=locals().get('low_attendance_list', [])
     )
 
 @faculty_bp.route('/attendance/export/csv')
