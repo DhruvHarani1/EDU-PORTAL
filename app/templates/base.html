@@ -7,6 +7,7 @@
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans antialiased">
+    {% block layout %}
     <nav class="bg-white shadow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -42,5 +43,6 @@
 
         {% block content %}{% endblock %}
     </main>
+    {% endblock %}
 </body>
 </html>

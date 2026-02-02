@@ -1,17 +1,248 @@
+
+
 {% extends "base.html" %}
 
-{% block content %}
-<div class="bg-white overflow-hidden shadow sm:rounded-lg">
-    <div class="px-4 py-5 sm:p-6">
-        <h1 class="text-3xl font-bold text-gray-900">Welcome to EduPortal</h1>
-        <p class="mt-2 text-sm text-gray-500">
-            A comprehensive management system for Students, Faculty, and Administrators.
+{% block title %}EduPortal | Beyond Management{% endblock %}
+
+{% block layout %}
+<style>
+    /* --- Base Variables --- */
+    :root {
+        --cursor-size: 20px;
+        --cursor-hover-size: 80px;
+    }
+    
+    body {
+        cursor: none; /* Hide default cursor */
+        background-color: #09090b !important; /* Zinc 950 Force */
+        color: #fff !important;
+        overflow-x: hidden;
+    }
+    
+    /* --- Custom Cursor --- */
+    #cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--cursor-size);
+        height: var(--cursor-size);
+        background: #fff;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: difference; /* Inverts color */
+        transition: width 0.3s, height 0.3s, transform 0.1s;
+        transform: translate(-50%, -50%);
+    }
+    #cursor.hovered {
+        width: var(--cursor-hover-size);
+        height: var(--cursor-hover-size);
+    }
+    
+    /* --- Typography & Text --- */
+    .text-stroke {
+        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+        color: transparent;
+    }
+    .text-stroke-hover:hover {
+        -webkit-text-stroke: 0px;
+        color: #fff;
+    }
+    
+    /* --- Marquee Animation --- */
+    .marquee-container {
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .marquee-content {
+        display: inline-block;
+        animation: marquee 20s linear infinite;
+    }
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    
+    /* --- Sticky Cards --- */
+    .sticky-card {
+        position: sticky;
+        top: 100px; /* Offset for stacking */
+        transition: transform 0.3s ease;
+    }
+    /* Staggered tops are handled via inline styles in loop or classes */
+    
+    /* --- Magnetic Button --- */
+    .magnetic-btn {
+        transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* --- Grain Overlay --- */
+    .grain {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9000;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+</style>
+
+<!-- Custom Cursor -->
+<div id="cursor"></div>
+<!-- Grain Texture -->
+<div class="grain"></div>
+
+<!-- --- HERO SECTION --- -->
+<section class="relative h-screen flex flex-col justify-center items-center overflow-hidden px-4">
+    <!-- Massive Background Text -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-10 select-none pointer-events-none">
+        <h1 class="text-[20vw] font-black leading-none text-white whitespace-nowrap">EDU PORTAL</h1>
+    </div>
+    
+    <div class="z-10 text-center max-w-4xl mx-auto space-y-8">
+        <h2 class="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-none mix-blend-difference hover-trigger text-white">
+            Future <br> Ready.
+        </h2>
+        <p class="text-xl md:text-2xl text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed">
+            The operating system for modern education. <br>
+            Designed for <span class="text-white font-bold">speed</span>, built for <span class="text-white font-bold">scale</span>.
         </p>
-        <div class="mt-5">
-            <a href="{{ url_for('auth.login') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Get Started
+        
+        <div class="flex justify-center gap-6 pt-8">
+            <a href="{{ url_for('auth.login') }}" class="magnetic-btn relative group px-10 py-5 bg-white text-black font-bold uppercase tracking-wider rounded-full overflow-hidden hover-trigger">
+                <span class="relative z-10 group-hover:text-white transition-colors duration-300">Enter System</span>
+                <div class="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+            </a>
+            <a href="#showcase" class="magnetic-btn px-10 py-5 border border-zinc-700 text-white font-bold uppercase tracking-wider rounded-full hover:bg-zinc-800 transition-all hover-trigger">
+                Explore
             </a>
         </div>
     </div>
-</div>
+    
+    <!-- Infinite Marquee -->
+    <div class="absolute bottom-10 w-full border-t border-b border-zinc-800 py-4 transform -rotate-2">
+        <div class="marquee-container bg-lime-400 text-black py-2">
+            <div class="marquee-content font-bold text-lg uppercase tracking-widest">
+                &nbsp; • ACADEMICS • MENTORSHIP • RESULTS • ATTENDANCE • GROWTH • ANALYTICS • ACADEMICS • MENTORSHIP • RESULTS • ATTENDANCE • GROWTH • ANALYTICS
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- --- STICKY SHOWCASE SECTION --- -->
+<section id="showcase" class="relative py-32 px-4 max-w-7xl mx-auto space-y-32">
+    
+    <div class="text-center mb-24">
+        <h3 class="text-zinc-500 font-medium uppercase tracking-[0.3em] text-sm mb-4">Core Modules</h3>
+        <p class="text-4xl md:text-5xl font-bold tracking-tight text-white">One Platform.<br>Infinite Possibilities.</p>
+    </div>
+
+    <!-- Card 1: Students -->
+    <div class="sticky-card bg-zinc-900 border border-zinc-800 rounded-[3rem] p-10 md:p-20 shadow-2xl overflow-hidden" style="top: 120px;">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <span class="inline-block px-4 py-1 rounded-full border border-lime-400/30 text-lime-400 text-xs font-bold uppercase tracking-wider">Student Focused</span>
+                <h4 class="text-5xl md:text-6xl font-black tracking-tighter hover-trigger text-white">Learn without<br>Limits.</h4>
+                <p class="text-zinc-400 text-lg">Real-time attendance tracking, dynamic timetables, and instant mentorship connection. Everything a student needs, one click away.</p>
+                <div class="pt-4">
+                    <ul class="space-y-3 text-zinc-300">
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-3"></span> Live Schedule Updates</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-3"></span> Digital Gradebook</li>
+                        <li class="flex items-center"><span class="w-2 h-2 bg-lime-400 rounded-full mr-3"></span> Direct Faculty Chat</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="relative h-[200px] md:h-[400px] bg-gradient-to-br from-lime-400/20 to-transparent rounded-2xl flex items-center justify-center border border-zinc-800">
+                <div class="text-9xl font-black text-white/5 select-none">01</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Faculty -->
+    <div class="sticky-card bg-[#111] border border-zinc-800 rounded-[3rem] p-10 md:p-20 shadow-2xl overflow-hidden" style="top: 160px; transform: rotate(-1deg);">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="order-2 md:order-1 relative h-[200px] md:h-[400px] bg-gradient-to-br from-purple-500/20 to-transparent rounded-2xl flex items-center justify-center border border-zinc-800">
+                <div class="text-9xl font-black text-white/5 select-none">02</div>
+            </div>
+            <div class="order-1 md:order-2 space-y-6">
+                 <span class="inline-block px-4 py-1 rounded-full border border-purple-400/30 text-purple-400 text-xs font-bold uppercase tracking-wider">Faculty Powered</span>
+                <h4 class="text-5xl md:text-6xl font-black tracking-tighter hover-trigger text-white">Teach with<br>Impact.</h4>
+                <p class="text-zinc-400 text-lg">Effortless batch management. Post notices, mark attendance in seconds, and track mentee performance with intuitive data dashboards.</p>
+                <div class="pt-4">
+                    <a href="#" class="text-purple-400 font-bold border-b border-purple-400 pb-1 hover:text-white hover:border-white transition-colors hover-trigger">Explore Tools &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Admin -->
+    <div class="sticky-card bg-zinc-950 border border-zinc-800 rounded-[3rem] p-10 md:p-20 shadow-2xl overflow-hidden" style="top: 200px; transform: rotate(1deg);">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                 <span class="inline-block px-4 py-1 rounded-full border border-blue-400/30 text-blue-400 text-xs font-bold uppercase tracking-wider">Admin Control</span>
+                <h4 class="text-5xl md:text-6xl font-black tracking-tighter hover-trigger text-white">Manage at<br>Scale.</h4>
+                <p class="text-zinc-400 text-lg">Complete oversight. Manage thousands of students, faculty records, fees, and global announcements from a single command center.</p>
+            </div>
+             <div class="relative h-[200px] md:h-[400px] bg-gradient-to-br from-blue-500/20 to-transparent rounded-2xl flex items-center justify-center border border-zinc-800">
+                <div class="text-9xl font-black text-white/5 select-none">03</div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<!-- --- FOOTER --- -->
+<footer class="py-24 border-t border-zinc-900 mt-32">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h2 class="text-[12vw] font-black leading-none text-zinc-900 hover:text-white transition-colors duration-500 cursor-default hover-trigger">
+            EDU PORTAL
+        </h2>
+        <div class="flex justify-center gap-8 mt-12 text-zinc-500 font-medium tracking-widest uppercase text-sm">
+            <a href="#" class="hover:text-white transition-colors hover-trigger">Instagram</a>
+            <a href="#" class="hover:text-white transition-colors hover-trigger">Twitter</a>
+            <a href="#" class="hover:text-white transition-colors hover-trigger">LinkedIn</a>
+            <a href="#" class="hover:text-white transition-colors hover-trigger">Github</a>
+        </div>
+        <div class="mt-12 text-zinc-700 text-xs">
+            © 2026 EduPortal. All Systems Normal.
+        </div>
+    </div>
+</footer>
+
+<script>
+    // --- Custom Cursor Logic ---
+    const cursor = document.getElementById('cursor');
+    const hoverTriggers = document.querySelectorAll('.hover-trigger');
+    
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+    
+    hoverTriggers.forEach(trigger => {
+        trigger.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+        trigger.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+    });
+    
+    // --- Magnetic Button Logic ---
+    const magneticBtns = document.querySelectorAll('.magnetic-btn');
+    
+    magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            
+            // Move button slightly towards mouse
+            btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate(0px, 0px)';
+        });
+    });
+</script>
 {% endblock %}
