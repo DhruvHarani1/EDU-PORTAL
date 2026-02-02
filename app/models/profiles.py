@@ -16,6 +16,10 @@ class StudentProfile(db.Model):
     guardian_name = db.Column(db.String(100), nullable=True)
     guardian_contact = db.Column(db.String(15), nullable=True)
     
+    # Mentor Relationship
+    mentor_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True)
+    mentor = db.relationship('FacultyProfile', backref=db.backref('mentees', lazy=True))
+
     # Relationship with User
     user = db.relationship('User', backref=db.backref('student_profile', uselist=False))
 

@@ -23,7 +23,9 @@ CREATE TABLE student_profile (
     address TEXT,
     guardian_name VARCHAR(100),
     guardian_contact VARCHAR(15),
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    mentor_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (mentor_id) REFERENCES faculty_profile (id)
 );
 
 -- Faculty Profile Schema
@@ -127,6 +129,7 @@ CREATE TABLE schedule_settings (
     slots_per_day INTEGER DEFAULT 8,
     days_per_week INTEGER DEFAULT 5
 );
+
 
 -- Exam Event Schema
 CREATE TABLE exam_event (

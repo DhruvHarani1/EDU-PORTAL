@@ -597,7 +597,12 @@ def marks():
 @faculty_bp.route('/mentorship')
 @login_required
 def mentorship():
-    return render_template('faculty/mentorship.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    # Mentees are available via backref 'mentees' from StudentProfile
+    # Or query explicit
+    mentees = StudentProfile.query.filter_by(mentor_id=faculty.id).all()
+    
+    return render_template('faculty/mentorship.html', mentees=mentees)
 
 @faculty_bp.route('/notices')
 @login_required

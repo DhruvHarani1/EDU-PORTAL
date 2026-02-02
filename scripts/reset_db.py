@@ -196,9 +196,12 @@ with app.app_context():
                 course_name='B.Tech',
                 semester=random.choice([1, 2, 3, 4, 5, 6, 7, 8]), 
                 batch_year=random.choice(['2024-2028', '2025-2029', '2023-2027', '2022-2026']),
+
                 phone_number=str(random.randint(7000000000, 9999999999)),
+                address='123 Main St',
                 guardian_name=f'Guardian of {enroll}',
-                guardian_contact=str(random.randint(7000000000, 9999999999))
+                guardian_contact=str(random.randint(7000000000, 9999999999)),
+                mentor_id=random.choice(faculty_profiles).id
             )
             db.session.add(sp)
             students.append(sp)

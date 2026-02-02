@@ -78,7 +78,8 @@ def add_student():
                 display_name=name,
                 enrollment_number=enrollment,
                 course_name=course,
-                semester=semester
+                semester=semester,
+                mentor_id=request.form.get('mentor_id')
             )
             db.session.add(student)
             db.session.commit()
@@ -88,7 +89,8 @@ def add_student():
             db.session.rollback()
             flash(f'Error adding student: {str(e)}', 'error')
 
-    return render_template('student_add.html')
+    faculty_list = FacultyProfile.query.all()
+    return render_template('student_add.html', faculty_list=faculty_list)
 
 @admin_bp.route('/students/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
