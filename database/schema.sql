@@ -101,6 +101,8 @@ CREATE TABLE syllabus (
     FOREIGN KEY (subject_id) REFERENCES subject (id)
 );
 
+
+
 -- Timetable Schema
 CREATE TABLE timetable (
     id SERIAL PRIMARY KEY,

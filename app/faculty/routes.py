@@ -3,7 +3,8 @@ from flask_login import login_required
 from datetime import datetime, date, timedelta
 from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile
 from flask_login import current_user, login_required
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, send_file
+import io
 from app.extensions import db
 from . import faculty_bp
 
@@ -435,10 +436,43 @@ def print_attendance_report():
         stats=stats
     )
 
-@faculty_bp.route('/material')
+@faculty_bp.route('/material', methods=['GET', 'POST'])
 @login_required
 def material():
-    return render_template('faculty/material.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    subjects = Subject.query.filter_by(faculty_id=faculty.id).all()
+    
+    if request.method == 'POST':
+        subj_id = request.form.get('subject_id')
+        link_url = request.form.get('resource_link')
+        
+        subject = Subject.query.get_or_404(subj_id)
+        
+        # Security: Ensure ownership
+        if subject.faculty_id != faculty.id:
+            flash('Unauthorized action.', 'error')
+            return redirect(url_for('faculty.material'))
+
+        if link_url:
+             # Basic validation
+            if not link_url.startswith(('http://', 'https://')):
+                link_url = 'https://' + link_url
+            subject.resource_link = link_url
+            db.session.commit()
+            flash(f'Resource link updated for {subject.name}.', 'success')
+        else:
+            # Clear link? Or error? Letting them clear it if empty
+            subject.resource_link = None
+            db.session.commit()
+            flash(f'Resource link removed for {subject.name}.', 'info')
+            
+        return redirect(url_for('faculty.material'))
+
+    return render_template('faculty/material.html', subjects=subjects)
+
+# Download route removed (Links are external)
+
+# Delete route removed (Managed via update)
 
 @faculty_bp.route('/marks')
 @login_required

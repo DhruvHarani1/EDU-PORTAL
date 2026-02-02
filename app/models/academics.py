@@ -58,6 +58,8 @@ class Syllabus(db.Model):
     def __repr__(self):
         return f'<Syllabus {self.filename} for Subject {self.subject_id}>'
 
+
+
 class Timetable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_name = db.Column(db.String(100), nullable=False)
