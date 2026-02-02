@@ -63,6 +63,7 @@ class Timetable(db.Model):
     period_number = db.Column(db.Integer, nullable=False) # 1, 2, ...
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=False)
+    room_number = db.Column(db.String(20), default='Room 101') # Added Room
     
     # Relationship
     subject = db.relationship('Subject', backref=db.backref('timetable_slots', lazy=True))

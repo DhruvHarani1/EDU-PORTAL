@@ -106,6 +106,7 @@ CREATE TABLE timetable (
     period_number INTEGER NOT NULL,
     subject_id INTEGER NOT NULL,
     faculty_id INTEGER NOT NULL, 
+    room_number VARCHAR(20) DEFAULT 'Room 101',
     FOREIGN KEY (subject_id) REFERENCES subject (id),
     FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
 );

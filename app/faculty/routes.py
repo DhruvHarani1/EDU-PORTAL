@@ -77,7 +77,7 @@ def query_chat(query_id):
 
 # --- New Faculty Routes Placeholders ---
 
-from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile, Timetable
 from werkzeug.utils import secure_filename
 
 # ... (existing imports)
@@ -192,7 +192,50 @@ def notices():
 @faculty_bp.route('/schedule')
 @login_required
 def schedule():
-    return render_template('faculty/schedule.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Get current day
+    today_name = datetime.utcnow().strftime('%A') # e.g. "Monday"
+    # For Demo purposes, if it's Sunday, show Monday's schedule so the user sees something
+    if today_name == 'Sunday':
+        today_name = 'Monday' # Demo fallback
+        flash('Showing Monday Schedule (Weekend Override)', 'info')
+
+    slots = Timetable.query.filter_by(
+        faculty_id=faculty.id, 
+        day_of_week=today_name
+    ).order_by(Timetable.period_number).all()
+    
+    schedule_data = []
+    current_time = datetime.utcnow().time() # UTC time, might need offset for display logic
+    
+    # Base Time: 9:00 AM
+    base_hour = 9 
+    
+    for slot in slots:
+        # Calculate Time
+        start_h = base_hour + (slot.period_number - 1)
+        end_h = start_h + 1
+        
+        # Format "9:00 - 10:00 AM"
+        t_str = f"{start_h if start_h <= 12 else start_h-12}:00 - {end_h if end_h <= 12 else end_h-12}:00 {'AM' if start_h < 12 else 'PM'}"
+        
+        # Student Count
+        count = StudentProfile.query.filter_by(
+            course_name=slot.course_name,
+            semester=slot.semester
+        ).count()
+        
+        schedule_data.append({
+            'time_str': t_str,
+            'subject': slot.subject.name,
+            'course_detail': f"{slot.course_name} • Sem {slot.semester}",
+            'room': slot.room_number,
+            'student_count': count,
+            'attendance_marked': False # Placeholder logic
+        })
+        
+    return render_template('faculty/schedule.html', schedule=schedule_data, day_name=today_name)
 
 @faculty_bp.route('/timetable')
 @login_required

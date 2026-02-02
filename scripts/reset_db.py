@@ -9,6 +9,14 @@ from app.models import User, StudentProfile, FacultyProfile, Notice, Subject, Ti
 
 app = create_app('development')
 
+def get_random_names(count):
+    first_names = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen"]
+    last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia", "Martinez", "Robinson"]
+    names = []
+    for _ in range(count):
+        names.append(f"{random.choice(first_names)} {random.choice(last_names)}")
+    return names
+
 with app.app_context():
     try:
         print("Dropping all tables...")
@@ -16,332 +24,210 @@ with app.app_context():
         print("Creating all tables...")
         db.create_all()
         
-        print("1. Creating Users...")
-        # Admin
+        # --- 1. Admin ---
+        print("1. Creating Admin...")
         admin = User(email='admin@edu.com', role='admin')
         admin.set_password('password')
+        db.session.add(admin)
+
+        # --- 2. Faculty (5 Members) ---
+        print("2. Creating Faculty...")
+        faculty_users = []
+        faculty_profiles = []
+        dept_list = ['Computer Science', 'Electronics', 'Mathematics', 'Humanities', 'Mechanical']
         
-        # Faculty
-        fac1 = User(email='faculty@edu.com', role='faculty')
-        fac1.set_password('password')
+        # Default Faculty for Login
+        f_def = User(email='faculty@edu.com', role='faculty')
+        f_def.set_password('password')
+        db.session.add(f_def)
+        db.session.flush()
         
-        # Student
-        stu1 = User(email='student@edu.com', role='student')
-        stu1.set_password('password')
-        
-        db.session.add_all([admin, fac1, stu1])
+        fp_def = FacultyProfile(user_id=f_def.id, display_name='Prof. Default', designation='Professor', department='Computer Science')
+        db.session.add(fp_def)
+        faculty_profiles.append(fp_def)
+
+        for i in range(1, 5):
+            u = User(email=f'faculty{i}@edu.com', role='faculty')
+            u.set_password('password')
+            db.session.add(u)
+            faculty_users.append(u)
         db.session.flush()
 
-        print("2. Creating Profiles...")
-        # Faculty Profile
-        fp1 = FacultyProfile(user_id=fac1.id, display_name='Dr. Smith', designation='Professor', department='CS')
-        db.session.add(fp1)
+        for i, user in enumerate(faculty_users):
+            fp = FacultyProfile(
+                user_id=user.id,
+                display_name=f'Prof. {get_random_names(1)[0]}',
+                designation=random.choice(['Assistant Professor', 'Associate Professor', 'Professor']),
+                department=dept_list[i]
+            )
+            db.session.add(fp)
+            faculty_profiles.append(fp)
         db.session.flush()
 
-        # Student Profile
-        sp1 = StudentProfile(
-            user_id=stu1.id, 
-            display_name='John Doe', 
-            enrollment_number='STU001', 
-            course_name='B.Tech', 
-            semester=1,
-            date_of_birth=date(2003, 5, 15),
-            batch_year='2025-2029',
-            phone_number='9876543210',
-            address='123, Campus Road, University City',
-            guardian_name='Robert Doe',
-            guardian_contact='9988776655'
-        )
-        db.session.add(sp1)
-        db.session.flush()
-
-        print("3. Creating Subjects (B.Tech Sem 1)...")
-        # 5 Subjects with Notes Links
-        s1 = Subject(name='Mathematics-I', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4, resource_link='https://drive.google.com/drive/folders/maths1-dummy')
-        s2 = Subject(name='Physics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=3, resource_link='https://drive.google.com/drive/folders/phy-dummy')
-        s3 = Subject(name='Programming in C', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=4, resource_link='https://drive.google.com/drive/folders/cprog-dummy')
-        s4 = Subject(name='Engineering Graphics', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2, resource_link='https://drive.google.com/drive/folders/graphics-dummy')
-        s5 = Subject(name='Communication Skills', course_name='B.Tech', semester=1, faculty_id=fp1.id, weekly_lectures=2, resource_link='https://drive.google.com/drive/folders/comm-dummy')
-        
-        db.session.add_all([s1, s2, s3, s4, s5])
-        db.session.flush()
-
-        print("4. Creating Timetable...")
-        # Mon: Math, Phy
-        # Tue: Prog, Graph
-        # Wed: Math, Comm
-        # Thu: Phy, Prog
-        # Fri: Math, Prog
-        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-        tt_entries = [
-            (s1, 'Mon', 1), (s2, 'Mon', 2),
-            (s3, 'Tue', 1), (s4, 'Tue', 2),
-            (s1, 'Wed', 1), (s5, 'Wed', 2),
-            (s2, 'Thu', 1), (s3, 'Thu', 2),
-            (s1, 'Fri', 1), (s3, 'Fri', 2)
+        # --- 3. Subjects ---
+        print("3. Creating Subjects...")
+        subjects = []
+        subject_names = [
+            # CSE
+            ('Data Structures', 'CS'), ('Algorithms', 'CS'), ('OS', 'CS'), ('DBMS', 'CS'), ('Networks', 'CS'),
+            # ECE
+            ('Digital Electronics', 'EC'), ('Signals', 'EC'), ('Microprocessors', 'EC'),
+            # Math
+            ('Calculus', 'Math'), ('Linear Algebra', 'Math'), ('Statistics', 'Math'),
+            # Other
+            ('English', 'Hum'), ('Economics', 'Hum'), ('Thermodynamics', 'Mech')
         ]
         
-        for sub, day, period in tt_entries:
-            t = Timetable(
-                course_name='B.Tech', semester=1, day_of_week=day, period_number=period,
-                subject_id=sub.id, faculty_id=fp1.id
-            )
-            db.session.add(t)
-        db.session.flush()
-
-        print("5. Simulating Attendance (Last 60 Days)...")
-        start_date = date.today() - timedelta(days=60)
-        
-        for i in range(60):
-            current_date = start_date + timedelta(days=i)
-            day_idx = current_date.weekday() # 0=Mon, 6=Sun
-            
-            if day_idx > 4: continue # Skip Weekends
-            
-            # Attendance Logic to create variety
-            # Math (Mon, Wed, Fri) -> High Attendance
-            # Physics (Mon, Thu) -> Medium
-            # Programming (Tue, Thu, Fri) -> LOW Attendance (Critical)
-            
-            status = 'Present'
-            
-            # Randomization with Bias
-            chance = random.random()
-            
-            # If Mon/Wed/Fri (Math days mainly), he attends 90%
-            if day_idx in [0, 2, 4]:
-                if chance > 0.9: status = 'Absent'
-            
-            # If Thu (Physics/Prog), he skips often (60% attendance)
-            elif day_idx == 3:
-                if chance > 0.6: status = 'Absent'
-                
-            # If Tue (Prog/Graphics), he skips very often (40% attendance)
-            elif day_idx == 1:
-                if chance > 0.4: status = 'Absent'
-
-            att = Attendance(
-                student_id=sp1.id,
+        for name, dept in subject_names:
+            # Assign random faculty from same dept roughly, but here random is fine
+            fac = random.choice(faculty_profiles)
+            sub = Subject(
+                name=name,
                 course_name='B.Tech',
-                date=current_date,
-                status=status
+                semester=random.choice([1, 2, 3, 4, 5, 6]),
+                faculty_id=fac.id,
+                weekly_lectures=random.randint(2, 5),
+                credits=random.randint(2, 4),
+                resource_link='https://google.com'
             )
-            db.session.add(att)
+            db.session.add(sub)
+            subjects.append(sub)
+        db.session.flush()
 
-        # Add Notices
-        n1 = Notice(title='Welcome to New Semester', content='We are excited to begin the new academic session. Attendance is mandatory from Day 1.', category='university')
-        n2 = Notice(title='Mid-Semester Exam Schedule', content='The mid-semester exams will commence from 15th next month. Please check the Exam section for the detailed timetable.', category='exam')
-        n3 = Notice(title='Library Holiday', content='The central library will remain closed this Sunday for maintenance.', category='general')
-        n4 = Notice(title='Fee Payment Deadline', content='Last date to pay the semester fee is 30th of this month. Late fees will apply thereafter.', category='admin')
+        # --- 4. Students (50 Students) ---
+        print("4. Creating 50 Students...")
+        students = []
         
-        db.session.add_all([n1, n2, n3, n4])
+        # Default Student
+        s_def = User(email='student@edu.com', role='student')
+        s_def.set_password('password')
+        db.session.add(s_def)
         db.session.flush()
-
-        # --- University Events ---
-        print("5.5 Creating Events...")
         
-        # Helper to read image bytes
-        DEFAULT_ARTIFACT_PATH = r"C:\Users\TEST\.gemini\antigravity\brain\ea4b25ed-125c-45de-b3a1-50f6629eceb7"
-        
-        def get_image_data(filename):
-            try:
-                path = os.path.join(DEFAULT_ARTIFACT_PATH, filename)
-                with open(path, 'rb') as f:
-                    return f.read()
-            except Exception as e:
-                print(f"Warning: Could not read image {filename}: {e}")
-                return None
-
-        ev1 = UniversityEvent(
-            title='TechNova 2026',
-            description='Annual Technical Symposium featuring Hackathons, Robotics workshops, and AI seminars.',
-            date=start_date + timedelta(days=10),
-            time=datetime.strptime('09:00', '%H:%M').time(),
-            location='Main Auditorium',
-            category='Tech',
-            image_data=get_image_data('event_tech_symposium_1769855435285.png'),
-            image_mimetype='image/png'
+        sp_def = StudentProfile(
+            user_id=s_def.id,
+            display_name='John Doe',
+            enrollment_number='STU001',
+            course_name='B.Tech',
+            semester=3, # Matches some subjects
+            batch_year='2025-2029',
+            phone_number='9999999999',
+            address='123 Main St',
+            guardian_name='Mr. Doe',
+            guardian_contact='8888888888'
         )
-        ev2 = UniversityEvent(
-            title='Inter-College Cricket Tournament',
-            description='The biggest sports showdown of the year.',
-            date=start_date + timedelta(days=15),
-            time=datetime.strptime('14:00', '%H:%M').time(),
-            location='University Stadium',
-            category='Sports',
-            image_data=get_image_data('event_sports_tournament_1769855453905.png'),
-            image_mimetype='image/png'
-        )
-        ev3 = UniversityEvent(
-            title='Cultural Night: Rhythm 2026',
-            description='A night of music, dance, and drama.',
-            date=start_date + timedelta(days=25),
-            time=datetime.strptime('18:00', '%H:%M').time(),
-            location='Open Air Theatre',
-            category='Cultural',
-            image_data=get_image_data('event_cultural_night_1769855474733.png'),
-            image_mimetype='image/png'
-        )
-        db.session.add_all([ev1, ev2, ev3])
-        db.session.flush()
+        db.session.add(sp_def)
+        students.append(sp_def)
 
-        db.session.add_all([ev1, ev2, ev3])
-        db.session.flush()
-
-        # --- Fee Records ---
-        print("5.8 Creating Fee Records...")
-        # Sem 1: Paid
-        fee1 = FeeRecord(
-            student_id=sp1.id,
-            semester=1,
-            academic_year='2025-2026',
-            amount_due=50000.0,
-            amount_paid=50000.0,
-            due_date=date(2025, 8, 15),
-            status='Paid',
-            payment_date=datetime(2025, 8, 10, 10, 30),
-            payment_mode='Online',
-            transaction_reference='TXN123456789'
-        )
-        # Sem 2: Pending
-        fee2 = FeeRecord(
-            student_id=sp1.id,
-            semester=2,
-            academic_year='2025-2026',
-            amount_due=50000.0,
-            amount_paid=0.0,
-            due_date=date(2026, 1, 30),
-            status='Pending'
-        )
-        db.session.add_all([fee1, fee2])
-        db.session.flush()
-
-        db.session.add_all([fee1, fee2])
-        db.session.flush()
-
-        # --- Support Queries ---
-        print("5.9 Creating Support Queries...")
-        q1 = StudentQuery(
-            student_id=sp1.id,
-            faculty_id=fp1.id, # Alice Smith
-            subject_id=s2.id, # Physics
-            title='Clarification on Quantum Mechanics',
-            status='Answered'
-        )
-        db.session.add(q1)
-        db.session.flush()
-
-        # Seed Image Logic
-        img_path = os.path.join(app.root_path, 'static', 'uploads', 'faculty', '133881789213445879.jpg')
-        img_data = None
-        if os.path.exists(img_path):
-            with open(img_path, 'rb') as f:
-                img_data = f.read()
-
-        qm1 = QueryMessage(query_id=q1.id, sender_type='student', content='Prof, I have a doubt regarding the Wave function topic discussed today.')
-        
-        # Attach image to first message if found
-        if img_data:
-            qm1.image_data = img_data
-            qm1.image_mimetype = 'image/jpeg'
+        for i in range(2, 51):
+            u = User(email=f'student{i}@edu.com', role='student')
+            u.set_password('password')
+            db.session.add(u)
+            db.session.flush()
             
-        qm2 = QueryMessage(query_id=q1.id, sender_type='faculty', content='Sure, please specify which part exactly you did not understand.')
-        db.session.add_all([qm1, qm2])
-        db.session.flush()
-
-        # --- Semester 1 Exams ---
-        print("6. Simulating Sem 1 Exams...")
-        exam_event = ExamEvent(
-            name='Winter Semester End Exams 2025',
-            academic_year='2025-2026',
-            course_name='B.Tech',
-            semester=1,
-            start_date=start_date + timedelta(days=50),
-            end_date=start_date + timedelta(days=60),
-            is_published=True
-        )
-        db.session.add(exam_event)
-        db.session.flush()
-
-        papers = []
-        # Reuse S1-S5
-        for i, sub in enumerate([s1, s2, s3, s4, s5]):
-            paper = ExamPaper(
-                exam_event_id=exam_event.id,
-                subject_id=sub.id,
-                date=exam_event.start_date + timedelta(days=i*2),
-                start_time=datetime.strptime('10:00', '%H:%M').time(),
-                end_time=datetime.strptime('13:00', '%H:%M').time(),
-                total_marks=100
+            enroll = f"STU{i:03d}"
+            sp = StudentProfile(
+                user_id=u.id,
+                display_name=get_random_names(1)[0],
+                enrollment_number=enroll,
+                course_name='B.Tech',
+                semester=random.choice([1, 2, 3, 4]),
+                batch_year=random.choice(['2024-2028', '2025-2029', '2023-2027']),
+                phone_number=str(random.randint(7000000000, 9999999999)),
+                guardian_name=f'Guardian of {enroll}',
+                guardian_contact=str(random.randint(7000000000, 9999999999))
             )
-            db.session.add(paper)
-            papers.append(paper)
+            db.session.add(sp)
+            students.append(sp)
         db.session.flush()
 
-        # Sem 1 Results
-        marks_data = [92, 78, 88, 85, 90]
-        for i, paper in enumerate(papers):
-            res = StudentResult(
-                exam_paper_id=paper.id,
-                student_id=sp1.id,
-                marks_obtained=marks_data[i],
-                status='Present',
-                is_fail=False
-            )
-            db.session.add(res)
+        # --- 5. Timetable ---
+        print("5. Creating Timetables...")
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        for fac in faculty_profiles:
+            # Each faculty teaches 2-4 slots per day
+            fac_subs = Subject.query.filter_by(faculty_id=fac.id).all()
+            if not fac_subs: continue
+            
+            for day in days:
+                slots = random.sample(range(1, 8), random.randint(2, 5)) # Slots 1-8
+                for slot_num in slots:
+                    sub = random.choice(fac_subs)
+                    tt = Timetable(
+                        course_name=sub.course_name,
+                        semester=sub.semester,
+                        day_of_week=day,
+                        period_number=slot_num,
+                        subject_id=sub.id,
+                        faculty_id=fac.id,
+                        room_number=f"Room {random.randint(101, 305)}"
+                    )
+                    db.session.add(tt)
+        db.session.flush()
 
-        # --- Semester 2 Exams ---
-        print("7. Simulating Sem 2 Exams...")
+        # --- 6. Attendance (Last 30 Days) ---
+        print("6. Creating Attendance Records...")
+        start_date = date.today() - timedelta(days=30)
+        attendance_opts = ['Present', 'Present', 'Present', 'Absent'] # 75% bias
         
-        # Create Sem 2 Subjects
-        s6 = Subject(name='Data Structures', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=4)
-        s7 = Subject(name='Digital Electronics', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=3)
-        s8 = Subject(name='Discrete Math', course_name='B.Tech', semester=2, faculty_id=fp1.id, weekly_lectures=3)
-        db.session.add_all([s6, s7, s8])
+        for i in range(30):
+            curr = start_date + timedelta(days=i)
+            if curr.weekday() > 4: continue # Skip weekend
+            
+            for stu in students:
+                # Randomly assign attendance for 1-2 subjects per day
+                daily_status = random.choice(attendance_opts)
+                # Pick a random subject they might have
+                # Simply logging generic attendance for demo
+                att = Attendance(
+                    student_id=stu.id,
+                    course_name='B.Tech',
+                    date=curr,
+                    status=daily_status
+                )
+                db.session.add(att)
         db.session.flush()
 
-        exam_event_2 = ExamEvent(
-            name='Summer Semester End Exams 2026',
-            academic_year='2025-2026',
-            course_name='B.Tech',
-            semester=2,
-            start_date=start_date + timedelta(days=200),
-            end_date=start_date + timedelta(days=210),
-            is_published=True
-        )
-        db.session.add(exam_event_2)
-        db.session.flush()
-
-        papers_2 = []
-        for i, sub in enumerate([s6, s7, s8]):
-            paper = ExamPaper(
-                exam_event_id=exam_event_2.id,
-                subject_id=sub.id,
-                date=exam_event_2.start_date + timedelta(days=i*2),
-                start_time=datetime.strptime('10:00', '%H:%M').time(),
-                end_time=datetime.strptime('13:00', '%H:%M').time(),
-                total_marks=100
+        # --- 7. Fee Records ---
+        print("7. Creating Fee Records...")
+        for stu in students:
+            # Sem 1 Paid
+            f1 = FeeRecord(
+                student_id=stu.id, semester=1, academic_year='2024-2025',
+                amount_due=50000, amount_paid=50000, status='Paid', due_date=date(2024, 8, 1)
             )
-            db.session.add(paper)
-            papers_2.append(paper)
+            # Sem 2 Mixed
+            status = random.choice(['Paid', 'Pending', 'Partial'])
+            paid = 50000 if status == 'Paid' else (25000 if status == 'Partial' else 0)
+            f2 = FeeRecord(
+                student_id=stu.id, semester=2, academic_year='2025-2026',
+                amount_due=50000, amount_paid=paid, status=status, due_date=date(2025, 1, 15)
+            )
+            db.session.add_all([f1, f2])
         db.session.flush()
 
-        # Sem 2 Results
-        marks_data_2 = [85, 88, 95] 
-        for i, paper in enumerate(papers_2):
-            res = StudentResult(
-                exam_paper_id=paper.id,
-                student_id=sp1.id,
-                marks_obtained=marks_data_2[i],
-                status='Present',
-                is_fail=False
-            )
-            db.session.add(res)
+        # --- 8. Notices ---
+        print("8. Creating Notices...")
+        notice_titles = [
+            ('Exam Schedule Released', 'exam'),
+            ('Holiday Announcement', 'general'),
+            ('Tech Fest Registration', 'event'),
+            ('Library Due Date', 'admin'),
+            ('Guest Lecture on AI', 'academic')
+        ]
+        for t, cat in notice_titles:
+            n = Notice(title=t, content=f"This is a detail content for {t}.", category=cat)
+            db.session.add(n)
+        db.session.flush()
 
         db.session.commit()
-        print("Seed Complete!")
-        print("Student Credentials: student@edu.com / password")
-
+        print("--- SEEDING COMPLETE ---")
+        print("Admin: admin@edu.com")
+        print("Faculty: faculty@edu.com (and faculty1..4)")
+        print("Student: student@edu.com (and student2..50)")
+        
     except Exception as e:
+        print(f"Error seeding: {e}")
+        import traceback
+        traceback.print_exc()
         db.session.rollback()
-        print(f"Error: {e}")
