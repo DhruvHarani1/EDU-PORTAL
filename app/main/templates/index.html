@@ -58,9 +58,17 @@
         display: inline-block;
         animation: marquee 20s linear infinite;
     }
+    .marquee-content-reverse {
+        display: inline-block;
+        animation: marqueeReverse 20s linear infinite;
+    }
     @keyframes marquee {
         0% { transform: translateX(0); }
         100% { transform: translateX(-50%); }
+    }
+    @keyframes marqueeReverse {
+        0% { transform: translateX(-50%); }
+        100% { transform: translateX(0); }
     }
 
     .marquee-container-slow {
@@ -242,107 +250,142 @@
     </div>
 </section>
 
-<!-- --- NETWORK ACTIVITY (REPLACING PULSE) --- -->
-<section class="py-32 overflow-hidden border-t border-zinc-800 bg-[#050505] relative">
+<!-- --- SYSTEM CLOUD (TESTIMONIALS V4) --- -->
+<section class="py-32 overflow-hidden border-t border-zinc-900 bg-[#050505] relative">
     
     <!-- Background Grid -->
     <div class="background-grid absolute inset-0"></div>
     
-    <div class="px-4 mb-20 flex items-end justify-between max-w-7xl mx-auto relative z-10">
-        <div>
-            <h2 class="text-sm font-bold text-lime-400 uppercase tracking-[0.2em] mb-4 font-mono shadow-lime-500/50 drop-shadow-sm">:: SYSTEM_FEEDBACK</h2>
-            <h3 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight">
-                Operating at <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-400">Peak Performance.</span>
-            </h3>
-        </div>
+    <div class="text-center mb-20 relative z-10 px-4">
+         <h2 class="text-xs font-bold text-lime-400 uppercase tracking-widest mb-4 font-mono">:: GLOBAL_SYNC</h2>
+        <h3 class="text-5xl md:text-8xl font-black text-white tracking-tighter leading-tight">
+            The Knowledge <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-400">Cloud.</span>
+        </h3>
     </div>
-    
-    <!-- Horizontal Scroller -->
-    <div class="marquee-container relative z-10">
-        <div class="marquee-content space-x-8 py-4">
-            
-            <!-- Card 1 -->
-            <div class="inline-block w-[450px] whitespace-normal bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-lime-500/50 transition-colors duration-500">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-12 h-12 text-lime-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
-                </div>
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="https://ui-avatars.com/api/?name=IIT+Delhi&background=84cc16&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
-                    <div>
-                        <div class="text-white font-bold text-lg">IIT Delhi</div>
-                        <div class="text-lime-400 text-xs font-mono uppercase">Engineering Dept</div>
-                    </div>
-                </div>
-                <div class="text-3xl font-black text-white mb-4">"Efficiency Up 400%"</div>
-                <p class="text-zinc-400 text-base leading-relaxed">"The attendance module alone saved our faculty 150+ hours this semester. It's not just software; it's a productivity multiplier."</p>
-            </div>
 
-            <!-- Card 2 -->
-             <div class="inline-block w-[450px] whitespace-normal bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-purple-500/50 transition-colors duration-500">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-12 h-12 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                </div>
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="https://ui-avatars.com/api/?name=IIM+A&background=a855f7&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
-                    <div>
-                        <div class="text-white font-bold text-lg">IIM Ahmedabad</div>
-                        <div class="text-purple-400 text-xs font-mono uppercase">Management</div>
+    <!-- Container for the 'Cloud' of cards -->
+    <div class="space-y-8 relative z-10 -rotate-1 scale-105">
+        
+        <!-- Row 1: Left Scroll (Fast) -->
+        <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
+            <div class="marquee-content space-x-6 py-2">
+                <!-- Card 1.1 -->
+                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center font-bold text-xs">ID</div>
+                        <div class="text-white font-bold text-sm">IIT Delhi</div>
                     </div>
+                    <div class="text-zinc-400 text-sm">"System latency reduced by 98%. It's instantaneous."</div>
                 </div>
-                <div class="text-3xl font-black text-white mb-4">"Zero Latency."</div>
-                <p class="text-zinc-400 text-base leading-relaxed">"Onboarding 500 new students took minutes, not days. The mentorship dashboard is the cleanest we've ever used."</p>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="inline-block w-[450px] whitespace-normal bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-blue-500/50 transition-colors duration-500">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-                </div>
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="https://ui-avatars.com/api/?name=NIFT&background=3b82f6&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
-                    <div>
-                        <div class="text-white font-bold text-lg">NIFT Mumbai</div>
-                        <div class="text-blue-400 text-xs font-mono uppercase">Design & Arts</div>
+                 <!-- Card 1.2 -->
+                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">IA</div>
+                        <div class="text-white font-bold text-sm">IIM Ahmedabad</div>
                     </div>
+                    <div class="text-zinc-400 text-sm">"The Faculty Dashboard is a masterpiece of UX."</div>
                 </div>
-                <div class="text-3xl font-black text-white mb-4">"Finally, UI that Works."</div>
-                <p class="text-zinc-400 text-base leading-relaxed">"Our previous system was a spreadsheet nightmare. EduPortal feels like using a modern app interaction on iOS."</p>
-            </div>
-            
-             <!-- Card 4 -->
-            <div class="inline-block w-[450px] whitespace-normal bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-amber-500/50 transition-colors duration-500">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-12 h-12 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                </div>
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="https://ui-avatars.com/api/?name=BITS&background=f59e0b&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
-                    <div>
-                        <div class="text-white font-bold text-lg">BITS Pilani</div>
-                        <div class="text-amber-400 text-xs font-mono uppercase">Administration</div>
+                <!-- Card 1.3 -->
+                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">NM</div>
+                        <div class="text-white font-bold text-sm">NMIMS</div>
                     </div>
+                    <div class="text-zinc-400 text-sm">"Student engagement metrics are up 40% since deployment."</div>
                 </div>
-                <div class="text-3xl font-black text-white mb-4">"Total Oversight."</div>
-                <p class="text-zinc-400 text-base leading-relaxed">"I have a pulse on the entire campus from my phone. Fees, attendance, notices—it's all synchronized perfectly."</p>
-            </div>
-
-            <!-- Duplicate for Infinity (Card 1) -->
-            <div class="inline-block w-[450px] whitespace-normal bg-zinc-900 border border-zinc-700/50 p-10 rounded-3xl relative group overflow-hidden hover:border-lime-500/50 transition-colors duration-500">
-                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-12 h-12 text-lime-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
-                </div>
-                <div class="flex items-center gap-4 mb-8">
-                    <img src="https://ui-avatars.com/api/?name=IIT+Delhi&background=84cc16&color=fff" class="w-12 h-12 rounded-full border-2 border-zinc-800" alt="Logo">
-                    <div>
-                        <div class="text-white font-bold text-lg">IIT Delhi</div>
-                        <div class="text-lime-400 text-xs font-mono uppercase">Engineering Dept</div>
+                 <!-- Card 1.4 -->
+                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">BP</div>
+                        <div class="text-white font-bold text-sm">BITS Pilani</div>
                     </div>
+                    <div class="text-zinc-400 text-sm">"Managing 5000+ students with zero downtime."</div>
                 </div>
-                <div class="text-3xl font-black text-white mb-4">"Efficiency Up 400%"</div>
-                <p class="text-zinc-400 text-base leading-relaxed">"The attendance module alone saved our faculty 150+ hours this semester. It's not just software; it's a productivity multiplier."</p>
+                 <!-- Duplicate 1.1 -->
+                <div class="inline-block w-[350px] whitespace-normal bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center font-bold text-xs">ID</div>
+                        <div class="text-white font-bold text-sm">IIT Delhi</div>
+                    </div>
+                    <div class="text-zinc-400 text-sm">"System latency reduced by 98%. It's instantaneous."</div>
+                </div>
             </div>
-
         </div>
+
+        <!-- Row 2: Right Scroll (Slow) -->
+        <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
+            <div class="marquee-content-reverse space-x-6 py-2" style="animation: marqueeReverse 40s linear infinite;">
+                <!-- Card 2.1 -->
+                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=MIT&background=000&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">MIT Media Lab (Partner)</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"A Kinetic Interface."</div>
+                    <div class="text-zinc-500 text-xs">"The magnetic interactions feel incredibly natural."</div>
+                </div>
+                <!-- Card 2.2 -->
+                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-purple-900/10">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=Y+C&background=f0652f&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">Y Combinator</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"The Standard for EdTech."</div>
+                    <div class="text-zinc-500 text-xs">"Setting a new benchmark for university software."</div>
+                </div>
+                 <!-- Card 2.3 -->
+                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-blue-900/10">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=S+U&background=b91c1c&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">Stanford University</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"Data Visibility: 100%"</div>
+                    <div class="text-zinc-500 text-xs">"We can finally track cross-departmental attendance."</div>
+                </div>
+                 <!-- Duplicate 2.1 -->
+                 <div class="inline-block w-[400px] whitespace-normal bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-lg shadow-lime-900/10">
+                    <div class="flex items-center gap-3 mb-4">
+                         <img src="https://ui-avatars.com/api/?name=MIT&background=000&color=fff" class="w-8 h-8 rounded-full" alt="Icon">
+                        <div class="text-white font-bold text-sm">MIT Media Lab (Partner)</div>
+                    </div>
+                    <div class="text-white font-bold text-lg mb-1">"A Kinetic Interface."</div>
+                    <div class="text-zinc-500 text-xs">"The magnetic interactions feel incredibly natural."</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Left Scroll (Medium) -->
+        <div class="marquee-container opacity-90 hover:opacity-100 transition-opacity">
+            <div class="marquee-content space-x-6 py-2" style="animation-duration: 30s;">
+                <!-- Card 3.1 -->
+                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                     <div class="text-lime-400 font-mono text-xs mb-2">:: DEPLOYMENT_SUCCESS</div>
+                     <div class="text-zinc-300 text-sm">"Rolled out to 15,000 students in 48 hours."</div>
+                </div>
+                 <!-- Card 3.2 -->
+                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                     <div class="text-purple-400 font-mono text-xs mb-2">:: SECURITY_AUDIT</div>
+                     <div class="text-zinc-300 text-sm">"Penetration testing passed with zero vulnerabilities."</div>
+                </div>
+                 <!-- Card 3.3 -->
+                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                     <div class="text-blue-400 font-mono text-xs mb-2">:: API_INTEGRATION</div>
+                     <div class="text-zinc-300 text-sm">"Seamlessly connected with our legacy Oracle DB."</div>
+                </div>
+                 <!-- Card 3.4 -->
+                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                     <div class="text-amber-400 font-mono text-xs mb-2">:: COST_SAVINGS</div>
+                     <div class="text-zinc-300 text-sm">"Reduced administrative overhead by $500k/year."</div>
+                </div>
+                 <!-- Duplicate 3.1 -->
+                <div class="inline-block w-[300px] whitespace-normal bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm hover:bg-zinc-800 transition-colors">
+                     <div class="text-lime-400 font-mono text-xs mb-2">:: DEPLOYMENT_SUCCESS</div>
+                     <div class="text-zinc-300 text-sm">"Rolled out to 15,000 students in 48 hours."</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 
