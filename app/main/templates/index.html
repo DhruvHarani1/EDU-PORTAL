@@ -460,7 +460,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
             
-            <!-- 1. Neural Core (Large 2x2) -->
+            <!-- 1. Predictive Retention (Large 2x2) -->
             <div class="col-span-1 md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-8 flex flex-col justify-between group hover:border-lime-500/50 transition-colors duration-500 relative overflow-hidden">
                 <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
                 <!-- Animated Background Scan -->
@@ -468,40 +468,41 @@
                 
                 <div class="relative z-10">
                     <div class="w-12 h-12 rounded-full bg-lime-500/10 flex items-center justify-center mb-6 text-lime-400">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     </div>
-                    <h3 class="text-3xl font-bold text-white mb-2">Neural Core Engine</h3>
-                    <p class="text-zinc-400">Our proprietary AI algorithm predicts student performance drop-offs 3 weeks before they happen.</p>
+                    <h3 class="text-3xl font-bold text-white mb-2">Predictive Retention</h3>
+                    <p class="text-zinc-400">Analyzing 1.2M+ attendance records to flag at-risk students before they fall behind.</p>
                 </div>
                 
                 <!-- Visualization -->
                 <div class="relative z-10 mt-8 h-48 bg-black/50 rounded-xl border border-zinc-800/50 p-4 font-mono text-xs text-lime-400 overflow-hidden">
                     <div class="opacity-50">
-                        > initializing_neural_net...<br>
-                        > loading_weights [98%]<br>
-                        > predicting_outcomes...<br>
+                        > ACCESSING_DB: 'attendance_logs_2025'<br>
+                        > PROCESSING: 8,420 records...<br>
+                        > PATTERN_MATCH: 3 Consecutive Absences<br>
                     </div>
                     <div class="mt-2 text-white font-bold">
-                        > ALERT: Student #4928 risk_level increased to 84%<br>
-                        > ACTION: Notify Faculty Advisor<br>
-                        > STATUS: Sent.
+                        > DETECTED: Student ID #2024-CS-092<br>
+                        > RISK_SCORE: High (87%)<br>
+                        > AUTO_ACTION: Alert Mentor & Schedule Counseling<br>
+                        > RESULT: Retention Success.
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Security (1x1) -->
+            <!-- 2. Audit Logs (1x1) -->
             <div class="col-span-1 md:col-span-1 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col justify-between group hover:border-purple-500/50 transition-colors duration-500 relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-32 bg-purple-500/10 blur-[60px] rounded-full"></div>
                 <div class="relative z-10">
                    <div class="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-4 text-purple-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.85.5-4m1.5 8l1.5 8"></path></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Military Grade</h3>
-                    <p class="text-zinc-500 text-sm mt-2">AES-256 encryption at rest and in transit.</p> 
+                    <h3 class="text-xl font-bold text-white">Immutable Logs</h3>
+                    <p class="text-zinc-500 text-sm mt-2">Every grade change is SHA-256 hashed and locked. Zero tampering.</p> 
                 </div>
             </div>
 
-            <!-- 3. Speed (1x1) -->
+            <!-- 3. Query Speed (1x1) -->
              <div class="col-span-1 md:col-span-1 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col justify-between group hover:border-blue-500/50 transition-colors duration-500 relative overflow-hidden">
                  <div class="absolute bottom-0 left-0 p-32 bg-blue-500/10 blur-[60px] rounded-full"></div>
                 <div class="relative z-10">
@@ -509,20 +510,21 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
                     <div class="flex items-baseline gap-1">
-                        <h3 class="text-4xl font-bold text-white">14<span class="text-lg text-zinc-500">ms</span></h3>
+                        <h3 class="text-4xl font-bold text-white">0.04<span class="text-lg text-zinc-500">s</span></h3>
                     </div>
-                    <p class="text-zinc-500 text-sm mt-2">Global latency average.</p> 
+                    <p class="text-zinc-500 text-sm mt-2">Avg. query time for full timetable generation.</p> 
                 </div>
             </div>
 
-            <!-- 4. Uptime (Wide 2x1) -->
+            <!-- 4. Peak Load (Wide 2x1) -->
             <div class="col-span-1 md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-8 flex items-center justify-between group hover:border-amber-500/50 transition-colors duration-500 relative overflow-hidden">
                 <div class="relative z-10 max-w-[60%]">
-                    <h3 class="text-2xl font-bold text-white mb-2">Always On.</h3>
-                     <p class="text-zinc-400 text-sm">Redundant cloud infrastructure ensures 99.99% uptime during exam weeks.</p>
+                    <h3 class="text-2xl font-bold text-white mb-2">Exam Day Ready.</h3>
+                     <p class="text-zinc-400 text-sm">Validating architecture that handles result declaration traffic spikes without a glitch.</p>
                 </div>
                 <div class="relative z-10 text-right">
-                     <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-orange-500">99.99%</div>
+                     <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-orange-500">45k+</div>
+                     <div class="text-zinc-500 text-xs font-mono mt-1 uppercase tracking-widest">Concurrent Users</div>
                 </div>
             </div>
 
