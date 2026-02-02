@@ -264,6 +264,49 @@ with app.app_context():
             db.session.add(paper)
         db.session.flush()
 
+        # --- 10. Student Queries ---
+        print("10. Creating Student Queries...")
+        query_titles = [
+            "Doubt in Lecture 3",
+            "Assignment submission issue",
+            "Request for extra class",
+            "Clarification on syllabus",
+            "Project partner request"
+        ]
+        
+        for i in range(10): # Create 10 queries
+            stu = random.choice(students)
+            sub = random.choice(subjects) # Assume link exists or loose coupling
+            fac_id = sub.faculty_id
+            
+            q = StudentQuery(
+                student_id=stu.id,
+                faculty_id=fac_id,
+                subject_id=sub.id,
+                title=random.choice(query_titles),
+                status=random.choice(['Pending', 'Answered', 'Resolved'])
+            )
+            db.session.add(q)
+            db.session.flush()
+            
+            # Initial Message
+            m1 = QueryMessage(
+                query_id=q.id,
+                sender_type='student',
+                content=f"Hello Professor, I have a question regarding {sub.name}."
+            )
+            db.session.add(m1)
+            
+            if q.status != 'Pending':
+                m2 = QueryMessage(
+                    query_id=q.id,
+                    sender_type='faculty',
+                    content="Sure, please visit my cabin or ask here."
+                )
+                db.session.add(m2)
+                
+        db.session.flush()
+
         db.session.commit()
         print("--- SEEDING COMPLETE ---")
         print("Admin: admin@edu.com")

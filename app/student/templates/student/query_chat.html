@@ -84,17 +84,28 @@
         {% if query.status != 'Resolved' %}
         <form action="{{ url_for('student.send_message', query_id=query.id) }}" method="POST" enctype="multipart/form-data" class="flex items-end space-x-2">
             
+            <!-- File Input -->
+            <div class="flex-shrink-0">
+                <input type="file" name="image" id="file-input" class="hidden" accept="image/*" onchange="previewImage(this)">
+                <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center p-2 border border-gray-300 rounded-full shadow-sm text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                </button>
+            </div>
+
             <div class="flex-1">
+                <!-- Preview Area -->
+                <div id="image-preview-container" class="hidden mb-2 relative inline-block">
+                     <img id="image-preview" src="" alt="Preview" class="max-h-32 rounded-lg border border-gray-300">
+                     <button type="button" onclick="clearImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-sm">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                     </button>
+                </div>
                 <textarea name="content" rows="1" class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none py-3" placeholder="Type your reply..."></textarea>
             </div>
-            
-            <!-- Image Upload Trigger -->
-            <label class="cursor-pointer p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                <input type="file" name="image" accept="image/*" class="hidden" onchange="document.getElementById('file-chosen').innerText = this.files[0].name">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-            </label>
             
             <button type="submit" class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="h-5 w-5 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +113,26 @@
                 </svg>
             </button>
         </form>
-        <span id="file-chosen" class="text-xs text-indigo-500 ml-1"></span>
+        
+        <script>
+            function previewImage(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('image-preview').src = e.target.result;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            
+            function clearImage() {
+                var input = document.getElementById('file-input');
+                input.value = "";
+                document.getElementById('image-preview').src = "";
+                document.getElementById('image-preview-container').classList.add('hidden');
+            }
+        </script>
         {% else %}
         <div class="text-center text-sm text-gray-500 py-4 bg-gray-50 rounded-lg border border-gray-200">
             <span class="block font-medium text-gray-700">This query is marked as Resolved.</span>

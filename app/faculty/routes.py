@@ -58,12 +58,19 @@ def query_chat(query_id):
 
     if request.method == 'POST':
         content = request.form.get('content')
-        if content:
+        image_file = request.files.get('image')
+        
+        if content or image_file:
             msg = QueryMessage(
                 query_id=query.id,
                 sender_type='faculty',
                 content=content
             )
+            
+            if image_file and image_file.filename != '':
+                msg.image_data = image_file.read()
+                msg.image_mimetype = image_file.mimetype
+                
             db.session.add(msg)
             
             # Update status to Answered
