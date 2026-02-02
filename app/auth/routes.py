@@ -16,6 +16,11 @@ def login():
         # TODO: In production, check if user.role matches the requested role!
         
         if user and user.check_password(password):
+            # Strict Role Validation
+            if user.role != role:
+                flash(f'Access Denied: Account exists but does not belong to the {role.capitalize()} domain.')
+                return render_template('login.html', role=role)
+
             login_user(user)
             if user.role == 'admin':
                 return redirect(url_for('admin.dashboard'))
