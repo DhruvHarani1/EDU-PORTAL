@@ -70,7 +70,11 @@ CREATE TABLE attendance (
     course_name VARCHAR(100) NOT NULL,
     date DATE NOT NULL,
     status VARCHAR(20) NOT NULL,
-    FOREIGN KEY (student_id) REFERENCES student_profile (id)
+    subject_id INTEGER,
+    faculty_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student_profile (id),
+    FOREIGN KEY (subject_id) REFERENCES subject (id),
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
 );
 
 -- Subjects Schema

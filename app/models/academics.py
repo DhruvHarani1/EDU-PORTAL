@@ -18,9 +18,12 @@ class Attendance(db.Model):
     course_name = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, default=date.today, nullable=False)
     status = db.Column(db.String(20), nullable=False) # 'Present', 'Absent', 'Late'
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=True) # Added Subject Link
+    faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True) # Added Faculty Link
 
     # Relationship
     student = db.relationship('StudentProfile', backref=db.backref('attendance_records', lazy=True))
+    subject = db.relationship('Subject', backref=db.backref('attendance_records', lazy=True))
 
     def __repr__(self):
         return f'<Attendance {self.student.enrollment_number} - {self.date} - {self.status}>'

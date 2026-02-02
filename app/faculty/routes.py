@@ -1,6 +1,6 @@
 from flask import render_template, request
 from flask_login import login_required
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile
 from flask_login import current_user, login_required
 from flask import render_template, request, redirect, url_for, flash
@@ -77,7 +77,7 @@ def query_chat(query_id):
 
 # --- New Faculty Routes Placeholders ---
 
-from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile, Timetable
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Subject, Syllabus, StudentProfile, Timetable, Attendance
 from werkzeug.utils import secure_filename
 
 # ... (existing imports)
@@ -164,10 +164,247 @@ def download_syllabus(subject_id):
         download_name=syllabus.filename
     )
 
-@faculty_bp.route('/attendance')
+@faculty_bp.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance():
-    return render_template('faculty/attendance.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    subjects = Subject.query.filter_by(faculty_id=faculty.id).all()
+    
+    # Defaults
+    selected_subject_id = request.args.get('subject_id', type=int)
+    selected_date_str = request.args.get('date')
+    page = request.args.get('page', 1, type=int)
+    
+    attendance_data = []
+    stats = {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
+    selected_subject = None
+    lecture_history = []
+    pagination = {}
+    
+    # Check for Pending Attendance (For Notification)
+    today = date.today()
+    pending_count = 0
+    # Quick check for today's lectures
+    day_name = today.strftime('%A')
+    todays_slots = Timetable.query.filter_by(faculty_id=faculty.id, day_of_week=day_name).all()
+    for slot in todays_slots:
+        is_marked = Attendance.query.filter_by(subject_id=slot.subject_id, date=today).first()
+        if not is_marked:
+            pending_count += 1
+
+    if request.method == 'POST':
+        # Handle Attendance Submission
+        subj_id = request.form.get('subject_id')
+        date_val = request.form.get('date')
+        
+        # Re-fetch for safety
+        target_subject = Subject.query.get_or_404(subj_id)
+        
+        # iterate form
+        for key in request.form:
+            if key.startswith('status_'):
+                student_id = int(key.split('_')[1])
+                status = request.form[key]
+                
+                # Check Existing
+                att = Attendance.query.filter_by(
+                    student_id=student_id,
+                    subject_id=subj_id,
+                    date=datetime.strptime(date_val, '%Y-%m-%d').date()
+                ).first()
+                
+                if att:
+                    att.status = status
+                else:
+                    new_att = Attendance(
+                        student_id=student_id,
+                        course_name=target_subject.course_name, # Fallback
+                        date=datetime.strptime(date_val, '%Y-%m-%d').date(),
+                        status=status,
+                        subject_id=subj_id,
+                        faculty_id=faculty.id
+                    )
+                    db.session.add(new_att)
+        
+        db.session.commit()
+        flash('Attendance updated successfully!', 'success')
+        return redirect(url_for('faculty.attendance', subject_id=subj_id, date=date_val))
+
+    # If parameters provided, load Marking View
+    if selected_subject_id and selected_date_str:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        selected_subject = Subject.query.get_or_404(selected_subject_id)
+        
+        # 1. Fetch Students
+        students = StudentProfile.query.filter_by(
+            course_name=selected_subject.course_name,
+            semester=selected_subject.semester
+        ).order_by(StudentProfile.enrollment_number).all()
+        
+        # 2. Fetch Existing
+        existing_records = Attendance.query.filter_by(
+            subject_id=selected_subject_id,
+            date=selected_date
+        ).all()
+        
+        status_map = {att.student_id: att.status for att in existing_records}
+        
+        for student in students:
+            current_status = status_map.get(student.id, 'Present') 
+            attendance_data.append({'student': student, 'status': current_status})
+            if current_status == 'Present': stats['present'] += 1
+            else: stats['absent'] += 1
+                
+        stats['total'] = len(students)
+        if stats['total'] > 0:
+            stats['percentage'] = round((stats['present'] / stats['total']) * 100, 1)
+
+    else:
+        # Load Dashboard View: Recent Lectures Table
+        # Generate last 30 days history
+        today = date.today()
+        # Look back 30 days
+        all_lectures = []
+        
+        # Optimize: Filter dict of faculty's timetable slots by day
+        # Map: 'Monday' -> [Slot1, Slot2]
+        timetable_map = {}
+        slots = Timetable.query.filter_by(faculty_id=faculty.id).all()
+        for slot in slots:
+            if slot.day_of_week not in timetable_map: timetable_map[slot.day_of_week] = []
+            timetable_map[slot.day_of_week].append(slot)
+            
+        # Iterate dates descending
+        for i in range(30):
+            curr_date = today - timedelta(days=i)
+            day_name = curr_date.strftime('%A')
+            
+            if day_name in timetable_map:
+                for slot in timetable_map[day_name]:
+                    # Check if marked
+                    marked_count = Attendance.query.filter_by(
+                        subject_id=slot.subject_id,
+                        date=curr_date
+                    ).count()
+                    
+                    status = 'Marked' if marked_count > 0 else 'Pending'
+                    
+                    all_lectures.append({
+                        'date': curr_date,
+                        'date_str': curr_date.strftime('%Y-%m-%d'),
+                        'subject': slot.subject,
+                        'time': f"{9 + (slot.period_number-1)}:00 - {10 + (slot.period_number-1)}:00", # Approx logic
+                        'status': status
+                    })
+        
+        # Pagination Logic (Manual list pagination)
+        per_page = 5
+        total_items = len(all_lectures)
+        start = (page - 1) * per_page
+        end = start + per_page
+        lecture_history = all_lectures[start:end]
+        
+        pagination = {
+            'page': page,
+            'total_pages': (total_items + per_page - 1) // per_page,
+            'has_next': end < total_items,
+            'has_prev': start > 0
+        }
+
+    return render_template(
+        'faculty/attendance.html', 
+        lecture_history=lecture_history,
+        pagination=pagination,
+        subjects=subjects, 
+        selected_subject=selected_subject,
+        selected_date=selected_date_str, # Keep valid if selected
+        attendance_data=attendance_data,
+        stats=stats,
+        pending_count=pending_count
+    )
+
+@faculty_bp.route('/attendance/export/csv')
+@login_required
+def export_attendance_csv():
+    import csv
+    import io
+    from flask import make_response
+
+    subject_id = request.args.get('subject_id')
+    date_str = request.args.get('date')
+    
+    if not subject_id or not date_str:
+        flash('Please select a subject and date to export.', 'error')
+        return redirect(url_for('faculty.attendance'))
+        
+    subject = Subject.query.get_or_404(subject_id)
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    
+    # Fetch Data (Reuse Logic or Refactor - Reusing for speed)
+    existing_records = Attendance.query.filter_by(subject_id=subject_id, date=date_obj).all()
+    record_map = {r.student_id: r.status for r in existing_records}
+    
+    students = StudentProfile.query.filter_by(
+            course_name=subject.course_name,
+            semester=subject.semester
+        ).order_by(StudentProfile.enrollment_number).all()
+
+    # Generate CSV
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['Enrollment', 'Name', 'Status', 'Date', 'Subject', 'Course'])
+    
+    for stu in students:
+        status = record_map.get(stu.id, 'Unmarked')
+        cw.writerow([
+            stu.enrollment_number, 
+            stu.display_name, 
+            status, 
+            date_str, 
+            subject.name, 
+            f"{subject.course_name} Sem {subject.semester}"
+        ])
+        
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = f"attachment; filename=attendance_{subject.name}_{date_str}.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+@faculty_bp.route('/attendance/print')
+@login_required
+def print_attendance_report():
+    subject_id = request.args.get('subject_id')
+    date_str = request.args.get('date')
+    
+    if not subject_id or not date_str:
+        return "Missing arguments", 400
+        
+    subject = Subject.query.get_or_404(subject_id)
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    
+    existing_records = Attendance.query.filter_by(subject_id=subject_id, date=date_obj).all()
+    record_map = {r.student_id: r.status for r in existing_records}
+    
+    students = StudentProfile.query.filter_by(course_name=subject.course_name, semester=subject.semester).order_by(StudentProfile.enrollment_number).all()
+    
+    final_data = []
+    stats = {'present': 0, 'absent': 0, 'total': 0}
+    
+    for stu in students:
+        status = record_map.get(stu.id, 'Unmarked')
+        final_data.append({'student': stu, 'status': status})
+        if status == 'Present': stats['present'] += 1
+        elif status == 'Absent': stats['absent'] += 1
+    
+    stats['total'] = len(students)
+    
+    return render_template(
+        'faculty/attendance_print.html',
+        subject=subject,
+        date_str=date_str,
+        data=final_data,
+        stats=stats
+    )
 
 @faculty_bp.route('/material')
 @login_required

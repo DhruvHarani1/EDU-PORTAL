@@ -131,8 +131,8 @@ with app.app_context():
                 display_name=get_random_names(1)[0],
                 enrollment_number=enroll,
                 course_name='B.Tech',
-                semester=random.choice([1, 2, 3, 4]),
-                batch_year=random.choice(['2024-2028', '2025-2029', '2023-2027']),
+                semester=random.choice([1, 2, 3, 4, 5, 6, 7, 8]),
+                batch_year=random.choice(['2024-2028', '2025-2029', '2023-2027', '2022-2026']),
                 phone_number=str(random.randint(7000000000, 9999999999)),
                 guardian_name=f'Guardian of {enroll}',
                 guardian_contact=str(random.randint(7000000000, 9999999999))
@@ -174,18 +174,23 @@ with app.app_context():
             curr = start_date + timedelta(days=i)
             if curr.weekday() > 4: continue # Skip weekend
             
+            # For each student, mark attendance for 2 random subjects he is likely enrolled in
+            # For simplicity, we assume all students take all subjects (or random subset)
             for stu in students:
-                # Randomly assign attendance for 1-2 subjects per day
-                daily_status = random.choice(attendance_opts)
-                # Pick a random subject they might have
-                # Simply logging generic attendance for demo
-                att = Attendance(
-                    student_id=stu.id,
-                    course_name='B.Tech',
-                    date=curr,
-                    status=daily_status
-                )
-                db.session.add(att)
+                # Pick 2 random subjects
+                daily_subs = random.sample(subjects, 2)
+                
+                for sub in daily_subs:
+                    status = random.choice(attendance_opts)
+                    att = Attendance(
+                        student_id=stu.id,
+                        course_name=sub.course_name,
+                        date=curr,
+                        status=status,
+                        subject_id=sub.id,
+                        faculty_id=sub.faculty_id
+                    )
+                    db.session.add(att)
         db.session.flush()
 
         # --- 7. Fee Records ---
