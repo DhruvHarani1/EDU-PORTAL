@@ -1,7 +1,7 @@
 from flask import render_template, request
 from flask_login import login_required
 from datetime import datetime, date, timedelta
-from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Attendance, Timetable
 from flask_login import current_user, login_required
 from flask import render_template, request, redirect, url_for, flash, send_file
 import io
@@ -11,7 +11,55 @@ from . import faculty_bp
 @faculty_bp.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('faculty_dashboard.html')
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # 1. Stats
+    mentees_count = StudentProfile.query.filter_by(mentor_id=faculty.id).count()
+    pending_queries = StudentQuery.query.filter_by(faculty_id=faculty.id, status='Pending').count()
+    
+    # 2. Today's Schedule & Attendance Check
+    today_name = datetime.now().strftime('%A') # e.g. "Monday"
+    todays_classes = Timetable.query.filter_by(faculty_id=faculty.id, day_of_week=today_name).order_by(Timetable.period_number).all()
+    
+    total_pending_attendance = 0
+    today_date = date.today()
+    
+    for entry in todays_classes:
+        # Time calc
+        base_start_hour = 9
+        start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
+        start_time = datetime.combine(today_date, datetime.min.time()) + timedelta(minutes=start_minutes)
+        end_time = start_time + timedelta(minutes=60)
+        entry.display_time = f"{start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
+        
+        # Check Attendance for this Subject + Date
+        # If count > 0, assumed marked
+        marked_count = Attendance.query.filter_by(
+            subject_id=entry.subject_id, 
+            date=today_date
+        ).count()
+        
+        if marked_count > 0:
+            entry.attendance_marked = True
+        else:
+            entry.attendance_marked = False
+            total_pending_attendance += 1
+            
+    # 3. Recent Notices (Inbox + Sent)
+    recent_notices = Notice.query.filter(
+        (Notice.target_type == 'all') | 
+        (Notice.target_type == 'faculty') |
+        (Notice.sender_faculty_id == faculty.id)
+    ).order_by(Notice.created_at.desc()).limit(5).all()
+
+    return render_template('faculty_dashboard.html', 
+                           faculty=faculty,
+                           mentees_count=mentees_count,
+                           pending_queries=pending_queries,
+                           todays_classes=todays_classes,
+                           total_pending_attendance=total_pending_attendance,
+                           recent_notices=recent_notices,
+                           today_date=datetime.now())
 
 @faculty_bp.route('/fees')
 @login_required
