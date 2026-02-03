@@ -126,12 +126,18 @@
                     <input type="number" name="slots_per_day" id="slots" value="8" class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
                 
-                 <div>
+                <div>
                     <label for="days" class="block text-sm font-medium text-gray-700">Days per Week</label>
                     <select name="days_per_week" class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                          <option value="5">5 (Mon-Fri)</option>
                          <option value="6">6 (Mon-Sat)</option>
                      </select>
+                </div>
+
+                <div>
+                    <label for="recess_duration" class="block text-sm font-medium text-gray-700">Recess Duration (Minutes)</label>
+                    <input type="number" name="recess_duration" id="recess_duration" value="0" min="0" step="5" class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    <p class="mt-1 text-xs text-gray-500">Break time (e.g. 30, 60 min) placed in the middle of the day.</p>
                 </div>
 
                 <div class="sm:col-span-full pt-4">

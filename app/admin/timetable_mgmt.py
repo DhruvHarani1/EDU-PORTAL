@@ -121,6 +121,11 @@ def generate_timetable():
     settings.end_time = end_time_obj
     settings.slots_per_day = slots_per_day
     settings.days_per_week = days_per_week
+    
+    # Recess (Now Automatic middle)
+    settings.recess_duration = int(request.form.get('recess_duration', 0))
+    settings.recess_after_slot = slots_per_day // 2
+    
     db.session.commit() # Save settings first
     
     # 1. Clear existing timetable for this course/sem
@@ -238,23 +243,14 @@ def view_timetable():
     # Calculate Time Slots
     time_headers = []
     if settings:
-        start_min = settings.start_time.hour * 60 + settings.start_time.minute
-        end_min = settings.end_time.hour * 60 + settings.end_time.minute
-        total_duration = end_min - start_min
-        slot_duration = total_duration // max_period
-        
-        for p in range(max_period):
-            s_time = start_min + (p * slot_duration)
-            e_time = s_time + slot_duration
+        for p in range(1, max_period + 1):
+            s_time, e_time = settings.get_period_times(p)
             
-            # Format HH:MM
-            s_str = f"{s_time // 60:02d}:{s_time % 60:02d}"
-            e_str = f"{e_time // 60:02d}:{e_time % 60:02d}"
-            
-            # Convert to AM/PM for display
-            s_dt = datetime.strptime(s_str, "%H:%M")
-            e_dt = datetime.strptime(e_str, "%H:%M")
-            time_headers.append(f"{s_dt.strftime('%I:%M %p')} - {e_dt.strftime('%I:%M %p')}")
+            # Format display
+            # Create dummy datetime to use strftime
+            dummy_dt_s = datetime.combine(date.today(), s_time)
+            dummy_dt_e = datetime.combine(date.today(), e_time)
+            time_headers.append(f"{dummy_dt_s.strftime('%I:%M %p')} - {dummy_dt_e.strftime('%I:%M %p')}")
     else:
         time_headers = [f"Period {p+1}" for p in range(max_period)]
 
@@ -273,7 +269,8 @@ def view_timetable():
                            time_headers=time_headers, # 0-based index list for display
                            course=course,
                            semester=semester,
-                           subjects=subjects)
+                           subjects=subjects,
+                           settings=settings)
 
 @admin_bp.route('/timetable/update_slot', methods=['POST'])
 @login_required

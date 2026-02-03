@@ -26,11 +26,17 @@ def dashboard():
     
     for entry in todays_classes:
         # Time calc
-        base_start_hour = 9
-        start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
-        start_time = datetime.combine(today_date, datetime.min.time()) + timedelta(minutes=start_minutes)
-        end_time = start_time + timedelta(minutes=60)
-        entry.display_time = f"{start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
+        from app.models import ScheduleSettings
+        settings = ScheduleSettings.query.filter_by(course_name=entry.course_name, semester=entry.semester).first()
+        if settings:
+            s_time, e_time = settings.get_period_times(entry.period_number)
+            entry.display_time = f"{s_time.strftime('%I:%M %p')} - {e_time.strftime('%I:%M %p')}"
+        else:
+            base_start_hour = 9
+            start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
+            start_time = datetime.combine(today_date, datetime.min.time()) + timedelta(minutes=start_minutes)
+            end_time = start_time + timedelta(minutes=60)
+            entry.display_time = f"{start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}"
         
         # Check Attendance for this Subject + Date
         # If count > 0, assumed marked
@@ -749,11 +755,15 @@ def schedule():
     
     for slot in slots:
         # Calculate Time
-        start_h = base_hour + (slot.period_number - 1)
-        end_h = start_h + 1
-        
-        # Format "9:00 - 10:00 AM"
-        t_str = f"{start_h if start_h <= 12 else start_h-12}:00 - {end_h if end_h <= 12 else end_h-12}:00 {'AM' if start_h < 12 else 'PM'}"
+        from app.models import ScheduleSettings
+        settings = ScheduleSettings.query.filter_by(course_name=slot.course_name, semester=slot.semester).first()
+        if settings:
+            s_time, e_time = settings.get_period_times(slot.period_number)
+            t_str = f"{s_time.strftime('%I:%M %p')} - {e_time.strftime('%I:%M %p')}"
+        else:
+            start_h = base_hour + (slot.period_number - 1)
+            end_h = start_h + 1
+            t_str = f"{start_h if start_h <= 12 else start_h-12}:00 - {end_h if end_h <= 12 else end_h-12}:00 {'AM' if start_h < 12 else 'PM'}"
         
         # Student Count
         count = StudentProfile.query.filter_by(
@@ -792,14 +802,23 @@ def timetable():
             # Mirroring student logic for consistency if possible, or simple list.
             
             # Simple Time Logic (09:00 Start, 1 hr slots)
-            base_start_hour = 9
-            start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
+            from app.models import ScheduleSettings
+            settings = ScheduleSettings.query.filter_by(course_name=entry.course_name, semester=entry.semester).first()
+            if settings:
+                s_time, e_time = settings.get_period_times(entry.period_number)
+                entry.start_time = s_time
+                entry.end_time = e_time
+            else:
+                base_start_hour = 9
+                start_minutes = (base_start_hour * 60) + ((entry.period_number - 1) * 60)
+                
+                start_time = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
+                end_time = start_time + timedelta(minutes=60)
+                entry.start_time = start_time.time()
+                entry.end_time = end_time.time()
             
-            start_time = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
-            end_time = start_time + timedelta(minutes=60)
-            
-            entry.start_time = start_time.time()
-            entry.end_time = end_time.time()
+            # Room logic
+            entry.room_number = getattr(entry, 'room_number', 'Room 101')
             
             schedule[entry.day_of_week].append(entry)
             

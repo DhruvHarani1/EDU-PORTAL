@@ -595,18 +595,18 @@ def timetable():
     
     for entry in entries:
         if entry.day_of_week in schedule:
-            # Calculate Time
-            # P1 starts at base, P2 at base + 1*duration, etc.
-            # entry.period_number is 1-based usually
-            p_idx = entry.period_number - 1
-            start_minutes = (base_start_hour * 60) + base_start_min + (p_idx * slot_duration_min)
+            p_idx = entry.period_number - 1 # Period is usually 1-indexed
             
-            start_dt = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
-            end_dt = start_dt + timedelta(minutes=slot_duration_min)
-            
-            # Attach temporary attributes for template
-            entry.start_time = start_dt.time()
-            entry.end_time = end_dt.time()
+            if settings:
+                s_time, e_time = settings.get_period_times(entry.period_number)
+                entry.start_time = s_time
+                entry.end_time = e_time
+            else:
+                start_minutes = (base_start_hour * 60) + base_start_min + (p_idx * slot_duration_min)
+                start_dt = datetime.combine(date.today(), datetime.min.time()) + timedelta(minutes=start_minutes)
+                end_dt = start_dt + timedelta(minutes=slot_duration_min)
+                entry.start_time = start_dt.time()
+                entry.end_time = end_dt.time()
             # Fake room number if missing
             entry.room_number = "Main Block" 
             

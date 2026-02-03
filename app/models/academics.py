@@ -86,6 +86,44 @@ class ScheduleSettings(db.Model):
     slots_per_day = db.Column(db.Integer, default=8)
     days_per_week = db.Column(db.Integer, default=5)
     
+    # Recess Settings
+    recess_duration = db.Column(db.Integer, default=0) # in minutes
+    recess_after_slot = db.Column(db.Integer, default=0) # e.g. after slot 3
+    
+    def get_period_times(self, period_number):
+        """Returns (start_time, end_time) as datetime.time objects for a 1-based period number."""
+        from datetime import datetime, timedelta, date
+        
+        # 1. Total available minutes for teaching
+        start_min = self.start_time.hour * 60 + self.start_time.minute
+        end_min = self.end_time.hour * 60 + self.end_time.minute
+        
+        recess_dur = self.recess_duration or 0
+        recess_after = self.recess_after_slot or (self.slots_per_day // 2)
+        
+        total_minutes = (end_min - start_min) - recess_dur
+        if total_minutes <= 0:
+            # Fallback if settings are invalid
+            total_minutes = self.slots_per_day * 60
+            
+        slot_duration = total_minutes // self.slots_per_day
+        
+        # 2. Calculate offset
+        # period_number is 1-based. offset = (period_number - 1)
+        p_idx = period_number - 1
+        current_start_min = start_min + (p_idx * slot_duration)
+        
+        # Add recess if we are after the break
+        if recess_after > 0 and p_idx >= recess_after:
+            current_start_min += recess_dur
+            
+        # 3. Create datetime objects to handle math easily
+        base_date = date.today()
+        start_dt = datetime.combine(base_date, datetime.min.time()) + timedelta(minutes=current_start_min)
+        end_dt = start_dt + timedelta(minutes=slot_duration)
+        
+        return start_dt.time(), end_dt.time()
+    
     # Composite unique constraint could be useful but we'll handle in logic
 
 class ExamEvent(db.Model):

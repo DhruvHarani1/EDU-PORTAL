@@ -39,6 +39,11 @@
                                     <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 border-l">
                                         {{ header }}
                                     </th>
+                                    {% if settings and settings.recess_duration > 0 and loop.index == settings.recess_after_slot %}
+                                    <th scope="col" class="px-3 py-3.5 text-center text-xs font-bold text-indigo-500 bg-indigo-50 border-l w-12">
+                                        RECESS
+                                    </th>
+                                    {% endif %}
                                     {% endfor %}
                                 </tr>
                             </thead>
@@ -53,7 +58,7 @@
                                         <td class="whitespace-nowrap px-1 py-2 text-sm text-gray-500 border-l relative h-24 align-top w-32 min-w-[150px]">
                                             <!-- Editable Dropdown -->
                                             <div class="h-full flex flex-col justify-center">
-<select onchange="updateSlot(`{{ day }}`, `{{ p }}`, this.value, `{{ slot.id if slot else '' }}`)">
+                                                <select onchange="updateSlot(`{{ day }}`, `{{ p }}`, this.value, `{{ slot.id if slot else '' }}`)" 
                                                         class="block w-full pl-2 pr-8 py-1 text-xs border-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs rounded-md shadow-sm
                                                         {% if slot %} bg-indigo-50 text-indigo-700 font-medium {% else %} bg-white text-gray-400 {% endif %}">
                                                     <option value="">-- Free --</option>
@@ -71,6 +76,13 @@
                                                 {% endif %}
                                             </div>
                                         </td>
+                                        {% if settings and settings.recess_duration > 0 and loop.index == settings.recess_after_slot %}
+                                        <td class="bg-indigo-50/50 border-l text-center">
+                                            <div class="rotate-180 [writing-mode:vertical-lr] text-[10px] font-bold text-indigo-300 uppercase tracking-widest">
+                                                Break
+                                            </div>
+                                        </td>
+                                        {% endif %}
                                     {% endfor %}
                                 </tr>
                                 {% endfor %}
