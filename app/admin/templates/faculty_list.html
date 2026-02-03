@@ -40,8 +40,8 @@
                        <span class="font-medium text-gray-900">{{ faculty.experience }} Years</span>
                    </div>
                    <div class="flex justify-between text-xs text-gray-500">
-                       <span>Subject:</span>
-                       <span class="font-medium text-gray-900 truncate w-24 text-right">{{ faculty.assigned_subject }}</span>
+                       <span>Subjects:</span>
+                       <span class="font-medium text-gray-900 text-right text-xs break-words max-w-[150px]">{{ faculty.assigned_subject or 'None' }}</span>
                    </div>
                 </div>
             </div>

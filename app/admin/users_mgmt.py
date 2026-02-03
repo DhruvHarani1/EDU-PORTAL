@@ -245,7 +245,11 @@ def add_faculty():
         department = request.form.get('department')
         experience = request.form.get('experience')
         specialization = request.form.get('specialization')
-        assigned_subject = request.form.get('assigned_subject')
+        # Retrieve list of selected subject names
+        selected_subject_names = request.form.getlist('assigned_subjects')
+        
+        # Store as comma-separated string for display
+        faculty_assigned_str = ", ".join(selected_subject_names) if selected_subject_names else None
         
         # Photo Upload (Binary)
         photo_data = None
@@ -276,11 +280,20 @@ def add_faculty():
                 department=department,
                 experience=experience,
                 specialization=specialization,
-                assigned_subject=assigned_subject,
+                assigned_subject=faculty_assigned_str,
                 photo_data=photo_data,
                 photo_mimetype=photo_mimetype
             )
             db.session.add(faculty)
+            db.session.flush() # Get ID
+            
+            # Link Subjects (Multi)
+            if selected_subject_names:
+                # Set new links
+                subjects_to_link = Subject.query.filter(Subject.name.in_(selected_subject_names)).all()
+                for sub in subjects_to_link:
+                    sub.faculty_id = faculty.id
+            
             db.session.commit()
             flash('Faculty added successfully!', 'success')
             return redirect(url_for('admin.faculty_list'))
@@ -303,30 +316,28 @@ def edit_faculty(id):
         department = request.form.get('department')
         experience = request.form.get('experience')
         specialization = request.form.get('specialization')
-        assigned_subject = request.form.get('assigned_subject')
-
-        # Check Email
-        if email != faculty.user.email:
-            if User.query.filter_by(email=email).first():
-                flash('Email already in use.', 'error')
-                return render_template('faculty_edit.html', faculty=faculty)
-            faculty.user.email = email
-            
-        # Photo Upload (Binary)
-        if 'photo' in request.files:
-            file = request.files['photo']
-            if file and file.filename != '':
-                faculty.photo_data = file.read()
-                faculty.photo_mimetype = file.mimetype
-
-        faculty.display_name = name
-        faculty.designation = designation
-        faculty.department = department
-        faculty.experience = experience
-        faculty.specialization = specialization
-        faculty.assigned_subject = assigned_subject
+        # Retrieve list of selected subject names
+        selected_subject_names = request.form.getlist('assigned_subjects')
+        
+        # Update Profile String
+        faculty.assigned_subject = ", ".join(selected_subject_names) if selected_subject_names else None
         
         try:
+            # Handle Subject Linking (Multi)
+            
+            # 1. Unlink subjects that are currently assigned to this faculty but NOT in the selected list
+            # Fetch all subjects currently owned by this faculty
+            existing_subjects = Subject.query.filter_by(faculty_id=faculty.id).all()
+            for sub in existing_subjects:
+                if sub.name not in selected_subject_names:
+                    sub.faculty_id = None
+            
+            # 2. Link selected subjects
+            if selected_subject_names:
+                new_subjects = Subject.query.filter(Subject.name.in_(selected_subject_names)).all()
+                for sub in new_subjects:
+                    sub.faculty_id = faculty.id
+            
             db.session.commit()
             flash('Faculty updated successfully!', 'success')
             return redirect(url_for('admin.faculty_list'))

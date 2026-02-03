@@ -42,14 +42,9 @@ def assign_subject():
     course = request.form.get('course')
     semester = request.form.get('semester')
     academic_year = request.form.get('academic_year')
-    faculty_id = request.form.get('faculty_id')
-    
-    sub = Subject.query.get_or_404(subject_id)
-    
     sub.course_name = course
     sub.semester = semester
     sub.academic_year = academic_year
-    sub.faculty_id = faculty_id
     
     db.session.commit()
     flash('Subject assigned successfully!', 'success')
