@@ -5,7 +5,7 @@ from app.models import Subject, Timetable, FacultyProfile, StudentProfile, Sched
 from . import admin_bp
 import random
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, time, date, timedelta
 
 @admin_bp.route('/timetable', methods=['GET'])
 @login_required

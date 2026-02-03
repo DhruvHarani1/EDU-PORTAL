@@ -2,7 +2,7 @@
 import sys
 import os
 import random
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 
 sys.path.append(os.getcwd())
 
@@ -10,7 +10,7 @@ from app import create_app, db
 from app.models import (
     User, StudentProfile, FacultyProfile, Subject, 
     Attendance, Notice, FeeRecord, StudentQuery, 
-    QueryMessage, ExamEvent, ExamPaper, Timetable, ScheduleSettings
+    QueryMessage, ExamEvent, ExamPaper, StudentResult, Timetable, ScheduleSettings
 )
 
 app = create_app()
@@ -51,7 +51,7 @@ def seed_data():
             u = User(email=email, role='faculty')
             u.set_password('123')
             db.session.add(u)
-            db.session.flush() # Get ID
+            db.session.flush()
 
             name = get_random_name()
             f = FacultyProfile(
@@ -122,23 +122,23 @@ def seed_data():
         
         db.session.flush()
 
-        # 5. Attendance (1500)
-        print("Seeding 1500 Attendance Records...")
+        # 5. Attendance (5000)
+        print("Seeding 5000 Attendance Records...")
         today = date.today()
-        for i in range(1500):
+        for i in range(5000):
             stu = random.choice(student_objs)
-            # Find a subject for this student's course/sem
             rel_subs = [sb for sb in subject_objs if sb.course_name == stu.course_name and sb.semester == stu.semester]
             if not rel_subs: continue
             
             sub = random.choice(rel_subs)
-            att_date = today - timedelta(days=random.randint(0, 30))
+            att_date = today - timedelta(days=random.randint(0, 45))
+            if att_date.weekday() >= 5: att_date -= timedelta(days=2)
             
             a = Attendance(
                 student_id=stu.id,
                 course_name=stu.course_name,
                 date=att_date,
-                status=random.choices(["Present", "Absent", "Late"], weights=[80, 15, 5])[0],
+                status=random.choices(["Present", "Absent", "Late"], weights=[85, 12, 3])[0],
                 subject_id=sub.id,
                 faculty_id=sub.faculty_id
             )
@@ -147,20 +147,15 @@ def seed_data():
         # 6. Notices (100)
         print("Seeding 100 Notices...")
         for i in range(100):
-            fac = random.choice([None] + faculty_objs) # Some from admin (None)
+            fac = random.choice([None] + faculty_objs)
             target = random.choice(["all", "faculty", "class", "individual"])
-            
             n = Notice(
-                title=f"Announcement {i+1}: {random.choice(['Holiday', 'Exam', 'Placement', 'Event'])}",
-                content=f"Deat Students/Faculty, this is a notice regarding {random.choice(['the upcoming workshop', 'maintenance', 'results leakage alert', 'cultural fest'])}.",
+                title=f"Announcement {i+1}",
+                content="Notice content goes here.",
                 category=random.choice(CATEGORIES),
                 target_type=target,
                 sender_faculty_id=fac.id if fac else None
             )
-            if target == 'class':
-                n.target_course = random.choice(COURSES)
-                n.target_semester = random.randint(1, 8)
-            
             db.session.add(n)
 
         # 7. Fee Records (500)
@@ -171,9 +166,9 @@ def seed_data():
                 student_id=stu.id,
                 semester=stu.semester,
                 academic_year="2024-2025",
-                amount_due=random.choice([25000, 50000, 75000]),
-                due_date=today + timedelta(days=random.randint(-30, 60)),
-                status=random.choices(["Paid", "Pending", "Overdue"], weights=[50, 40, 10])[0]
+                amount_due=random.choice([25000, 50000]),
+                due_date=today + timedelta(days=random.randint(-10, 30)),
+                status=random.choice(["Paid", "Pending"])
             )
             db.session.add(f)
 
@@ -181,58 +176,59 @@ def seed_data():
         print("Seeding 100 Queries...")
         for i in range(100):
             stu = random.choice(student_objs)
-            fac = faculty_objs[random.randint(0, 59)]
-            
-            q = StudentQuery(
-                student_id=stu.id,
-                faculty_id=fac.id,
-                title=f"Problem with {random.choice(['Assignment', 'Lecture', 'Notes'])}",
-                status=random.choice(["Pending", "Answered", "Resolved"])
-            )
+            fac = random.choice(faculty_objs)
+            q = StudentQuery(student_id=stu.id, faculty_id=fac.id, title="Query", status="Pending")
             db.session.add(q)
-            db.session.flush()
-            
-            # Initial Message
-            m = QueryMessage(
-                query_id=q.id,
-                sender_type='student',
-                content="Hello sir, I have a doubt in today's topic."
-            )
-            db.session.add(m)
 
-        # 9. Exam Events (5)
-        print("Seeding 5 Exam Events...")
-        for i in range(5):
-            course = random.choice(COURSES)
-            sem = random.randint(1, 8)
-            ee = ExamEvent(
-                name=f"Semester Exam {i+1} - {course}",
-                academic_year="2024-2025",
-                course_name=course,
-                semester=sem,
-                start_date=date.today() + timedelta(days=random.randint(30, 90)),
-                end_date=date.today() + timedelta(days=random.randint(91, 120)),
-                is_published=True
-            )
-            db.session.add(ee)
-            db.session.flush()
-            
-            # Add papers for this event
-            relevant_subs = [s for s in subject_objs if s.course_name == course and s.semester == sem]
-            for sub in relevant_subs[:5]: # Max 5 papers per event
-                ep = ExamPaper(
-                    exam_event_id=ee.id,
-                    subject_id=sub.id,
-                    date=ee.start_date + timedelta(days=random.randint(0, 5)),
-                    start_time=datetime.strptime("10:00", "%H:%M").time(),
-                    end_time=datetime.strptime("13:00", "%H:%M").time(),
-                    total_marks=100
+        # 9. Exam Events (Sem 1 & 3)
+        print("Seeding 10 Exam Events...")
+        for course in COURSES:
+            for sem in [1, 3]:
+                ee = ExamEvent(
+                    name=f"Final Exam {course} S{sem}",
+                    academic_year="2024-2025",
+                    course_name=course,
+                    semester=sem,
+                    start_date=date.today() - timedelta(days=120),
+                    end_date=date.today() - timedelta(days=110),
+                    is_published=True
                 )
-                db.session.add(ep)
+                db.session.add(ee)
+                db.session.flush()
+                
+                relevant_subs = [s for s in subject_objs if s.course_name == course and s.semester == sem]
+                for sub in relevant_subs[:4]:
+                    ep = ExamPaper(
+                        exam_event_id=ee.id,
+                        subject_id=sub.id,
+                        date=ee.start_date + timedelta(days=2),
+                        start_time=time(10,0),
+                        end_time=time(13,0)
+                    )
+                    db.session.add(ep)
+
+        db.session.flush()
+
+        # 10. Student Results (6000)
+        print("Seeding 6000 Results...")
+        papers = ExamPaper.query.all()
+        for p in papers:
+            event = p.exam_event
+            rel_students = [s for s in student_objs if s.course_name == event.course_name and s.semester == event.semester]
+            for s in rel_students:
+                m = random.gauss(65 if event.semester==1 else 72, 10)
+                m = max(0, min(100, m))
+                res = StudentResult(
+                    exam_paper_id=p.id,
+                    student_id=s.id,
+                    marks_obtained=m,
+                    status="Present",
+                    is_fail=(m < 35)
+                )
+                db.session.add(res)
 
         db.session.commit()
-        print("--- Seeding Complete! ---")
-        print(f"Summary: 11 Admins, 60 Faculty, 1000 Students, 100 Subjects, 1500 Attendance, 100 Notices, 500 Fees, 100 Queries, 5 Exam Events.")
+        print("--- DONE ---")
 
 if __name__ == "__main__":
     seed_data()
