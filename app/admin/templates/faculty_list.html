@@ -41,7 +41,17 @@
                    </div>
                    <div class="flex justify-between text-xs text-gray-500">
                        <span>Subjects:</span>
-                       <span class="font-medium text-gray-900 text-right text-xs break-words max-w-[150px]">{{ faculty.assigned_subject or 'None' }}</span>
+                       <div class="flex flex-wrap justify-end gap-1 max-w-[180px]">
+                           {% if faculty.assigned_subject %}
+                               {% for subject in faculty.assigned_subject.split(',') %}
+                                   <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                       {{ subject.strip() }}
+                                   </span>
+                               {% endfor %}
+                           {% else %}
+                               <span class="text-gray-500 italic">None</span>
+                           {% endif %}
+                       </div>
                    </div>
                 </div>
             </div>
