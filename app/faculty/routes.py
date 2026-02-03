@@ -48,7 +48,7 @@ def dashboard():
     # 3. Recent Notices (Inbox + Sent)
     recent_notices = Notice.query.filter(
         (Notice.target_type == 'all') | 
-        (Notice.target_type == 'faculty') |
+        ((Notice.target_type == 'faculty') & ((Notice.target_faculty_id == None) | (Notice.target_faculty_id == faculty.id))) |
         (Notice.sender_faculty_id == faculty.id)
     ).order_by(Notice.created_at.desc()).limit(5).all()
 
@@ -188,15 +188,19 @@ def classes():
     subject_data = []
     for sub in subjects:
         # Count students in this course & semester
-        # Assuming course_name and semester match
-        count = StudentProfile.query.filter_by(
+        student_count = StudentProfile.query.filter_by(
             course_name=sub.course_name,
             semester=sub.semester
         ).count()
         
+        # Count actual scheduled lectures from Timetable
+        lecture_count = Timetable.query.filter_by(subject_id=sub.id).count()
+        
         subject_data.append({
             'subject': sub,
-            'student_count': count
+            'student_count': student_count,
+            'lecture_count': lecture_count,
+            'is_elective': False # Placeholder for future logic
         })
 
     return render_template('faculty/classes.html', subject_data=subject_data)
@@ -701,7 +705,7 @@ def notices():
     # Assuming Admin senders have sender_faculty_id = None
     received_notices = Notice.query.filter(
         (Notice.target_type == 'all') | 
-        (Notice.target_type == 'faculty') # Future proofing
+        ((Notice.target_type == 'faculty') & ((Notice.target_faculty_id == None) | (Notice.target_faculty_id == faculty.id)))
     ).filter(Notice.sender_faculty_id == None).order_by(Notice.created_at.desc()).all()
     
     # Context Data for Form

@@ -21,16 +21,30 @@ def add_notice():
         target_course = None
         target_faculty_id = None
         
+        # Determine target_type based on category
+        target_type = 'all'
         if category == 'course':
-             target_course = request.form.get('target_course')
+            target_course = request.form.get('target_course')
+            if not target_course:
+                flash('Please select a course.', 'error')
+                return redirect(url_for('admin.add_notice'))
+            target_type = 'class'
+            
         elif category == 'faculty':
-             target_faculty_id = request.form.get('target_faculty_id')
+            target_faculty_id = request.form.get('target_faculty_id')
+            if not target_faculty_id:
+                flash('Please select a faculty member.', 'error')
+                return redirect(url_for('admin.add_notice'))
+            target_type = 'faculty'
         
+        print(f"DEBUG: Creating Notice - Cat: {category}, Type: {target_type}, TargetID: {target_faculty_id}") # Debug Log
+
         try:
             notice = Notice(
                 title=title,
                 content=content,
                 category=category,
+                target_type=target_type,
                 target_course=target_course,
                 target_faculty_id=target_faculty_id
             )

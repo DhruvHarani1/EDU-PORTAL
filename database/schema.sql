@@ -54,9 +54,11 @@ CREATE TABLE notice (
     target_semester INTEGER,
     target_student_id INTEGER,
     sender_faculty_id INTEGER,
+    target_faculty_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (target_student_id) REFERENCES student_profile (id),
-    FOREIGN KEY (sender_faculty_id) REFERENCES faculty_profile (id)
+    FOREIGN KEY (sender_faculty_id) REFERENCES faculty_profile (id),
+    FOREIGN KEY (target_faculty_id) REFERENCES faculty_profile (id)
 );
 
 -- Exam Schema
