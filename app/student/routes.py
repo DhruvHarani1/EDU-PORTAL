@@ -13,9 +13,7 @@ def dashboard():
     student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
     
     # 1. Attendance Stats
-    total_days = Attendance.query.filter_by(student_id=student.id).count()
-    present_days = Attendance.query.filter_by(student_id=student.id, status='Present').count()
-    attendance_pct = round((present_days / total_days * 100), 1) if total_days > 0 else 0
+    attendance_pct = student.get_overall_attendance()
     
     # 2. Recent Notices
     notices = Notice.query.order_by(Notice.created_at.desc()).limit(4).all()
@@ -48,10 +46,8 @@ def attendance():
     student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
     
     # 2. Get Overall Attendance (Daily)
-    total_days = Attendance.query.filter_by(student_id=student.id).count()
-    present_days = Attendance.query.filter_by(student_id=student.id, status='Present').count()
-    
-    overall_percent = (present_days / total_days * 100) if total_days > 0 else 0
+    # Using standardized model method
+    overall_percent = student.get_overall_attendance()
     overall_status = "Excellent" if overall_percent >= 85 else "Good" if overall_percent >= 75 else "Critical"
 
     # 3. Derive Subject-Wise Data via Timetable Heuristic

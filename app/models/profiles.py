@@ -26,6 +26,13 @@ class StudentProfile(db.Model):
     def __repr__(self):
         return f'<StudentProfile {self.enrollment_number}>'
 
+    def get_overall_attendance(self):
+        # Local import to avoid circular dependency
+        from app.models.academics import Attendance
+        total = Attendance.query.filter_by(student_id=self.id).count()
+        present = Attendance.query.filter_by(student_id=self.id, status='Present').count()
+        return round((present / total * 100), 1) if total > 0 else 0
+
 class FacultyProfile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)

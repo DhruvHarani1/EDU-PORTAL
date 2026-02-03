@@ -81,6 +81,7 @@
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Course</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Semester</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Attendance</th>
                             <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:pr-6">
                                 Action
                             </th>
@@ -94,6 +95,12 @@
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ student.user.email }}</td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ student.course_name }}</td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ student.semester }}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    {% set att = student.get_overall_attendance() %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if att < 75 %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                        {{ att }}%
+                                    </span>
+                                </td>
                                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                     <div class="flex justify-end space-x-2">
                                         <a href="{{ url_for('admin.edit_student', id=student.id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
