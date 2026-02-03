@@ -12,7 +12,8 @@ from datetime import datetime, timedelta
 def timetable_landing():
     # step 1: Select Course and Semester
     courses = db.session.query(StudentProfile.course_name).distinct().all()
-    courses = [c[0] for c in courses]
+    # Deduplicate in Python (handle whitespace/case potentially) and sort
+    courses = sorted(list(set([c[0].strip() for c in courses if c[0]])))
     return render_template('timetable_landing.html', courses=courses)
 
 @admin_bp.route('/timetable/setup', methods=['GET', 'POST'])
