@@ -81,7 +81,12 @@
                     <div class="sm:col-span-6">
                         <label for="assigned_subject" class="block text-sm font-medium text-gray-700">Assigned Subject</label>
                         <div class="mt-1">
-                            <input type="text" name="assigned_subject" id="assigned_subject" value="{{ faculty.assigned_subject or '' }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            <select name="assigned_subject" id="assigned_subject" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                                <option value="">-- Select Subject --</option>
+                                {% for sub in subjects %}
+                                <option value="{{ sub.name }}" {% if faculty.assigned_subject == sub.name %}selected{% endif %}>{{ sub.name }} ({{ sub.course_name }} - Sem {{ sub.semester }})</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                 </div>

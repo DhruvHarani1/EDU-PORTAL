@@ -1,7 +1,7 @@
 from flask import render_template, request, flash, redirect, url_for, current_app, Response, make_response
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import User, StudentProfile, FacultyProfile
+from app.models import User, StudentProfile, FacultyProfile, Subject
 from . import admin_bp
 import csv
 import io
@@ -288,7 +288,8 @@ def add_faculty():
             db.session.rollback()
             flash(f'Error adding faculty: {str(e)}', 'error')
 
-    return render_template('faculty_add.html')
+    subjects = Subject.query.all()
+    return render_template('faculty_add.html', subjects=subjects)
 
 @admin_bp.route('/faculty/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -333,7 +334,8 @@ def edit_faculty(id):
             db.session.rollback()
             flash(f'Error updating faculty: {str(e)}', 'error')
 
-    return render_template('faculty_edit.html', faculty=faculty)
+    subjects = Subject.query.all()
+    return render_template('faculty_edit.html', faculty=faculty, subjects=subjects)
 
 @admin_bp.route('/faculty/delete/<int:id>', methods=['POST'])
 @login_required
