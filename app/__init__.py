@@ -19,19 +19,19 @@ def create_app(config_name='default'):
         return base64.b64encode(data).decode('utf-8')
 
     # Register Blueprints
-    from app.main import main_bp
+    from app.modules.main import main_bp
     app.register_blueprint(main_bp)
 
-    from app.auth import auth_bp
+    from app.modules.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    from app.admin import admin_bp
+    from app.modules.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    from app.faculty import faculty_bp
+    from app.modules.faculty import faculty_bp
     app.register_blueprint(faculty_bp, url_prefix='/faculty')
 
-    from app.student import student_bp
+    from app.modules.student import student_bp
     app.register_blueprint(student_bp, url_prefix='/student')
 
     return app

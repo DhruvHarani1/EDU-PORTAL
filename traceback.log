@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "P:\EDU-PORTAL\debug_test.py", line 9, in <module>
-    from tests.test_view_consistency import app, test_attendance_view_consistency, db
-ModuleNotFoundError: No module named 'tests.test_view_consistency'
