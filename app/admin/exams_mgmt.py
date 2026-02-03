@@ -24,6 +24,10 @@ def create_exam_event():
         start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
         end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
         
+        if end_date < start_date:
+            flash('End Date cannot be before Start Date.', 'error')
+            return redirect(url_for('.create_exam_event'))
+        
         event = ExamEvent(
             name=name,
             course_name=course,
@@ -53,6 +57,7 @@ def schedule_exam(event_id):
             date_str = request.form.get(f'date_{sub.id}')
             start_str = request.form.get(f'start_{sub.id}')
             end_str = request.form.get(f'end_{sub.id}')
+            marks_str = request.form.get(f'marks_{sub.id}')
             
             if date_str and start_str and end_str:
                 # Check if paper exists
@@ -61,11 +66,16 @@ def schedule_exam(event_id):
                 date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
                 start_obj = datetime.strptime(start_str, '%H:%M').time()
                 end_obj = datetime.strptime(end_str, '%H:%M').time()
+                try:
+                    total_marks = int(marks_str) if marks_str else 100
+                except ValueError:
+                    total_marks = 100
                 
                 if paper:
                     paper.date = date_obj
                     paper.start_time = start_obj
                     paper.end_time = end_obj
+                    paper.total_marks = total_marks
                 else:
                     paper = ExamPaper(
                         exam_event_id=event.id,
@@ -73,7 +83,7 @@ def schedule_exam(event_id):
                         date=date_obj,
                         start_time=start_obj,
                         end_time=end_obj,
-                        total_marks=100
+                        total_marks=total_marks
                     )
                     db.session.add(paper)
         
