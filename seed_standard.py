@@ -26,19 +26,19 @@ def get_random_name():
 
 def seed_data():
     with app.app_context():
-        print("--- Resetting Database for Standard Data ---")
+        print("--- Resetting Database for Universal Standard Data ---")
         db.drop_all()
         db.create_all()
 
         # 1. Admins
-        print("Seeding 2 Admins...")
+        print("Seeding Admins...")
         for i in [f"admin@edu.com", "admin2@edu.com"]:
             u = User(email=i, role='admin')
             u.set_password('123')
             db.session.add(u)
         
         # 2. Faculty
-        print("Seeding 10 Faculty...")
+        print("Seeding Faculty...")
         faculty_objs = []
         for i in range(1, 11):
             u = User(email=f"faculty{i}@edu.com", role='faculty')
@@ -54,38 +54,71 @@ def seed_data():
             )
             db.session.add(f)
             faculty_objs.append(f)
-        
-        # 3. Subjects
-        print("Seeding 20 Subjects...")
-        subject_objs = []
-        subj_names = ["Math", "Physics", "DSA", "DBMS", "OS", "AI", "Cloud", "Networking"]
-        for i in range(20):
-            course = random.choice(COURSES)
-            sem = random.randint(1, 4)
-            s = Subject(
-                name=f"{random.choice(subj_names)} {random.randint(1,2)}",
-                course_name=course, semester=sem,
-                academic_year="2024-2025", faculty_id=random.choice(faculty_objs).id,
-                weekly_lectures=4, credits=3
-            )
-            db.session.add(s)
-            subject_objs.append(s)
         db.session.flush()
 
-        # 4. Students
-        print("Seeding 50 Students...")
+        # 3. Subjects & Schedule Settings (Ensure for ALL Course/Sem combinations)
+        print("Seeding Subjects & Timetable Settings...")
+        subject_map = {} # (course, sem) -> [Subject]
+        
+        for course in COURSES:
+            for sem in range(1, 5): # 1 to 4 semesters for each course
+                # a. Schedule Settings
+                settings = ScheduleSettings(
+                    course_name=course, semester=sem,
+                    start_time=time(9,0), end_time=time(17,0),
+                    slots_per_day=8, days_per_week=5,
+                    recess_duration=60, recess_after_slot=4
+                )
+                db.session.add(settings)
+                
+                # b. Subjects
+                subj_list = []
+                names = ["Programming", "Mathematics", "Science", "Professional Arts", "Database", "Networking"]
+                random.shuffle(names)
+                for i in range(4): # 4 subjects per combination
+                    s = Subject(
+                        name=f"{names[i]} {course}-{sem}",
+                        course_name=course, semester=sem,
+                        academic_year="2024-2025", faculty_id=random.choice(faculty_objs).id,
+                        weekly_lectures=4, credits=3
+                    )
+                    db.session.add(s)
+                    subj_list.append(s)
+                subject_map[(course, sem)] = subj_list
+                db.session.flush()
+                
+                # c. Timetable slots
+                for d in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']: # Added Sat for visual parity
+                    for p in range(1, 8): # 7 periods per day - ensures recess (after 4) is in the middle
+                        sub = random.choice(subj_list)
+                        slot = Timetable(
+                            course_name=course, semester=sem,
+                            day_of_week=d, period_number=p,
+                            subject_id=sub.id, faculty_id=sub.faculty_id
+                        )
+                        db.session.add(slot)
+        
+        db.session.flush()
+
+        # 4. Students (Ensure distributed across courses)
+        print("Seeding Students...")
         student_objs = []
-        for i in range(1, 51):
+        for i in range(1, 41): # 40 students
             u = User(email=f"student{i}@edu.com", role='student')
             u.set_password('123')
             db.session.add(u)
             db.session.flush()
 
+            # Cycle thru course/sem combinations
+            idx = (i-1) % 12
+            course = COURSES[idx // 4]
+            sem = (idx % 4) + 1
+            
             s = StudentProfile(
                 user_id=u.id, display_name=get_random_name(),
                 enrollment_number=f"EN{2024000+i:07d}",
-                course_name=random.choice(COURSES),
-                semester=random.randint(1, 4),
+                course_name=course,
+                semester=sem,
                 date_of_birth=date(2003, 1, 1),
                 mentor_id=random.choice(faculty_objs).id
             )
@@ -93,45 +126,64 @@ def seed_data():
             student_objs.append(s)
         db.session.flush()
 
-        # 5. Attendance & Results
-        print("Seeding Trends...")
+        # 5. Attendance & Results (For all students)
+        print("Seeding Attendance & Trends...")
         for s in student_objs:
-            relevant_subs = [sb for sb in subject_objs if sb.course_name == s.course_name and sb.semester == s.semester]
-            for sub in relevant_subs[:3]:
-                # Attendance
-                for d in range(5):
+            relevant_subs = subject_map.get((s.course_name, s.semester), [])
+            for sub in relevant_subs:
+                # Attendance (Last 10 days)
+                for d in range(10):
                     att = Attendance(
                         student_id=s.id, course_name=s.course_name,
                         date=date.today() - timedelta(days=d+1),
-                        status="Present", subject_id=sub.id, faculty_id=sub.faculty_id
-                    )
-                    db.session.add(att)
-
-        # 6. Timetable (B.Tech Sem 1)
-        print("Seeding Sample Timetable...")
-        settings = ScheduleSettings(
-            course_name="B.Tech", semester=1,
-            start_time=time(9,0), end_time=time(17,0),
-            slots_per_day=8, days_per_week=5,
-            recess_duration=60, recess_after_slot=4
-        )
-        db.session.add(settings)
-        db.session.flush()
-
-        bt_subs = [sb for sb in subject_objs if sb.course_name == "B.Tech" and sb.semester == 1]
-        if bt_subs:
-            for d in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']:
-                for p in range(1, 5):
-                    sub = random.choice(bt_subs)
-                    slot = Timetable(
-                        course_name="B.Tech", semester=1,
-                        day_of_week=d, period_number=p,
+                        status="Present" if random.random() > 0.1 else "Absent",
                         subject_id=sub.id, faculty_id=sub.faculty_id
                     )
-                    db.session.add(slot)
+                    db.session.add(att)
+                
+                # Results
+                res = StudentResult(
+                    exam_paper_id=None, # Not using ExamPaper/Event for simple test
+                    student_id=s.id,
+                    marks_obtained=random.randint(60, 95),
+                    status="Present"
+                )
+                # Note: StudentResult usually needs an exam_paper_id, but some reports might handle Null
+                # For safety, let's seed one Exam Event per course
+        
+        # 6. Exam Logic (Simple)
+        print("Seeding Exams...")
+        for course in COURSES:
+            ee = ExamEvent(
+                name=f"Standard Exam - {course}", academic_year="2024-2025",
+                course_name=course, semester=1,
+                start_date=date.today() - timedelta(days=30),
+                end_date=date.today() - timedelta(days=25),
+                is_published=True
+            )
+            db.session.add(ee)
+            db.session.flush()
+            
+            # Add one paper and results for Sem 1 students
+            sub = subject_map[(course, 1)][0]
+            ep = ExamPaper(
+                exam_event_id=ee.id, subject_id=sub.id,
+                date=ee.start_date + timedelta(days=1),
+                start_time=time(10,0), end_time=time(13,0)
+            )
+            db.session.add(ep)
+            db.session.flush()
+            
+            relevant_students = [st for st in student_objs if st.course_name == course and st.semester == 1]
+            for st in relevant_students:
+                res = StudentResult(
+                    exam_paper_id=ep.id, student_id=st.id,
+                    marks_obtained=random.gauss(75, 8), status="Present"
+                )
+                db.session.add(res)
 
         db.session.commit()
-        print("--- Standard Data Seeded! ---")
+        print("--- Universal Standard Data Seeded! ---")
 
 if __name__ == "__main__":
     seed_data()
