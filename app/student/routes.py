@@ -77,14 +77,22 @@ def attendance():
     records = Attendance.query.filter_by(student_id=student.id).all()
     
     for record in records:
-        day_idx = record.date.weekday() # 0=Mon
-        relevant_subjects = day_map.get(day_idx, [])
-        
-        for sub_id in relevant_subjects:
-            if sub_id in subject_stats:
-                subject_stats[sub_id]['total'] += 1
+        # Direct Subject Match (Preferred)
+        if record.subject_id:
+            if record.subject_id in subject_stats:
+                subject_stats[record.subject_id]['total'] += 1
                 if record.status == 'Present':
-                    subject_stats[sub_id]['present'] += 1
+                    subject_stats[record.subject_id]['present'] += 1
+        else:
+            # Fallback for Legacy Data (Day-based Heuristic)
+            day_idx = record.date.weekday() # 0=Mon
+            relevant_subjects = day_map.get(day_idx, [])
+            
+            for sub_id in relevant_subjects:
+                if sub_id in subject_stats:
+                    subject_stats[sub_id]['total'] += 1
+                    if record.status == 'Present':
+                        subject_stats[sub_id]['present'] += 1
 
     # 4. Final Calculations (Percent + Recovery)
     processed_subjects = []
