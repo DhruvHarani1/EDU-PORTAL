@@ -80,7 +80,7 @@ def seed():
                 
                 # Subjects
                 subs = []
-                names = ["Programming", "Logic", "Networks", "Databases"]
+                names = ["Data Structures and Algorithms", "Programming", "Logic", "Networks", "Databases"]
                 for i, n in enumerate(names):
                     # Ensure faculty1 (id=1) gets at least one subject per sem
                     # faculty_objs[0] is faculty1
@@ -96,14 +96,14 @@ def seed():
                     db.session.add(s)
                     subs.append(s)
                 db.session.flush()
-                
+
                 # Timetable (4-Recess-3 pattern)
                 for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
                     for p in range(1, 8):
                         # Guarantee faculty1 has period 1 and 2 every day for testing
                         if p in [1, 2]:
                              fac_id = faculty_objs[0].id
-                             sub_id = subs[0].id # The subject we assigned to faculty1 above
+                             sub_id = subs[0].id # Data Structures and Algorithms for faculty1
                         else:
                              fac_id = random.choice(faculty_objs).id
                              sub_id = random.choice(subs).id
@@ -119,7 +119,7 @@ def seed():
                         db.session.add(slot)
 
         # 4. Students
-        print("Seeding 40 Students...")
+        print("Seeding 40 Students and Mentorship...")
         for i in range(1, 41):
             u = User(email=f"student{i}@edu.com", role='student')
             u.set_password('123')
@@ -130,7 +130,26 @@ def seed():
             c = courses[idx // 3]
             s = (idx % 3) + 1
             
-            sp = StudentProfile(user_id=u.id, display_name=f"Student {i}", enrollment_number=f"EN{2024000+i:07d}", course_name=c, semester=s)
+            # Assign Mentor (faculty1 gets more mentees for testing)
+            if i <= 10:
+                mentor_id = faculty_objs[0].id # faculty1
+            else:
+                mentor_id = random.choice(faculty_objs).id
+
+            # Randomly flag some students with 'Lost' ID card status
+            id_status = 'Lost' if random.random() < 0.1 else 'Active'
+
+            sp = StudentProfile(
+                user_id=u.id, 
+                display_name=f"Student {i}", 
+                enrollment_number=f"EN{2024000+i:07d}", 
+                course_name=c, 
+                semester=s,
+                mentor_id=mentor_id,
+                phone_number=f"+91 {random.randint(7000, 9999)} {random.randint(1000, 9999)}",
+                address=f"{random.randint(1, 999)}, Edu Lane, City {i}",
+                id_card_status=id_status
+            )
             db.session.add(sp)
         db.session.flush()
 
