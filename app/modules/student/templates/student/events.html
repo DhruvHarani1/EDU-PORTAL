@@ -103,7 +103,7 @@
                             <img class="h-6 w-6 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&h=64" alt="">
                             <img class="h-6 w-6 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=64&h=64" alt="">
                         </div>
-                        <span class="text-xs text-gray-400 font-medium">+124 Going</span>
+                        <span class="text-xs text-gray-400 font-medium">+{{ ev.registrations|length }} Going</span>
                     </div>
                     
                     {% if ev.id in registered_ids %}
