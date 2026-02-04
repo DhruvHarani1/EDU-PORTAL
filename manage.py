@@ -81,22 +81,41 @@ def seed():
                 # Subjects
                 subs = []
                 names = ["Programming", "Logic", "Networks", "Databases"]
-                for n in names:
+                for i, n in enumerate(names):
+                    # Ensure faculty1 (id=1) gets at least one subject per sem
+                    # faculty_objs[0] is faculty1
+                    assigned_fac = faculty_objs[0] if i == 0 else random.choice(faculty_objs)
+                    
                     s = Subject(
                         name=f"{n} {course}-{sem}", 
                         course_name=course, 
                         semester=sem, 
-                        faculty_id=random.choice(faculty_objs).id,
-                        resource_link="https://drive.google.com/drive/u/0/folders/dummy_link" # Dummy Link
+                        faculty_id=assigned_fac.id,
+                        resource_link="https://drive.google.com/drive/u/0/folders/dummy_link" 
                     )
                     db.session.add(s)
                     subs.append(s)
                 db.session.flush()
                 
                 # Timetable (4-Recess-3 pattern)
-                for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']:
+                for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
                     for p in range(1, 8):
-                        slot = Timetable(course_name=course, semester=sem, day_of_week=day, period_number=p, subject_id=random.choice(subs).id, faculty_id=random.choice(faculty_objs).id)
+                        # Guarantee faculty1 has period 1 and 2 every day for testing
+                        if p in [1, 2]:
+                             fac_id = faculty_objs[0].id
+                             sub_id = subs[0].id # The subject we assigned to faculty1 above
+                        else:
+                             fac_id = random.choice(faculty_objs).id
+                             sub_id = random.choice(subs).id
+
+                        slot = Timetable(
+                            course_name=course, 
+                            semester=sem, 
+                            day_of_week=day, 
+                            period_number=p, 
+                            subject_id=sub_id, 
+                            faculty_id=fac_id
+                        )
                         db.session.add(slot)
 
         # 4. Students

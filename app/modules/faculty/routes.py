@@ -296,8 +296,10 @@ def attendance():
         flash('Attendance updated successfully!', 'success')
         return redirect(url_for('faculty.attendance', subject_id=subj_id, date=date_val))
 
-    # If parameters provided, load Marking View
-    if selected_subject_id and selected_date_str:
+    # If parameters provided, load Marking View (Unless view param is 'list')
+    view_mode = request.args.get('view')
+    
+    if selected_subject_id and selected_date_str and view_mode != 'list':
         selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
         selected_subject = Subject.query.get_or_404(selected_subject_id)
         
@@ -354,23 +356,38 @@ def attendance():
                 })
 
     else:
-        # Load Dashboard View: Recent Lectures Table
-        # Generate last 30 days history
-        today = date.today()
-        # Look back 30 days
+        # Load Dashboard View: Lecture History
         all_lectures = []
         
         # Optimize: Filter dict of faculty's timetable slots by day
-        # Map: 'Monday' -> [Slot1, Slot2]
         timetable_map = {}
-        slots = Timetable.query.filter_by(faculty_id=faculty.id).all()
+        slots_query = Timetable.query.filter_by(faculty_id=faculty.id)
+        
+        # Filter Slots by Subject if provided
+        if selected_subject_id:
+             slots_query = slots_query.filter_by(subject_id=selected_subject_id)
+             
+        slots = slots_query.all()
         for slot in slots:
             if slot.day_of_week not in timetable_map: timetable_map[slot.day_of_week] = []
             timetable_map[slot.day_of_week].append(slot)
             
-        # Iterate dates descending
-        for i in range(30):
-            curr_date = today - timedelta(days=i)
+        # Determine Date Range
+        if selected_date_str:
+             try:
+                 # Specific Date
+                 date_range = [datetime.strptime(selected_date_str, '%Y-%m-%d').date()]
+             except ValueError:
+                 flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
+                 today = date.today()
+                 date_range = [today - timedelta(days=i) for i in range(30)]
+        else:
+             # Last 30 Days
+             today = date.today()
+             date_range = [today - timedelta(days=i) for i in range(30)]
+
+        # Iterate dates
+        for curr_date in date_range:
             day_name = curr_date.strftime('%A')
             
             if day_name in timetable_map:
@@ -391,6 +408,9 @@ def attendance():
                         'status': status
                     })
         
+        # Sort descending by date
+        all_lectures.sort(key=lambda x: x['date'], reverse=True)
+
         # Pagination Logic (Manual list pagination)
         per_page = 5
         total_items = len(all_lectures)

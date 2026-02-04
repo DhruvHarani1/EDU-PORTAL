@@ -196,7 +196,33 @@
     {% else %}
         <!-- DASHBOARD VIEW: Lecture History -->
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Filter Attendance</h3>
+                <form action="{{ url_for('faculty.attendance') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <input type="hidden" name="view" value="list">
+                    <div>
+                        <label for="subject_id" class="block text-sm font-medium text-gray-700">Filter by Subject</label>
+                        <select id="subject_id" name="subject_id" onchange="this.form.submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="">All Subjects</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}" {% if selected_subject and selected_subject.id == sub.id %}selected{% endif %}>{{ sub.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700">Filter by Date</label>
+                        <input type="date" name="date" id="date" value="{{ selected_date|default('') }}" onchange="this.form.submit()" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                         <!-- Search button kept as fallback but text updated -->
+                        <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200 mt-4">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Recent & Upcoming Lectures</h3>
                 <p class="mt-1 max-w-2xl text-sm text-gray-500">Select a scheduled lecture to mark or view attendance.</p>
             </div>
