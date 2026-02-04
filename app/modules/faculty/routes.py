@@ -668,6 +668,45 @@ def mentorship():
     
     return render_template('faculty/mentorship.html', mentees=mentees)
 
+@faculty_bp.route('/mentorship/edit/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def edit_mentee(student_id):
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    student = StudentProfile.query.get_or_404(student_id)
+    
+    # Security: Check if this faculty is the mentor
+    if student.mentor_id != faculty.id:
+        flash('Unauthorized: You can only edit details of your assigned mentees.', 'error')
+        return redirect(url_for('faculty.mentorship'))
+        
+    if request.method == 'POST':
+        try:
+            student.display_name = request.form.get('display_name')
+            student.enrollment_number = request.form.get('enrollment_number')
+            student.course_name = request.form.get('course_name')
+            student.semester = request.form.get('semester', type=int)
+            student.batch_year = request.form.get('batch_year')
+            student.phone_number = request.form.get('phone_number')
+            student.address = request.form.get('address')
+            student.guardian_name = request.form.get('guardian_name')
+            student.guardian_contact = request.form.get('guardian_contact')
+            student.id_card_status = request.form.get('id_card_status')
+            
+            dob_str = request.form.get('date_of_birth')
+            if dob_str and dob_str.strip():
+                student.date_of_birth = datetime.strptime(dob_str, '%Y-%m-%d').date()
+            else:
+                student.date_of_birth = None
+            
+            db.session.commit()
+            flash(f'Details for {student.display_name} updated successfully!', 'success')
+            return redirect(url_for('faculty.mentorship'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating mentee: {str(e)}', 'error')
+            
+    return render_template('faculty/edit_mentee.html', student=student)
+
 from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Notice, StudentProfile, Subject
 
 # ... (Previous imports remain, just adding models to line 4 manually if needed, 
