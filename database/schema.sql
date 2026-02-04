@@ -23,7 +23,6 @@ CREATE TABLE student_profile (
     address TEXT,
     guardian_name VARCHAR(100),
     guardian_contact VARCHAR(15),
-    id_card_status VARCHAR(20) DEFAULT 'Active',
     mentor_id INTEGER,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (mentor_id) REFERENCES faculty_profile (id)
@@ -134,9 +133,7 @@ CREATE TABLE schedule_settings (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     slots_per_day INTEGER DEFAULT 8,
-    days_per_week INTEGER DEFAULT 5,
-    recess_duration INTEGER DEFAULT 0,
-    recess_after_slot INTEGER DEFAULT 0
+    days_per_week INTEGER DEFAULT 5
 );
 
 
