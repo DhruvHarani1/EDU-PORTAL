@@ -16,6 +16,8 @@ class StudentProfile(db.Model):
     guardian_name = db.Column(db.String(100), nullable=True)
     guardian_contact = db.Column(db.String(15), nullable=True)
     
+    id_card_status = db.Column(db.String(20), default='Active', nullable=True) # Active, Lost, Replaced
+    
     # Mentor Relationship
     mentor_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True)
     mentor = db.relationship('FacultyProfile', backref=db.backref('mentees', lazy=True))

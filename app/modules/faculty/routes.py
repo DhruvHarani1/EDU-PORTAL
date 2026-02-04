@@ -828,3 +828,15 @@ def timetable():
         del schedule['Sunday']
         
     return render_template('faculty/timetable.html', faculty=faculty, schedule=schedule)
+
+@faculty_bp.route('/reports/lost-cards')
+@login_required
+def report_lost_cards():
+    faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Ideally filter by students relevant to faculty(optional), but for "Lost Cards", 
+    # usually it's a general report or filtered by Dept. 
+    # Showing all lost cards for now as faculty might need to know about any student.
+    lost_cards = StudentProfile.query.filter_by(id_card_status='Lost').all()
+    
+    return render_template('faculty/report_lost_cards.html', lost_cards=lost_cards)

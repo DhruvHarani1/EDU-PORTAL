@@ -589,6 +589,17 @@ def id_card():
     
     return render_template('student/id_card.html', student=student)
 
+@student_bp.route('/id-card/report-lost', methods=['POST'])
+@login_required
+def report_lost_card():
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    student.id_card_status = 'Lost'
+    db.session.commit()
+    
+    flash('ID Card reported as lost. Please contact administration for a replacement.', 'warning')
+    return redirect(url_for('student.id_card'))
+
 
 
 

@@ -217,15 +217,17 @@
             </div>
         </div>
 
-        <!-- Library Status -->
+        <!-- Faculty Mentor -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-             <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+             <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
             </div>
              <div>
-                <h3 class="text-sm font-bold text-gray-900">Library Access</h3>
-                <p class="text-xs text-gray-500">Books Borrowed: 0</p>
-                <p class="text-[10px] text-blue-600 font-medium mt-1">Account Active</p>
+                <h3 class="text-sm font-bold text-gray-900">Faculty Mentor</h3>
+                <p class="text-xs text-gray-500">{{ student.mentor.display_name if student.mentor else 'Not Assigned' }}</p>
+                <p class="text-[10px] text-purple-600 font-medium mt-1">{{ student.mentor.department if student.mentor else 'Academic Dept' }}</p>
             </div>
         </div>
 
@@ -236,8 +238,15 @@
             </div>
              <div>
                 <h3 class="text-sm font-bold text-gray-900">Lost Card?</h3>
-                <p class="text-xs text-gray-500">Immediately report to admin.</p>
-                <a href="#" class="text-[10px] text-red-600 font-bold mt-1 uppercase hover:underline">Report Issue ></a>
+                {% if student.id_card_status == 'Lost' %}
+                    <p class="text-xs text-red-500 font-bold">Status: Reported Lost</p>
+                    <p class="text-[10px] text-gray-400 mt-1">Processing Replacement...</p>
+                {% else %}
+                    <p class="text-xs text-gray-500">Immediately report to admin.</p>
+                    <form action="{{ url_for('student.report_lost_card') }}" method="POST" onsubmit="return confirm('Are you sure you want to report your ID card as lost? This action cannot be undone.');">
+                        <button type="submit" class="text-[10px] text-red-600 font-bold mt-1 uppercase hover:underline bg-transparent border-none p-0 cursor-pointer">Report Issue ></button>
+                    </form>
+                {% endif %}
             </div>
         </div>
 
