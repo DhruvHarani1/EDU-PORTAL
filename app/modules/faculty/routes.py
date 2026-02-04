@@ -707,7 +707,7 @@ def edit_mentee(student_id):
             
     return render_template('faculty/edit_mentee.html', student=student)
 
-from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Notice, StudentProfile, Subject
+from app.models import FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Notice, StudentProfile, Subject, UniversityEvent, EventRegistration
 
 # ... (Previous imports remain, just adding models to line 4 manually if needed, 
 # but simply overwriting the notices function is safer)
@@ -827,6 +827,29 @@ def schedule():
         
     return render_template('faculty/schedule.html', schedule=schedule_data, day_name=today_name)
 
+
+@faculty_bp.route('/events')
+@login_required
+def events():
+    # Fetch upcoming events
+    events_list = UniversityEvent.query.filter_by(is_upcoming=True).order_by(UniversityEvent.date).all()
+    return render_template('faculty/events.html', events=events_list)
+
+@faculty_bp.route('/events/<int:event_id>')
+@login_required
+def event_detail(event_id):
+    event = UniversityEvent.query.get_or_404(event_id)
+    # Get registered students
+    registrations = EventRegistration.query.filter_by(event_id=event.id).all()
+    return render_template('faculty/event_detail.html', event=event, registrations=registrations)
+
+@faculty_bp.route('/event/image/<int:event_id>')
+def event_image(event_id):
+    from flask import Response
+    event = UniversityEvent.query.get_or_404(event_id)
+    if not event.image_data:
+        return "", 404
+    return Response(event.image_data, mimetype=event.image_mimetype)
 
 @faculty_bp.route('/timetable')
 @login_required

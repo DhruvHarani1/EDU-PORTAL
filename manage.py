@@ -340,6 +340,25 @@ def seed():
             db.session.add(event)
 
         db.session.commit()
+
+        # 11. Event Registrations
+        print("Seeding Event Registrations...")
+        all_events = UniversityEvent.query.all()
+        all_students = StudentProfile.query.all()
+        from app.models import EventRegistration
+        for ev in all_events:
+            # Register 15-25 random students per event
+            reg_count = random.randint(15, 25)
+            registered_students = random.sample(all_students, reg_count)
+            for stu in registered_students:
+                reg = EventRegistration(
+                    event_id=ev.id,
+                    student_id=stu.id,
+                    registered_at=datetime.utcnow() - timedelta(days=random.randint(1, 5))
+                )
+                db.session.add(reg)
+        db.session.commit()
+
         print("--- Standard Seeding Complete ---")
 
 if __name__ == "__main__":
