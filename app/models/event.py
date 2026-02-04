@@ -27,7 +27,7 @@ class EventRegistration(db.Model):
     registered_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    student = db.relationship('StudentProfile', backref=db.backref('event_registrations', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('event_registrations', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Registration {self.student_id} -> {self.event_id}>'

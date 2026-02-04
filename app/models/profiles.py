@@ -23,7 +23,7 @@ class StudentProfile(db.Model):
     mentor = db.relationship('FacultyProfile', backref=db.backref('mentees', lazy=True))
 
     # Relationship with User
-    user = db.relationship('User', backref=db.backref('student_profile', uselist=False))
+    user = db.relationship('User', backref=db.backref('student_profile', uselist=False, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<StudentProfile {self.enrollment_number}>'

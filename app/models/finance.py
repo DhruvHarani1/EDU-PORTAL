@@ -17,7 +17,7 @@ class FeeRecord(db.Model):
     transaction_reference = db.Column(db.String(100), nullable=True)
     
     # Relationship
-    student = db.relationship('StudentProfile', backref=db.backref('fee_records', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('fee_records', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<FeeRecord Stud:{self.student_id} Sem:{self.semester} Status:{self.status}>'

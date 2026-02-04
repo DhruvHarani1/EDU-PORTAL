@@ -14,7 +14,7 @@ class StudentQuery(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    student = db.relationship('StudentProfile', backref=db.backref('queries', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('queries', lazy=True, cascade="all, delete-orphan"))
     faculty = db.relationship('FacultyProfile', backref=db.backref('queries', lazy=True))
     subject = db.relationship('Subject', backref=db.backref('queries', lazy=True))
     messages = db.relationship('QueryMessage', backref='query', lazy=True, cascade="all, delete-orphan")

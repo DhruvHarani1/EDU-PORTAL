@@ -34,7 +34,7 @@ class Attendance(db.Model):
     faculty_id = db.Column(db.Integer, db.ForeignKey('faculty_profile.id'), nullable=True) # Added Faculty Link
 
     # Relationship
-    student = db.relationship('StudentProfile', backref=db.backref('attendance_records', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('attendance_records', lazy=True, cascade="all, delete-orphan"))
     subject = db.relationship('Subject', backref=db.backref('attendance_records', lazy=True))
 
     def __repr__(self):
@@ -179,7 +179,7 @@ class StudentResult(db.Model):
     
     # Relationships
     paper = db.relationship('ExamPaper', backref=db.backref('results', lazy=True))
-    student = db.relationship('StudentProfile', backref=db.backref('exam_results', lazy=True))
+    student = db.relationship('StudentProfile', backref=db.backref('exam_results', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Result {self.student.enrollment_number} - {self.marks_obtained}>'
