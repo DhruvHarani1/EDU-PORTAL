@@ -7,9 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
+            @page { size: A4; margin: 0; }
             body { 
                 print-color-adjust: exact; 
                 -webkit-print-color-adjust: exact; 
+                margin: 0;
             }
             .no-print { display: none; }
         }
@@ -35,22 +37,23 @@
         <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:bg-indigo-700 font-medium transition">
             Print / Save as PDF
         </button>
-        <button onclick="window.history.back()" class="bg-gray-600 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-700 font-medium transition">
-            Back to Dashboard
+        <button onclick="window.close()" class="bg-gray-600 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-700 font-medium transition">
+            Close Window
         </button>
     </div>
 
     <!-- Marksheet Container -->
-    <div class="max-w-[210mm] mx-auto bg-white shadow-2xl my-10 min-h-[297mm] relative overflow-hidden print:shadow-none print:m-0 print:border-none">
+    <div class="max-w-[210mm] mx-auto bg-white shadow-2xl my-10 min-h-[297mm] relative overflow-hidden print:shadow-none print:m-0 print:border-none print:w-full">
         
         <!-- Decorative Border -->
         <div class="absolute inset-4 border-4 border-double border-gray-800 pointer-events-none z-10"></div>
-        <div class="absolute inset-0 waterwark flex items-center justify-center">
+        
+        <div class="absolute inset-0 watermark flex items-center justify-center">
             <h1 class="text-9xl font-black text-gray-100 rotate-[-45deg] select-none">EDU PORTAL</h1>
         </div>
 
         <!-- Content Padding -->
-        <div class="p-16 relative z-20 h-full flex flex-col">
+        <div class="p-12 relative z-20 h-full flex flex-col">
             
             <!-- Header -->
             <div class="text-center border-b-2 border-gray-800 pb-8 mb-8">
@@ -112,7 +115,7 @@
                             <td class="border border-gray-900 p-3 text-left font-semibold">{{ res.subject }}</td>
                             <td class="border border-gray-900 p-3">{{ res.credits }}</td>
                             <td class="border border-gray-900 p-3">{{ res.max_marks }}</td>
-                            <td class="border border-gray-900 p-3 font-bold">{{ res.marks }}</td>
+                            <td class="border border-gray-900 p-3 font-bold">{{ res.marks|round(2) }}</td>
                             <td class="border border-gray-900 p-3 font-bold">{{ res.grade }}</td>
                             <td class="border border-gray-900 p-3">{{ res.points }}</td>
                         </tr>
@@ -123,7 +126,7 @@
                             <td class="border border-gray-900 p-3 text-right" colspan="2">TOTAL</td>
                             <td class="border border-gray-900 p-3"></td>
                             <td class="border border-gray-900 p-3">{{ total_max_marks }}</td>
-                            <td class="border border-gray-900 p-3">{{ total_marks_obtained }}</td>
+                            <td class="border border-gray-900 p-3">{{ total_marks_obtained|round(2) }}</td>
                             <td class="border border-gray-900 p-3" colspan="2"></td>
                         </tr>
                     </tbody>

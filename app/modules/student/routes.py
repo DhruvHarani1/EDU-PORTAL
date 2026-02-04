@@ -27,12 +27,51 @@ def dashboard():
     # 4. Pending Fee Count
     pending_fees = FeeRecord.query.filter_by(student_id=student.id, status='Pending').count()
 
+    # 5. Calculate Latest SGPA (SPI)
+    # Fetch results for current semester (or latest available)
+    results = StudentResult.query.filter_by(student_id=student.id).all()
+    
+    total_credits = 0
+    total_points = 0
+    
+    # Filter for results belonging to the latest exam event
+    if results:
+        # Group by event to find latest
+        events = {}
+        for res in results:
+            eid = res.paper.exam_event_id
+            if eid not in events: events[eid] = []
+            events[eid].append(res)
+            
+        # Sort events by date (desc)
+        sorted_events = sorted(events.keys(), key=lambda eid: events[eid][0].paper.exam_event.start_date, reverse=True)
+        latest_eid = sorted_events[0]
+        latest_results = events[latest_eid]
+        
+        for res in latest_results:
+            marks = res.marks_obtained or 0
+            points = 0
+            if marks >= 90: points = 10
+            elif marks >= 80: points = 9
+            elif marks >= 70: points = 8
+            elif marks >= 60: points = 7
+            elif marks >= 50: points = 6
+            elif marks >= 40: points = 5
+            else: points = 0
+            
+            credits = res.paper.subject.weekly_lectures or 3
+            total_points += (points * credits)
+            total_credits += credits
+
+    latest_spi = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
+
     return render_template('student_dashboard.html', 
                            student=student, 
                            attendance_pct=attendance_pct, 
                            notices=notices, 
                            next_event=next_event, 
-                           pending_fees=pending_fees)
+                           pending_fees=pending_fees,
+                           latest_spi=latest_spi)
 
 # Placeholder Routes for Sidebar Navigation
 @student_bp.route('/attendance')
@@ -550,10 +589,7 @@ def id_card():
     
     return render_template('student/id_card.html', student=student)
 
-@student_bp.route('/clubs')
-@login_required
-def clubs():
-    return render_template('student_dashboard.html') # TODO: Create clubs.html
+
 
 
 
