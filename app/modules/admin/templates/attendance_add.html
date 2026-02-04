@@ -21,10 +21,10 @@
                 </div>
 
                 <div>
-                    <label for="course_name" class="block text-sm font-medium text-gray-700">Course Name</label>
+                    <label for="course_name" class="block text-sm font-medium text-gray-700">Branch</label>
                     <div class="mt-1">
                         <select id="course_name" name="course_name" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                            <option value="">-- Select Course --</option>
+                            <option value="">-- Select Branch --</option>
                             {% for c in courses %}
                             <option value="{{ c.code }}">{{ c.name }} ({{ c.code }})</option>
                             {% endfor %}

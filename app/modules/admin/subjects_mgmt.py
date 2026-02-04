@@ -24,12 +24,20 @@ def subject_list():
 @login_required
 def create_subject():
     name = request.form.get('name')
+    course = request.form.get('course')
+    semester = request.form.get('semester')
+    academic_year = request.form.get('academic_year')
+    
     if name:
-        # Create "Draft" subject
-        sub = Subject(name=name)
+        sub = Subject(
+            name=name,
+            course_name=course if course else None,
+            semester=int(semester) if semester else None,
+            academic_year=academic_year if academic_year else None
+        )
         db.session.add(sub)
         db.session.commit()
-        flash(f'Subject "{name}" created. Please assign details.', 'success')
+        flash(f'Subject "{name}" created successfully.', 'success')
     else:
         flash('Subject name is required.', 'error')
     return redirect(url_for('.subject_list'))
