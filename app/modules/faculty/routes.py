@@ -236,43 +236,18 @@ def attendance():
     faculty = FacultyProfile.query.filter_by(user_id=current_user.id).first_or_404()
     subjects = Subject.query.filter_by(faculty_id=faculty.id).all()
     
-    # Defaults
-    selected_subject_id = request.args.get('subject_id', type=int)
-    selected_date_str = request.args.get('date')
-    page = request.args.get('page', 1, type=int)
-    
-    attendance_data = []
-    stats = {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
-    selected_subject = None
-    lecture_history = []
-    pagination = {}
-    
-    # Check for Pending Attendance (For Notification)
-    today = date.today()
-    pending_count = 0
-    # Quick check for today's lectures
-    day_name = today.strftime('%A')
-    todays_slots = Timetable.query.filter_by(faculty_id=faculty.id, day_of_week=day_name).all()
-    for slot in todays_slots:
-        is_marked = Attendance.query.filter_by(subject_id=slot.subject_id, date=today).first()
-        if not is_marked:
-            pending_count += 1
-
+    # --- 1. HANDLE ATTENDANCE SUBMISSION (POST) ---
     if request.method == 'POST':
-        # Handle Attendance Submission
         subj_id = request.form.get('subject_id')
         date_val = request.form.get('date')
-        
-        # Re-fetch for safety
         target_subject = Subject.query.get_or_404(subj_id)
         
-        # iterate form
         for key in request.form:
             if key.startswith('status_'):
                 student_id = int(key.split('_')[1])
                 status = request.form[key]
                 
-                # Check Existing
+                # Update or Create record
                 att = Attendance.query.filter_by(
                     student_id=student_id,
                     subject_id=subj_id,
@@ -284,7 +259,7 @@ def attendance():
                 else:
                     new_att = Attendance(
                         student_id=student_id,
-                        course_name=target_subject.course_name, # Fallback
+                        course_name=target_subject.course_name,
                         date=datetime.strptime(date_val, '%Y-%m-%d').date(),
                         status=status,
                         subject_id=subj_id,
@@ -294,136 +269,147 @@ def attendance():
         
         db.session.commit()
         flash('Attendance updated successfully!', 'success')
-        return redirect(url_for('faculty.attendance', subject_id=subj_id, date=date_val))
+        # Return to the SAME marking view after saving
+        return redirect(url_for('faculty.attendance', mode='mark', subject_id=subj_id, date=date_val))
 
-    # If parameters provided, load Marking View (Unless view param is 'list')
-    view_mode = request.args.get('view')
-    
-    if selected_subject_id and selected_date_str and view_mode != 'list':
-        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
-        selected_subject = Subject.query.get_or_404(selected_subject_id)
-        
-        # 1. Fetch Students
-        students = StudentProfile.query.filter_by(
-            course_name=selected_subject.course_name,
-            semester=selected_subject.semester
-        ).order_by(StudentProfile.enrollment_number).all()
-        
-        # 2. Fetch Existing
-        existing_records = Attendance.query.filter_by(
-            subject_id=selected_subject_id,
-            date=selected_date
-        ).all()
-        
-        status_map = {att.student_id: att.status for att in existing_records}
-        
-        for student in students:
-            current_status = status_map.get(student.id, 'Present') 
-            attendance_data.append({'student': student, 'status': current_status})
-            if current_status == 'Present': stats['present'] += 1
-            else: stats['absent'] += 1
-                
-        stats['total'] = len(students)
-        if stats['total'] > 0:
-            stats['percentage'] = round((stats['present'] / stats['total']) * 100, 1)
+    # --- 2. GET PARAMETERS ---
+    mode = request.args.get('mode') # 'mark' or None
+    selected_subject_id = request.args.get('subject_id', type=int)
+    selected_date_str = request.args.get('date')
+    page = request.args.get('page', 1, type=int)
 
-        # 4. Calculate Low Attendance List (< 75%)
-        # Fetch ALL historical attendance for this subject
-        low_attendance_list = []
-        all_subject_attendance = Attendance.query.filter_by(subject_id=selected_subject_id).all()
-        
-        # Aggregation
-        student_stats = {} # { id: {total: 0, present: 0} }
-        for rec in all_subject_attendance:
-            if rec.student_id not in student_stats: student_stats[rec.student_id] = {'total': 0, 'present': 0}
-            student_stats[rec.student_id]['total'] += 1
-            if rec.status == 'Present':
-                student_stats[rec.student_id]['present'] += 1
-        
-        for student in students:
-            s_stat = student_stats.get(student.id, {'total': 0, 'present': 0})
-            if s_stat['total'] > 0:
-                pct = (s_stat['present'] / s_stat['total']) * 100
-            else:
-                pct = 100.0 # Default safe
+    # Initialize variables
+    attendance_data = []
+    stats = {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
+    selected_subject = None
+    lecture_history = []
+    pagination = {}
+    marking_mode = False
+    low_attendance_list = []
+
+    # --- 3. LOGIC BRANCHING ---
+
+    # A. MARKING MODE (Requires explicit mode='mark')
+    if mode == 'mark' and selected_subject_id and selected_date_str:
+        marking_mode = True
+        try:
+            selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+            selected_subject = Subject.query.get_or_404(selected_subject_id)
             
-            if pct < 75:
-                low_attendance_list.append({
-                    'student': student,
-                    'percentage': round(pct, 1),
-                    'attended': s_stat['present'],
-                    'total': s_stat['total']
-                })
+            # Fetch Students for this subject's class (course/semester)
+            students = StudentProfile.query.filter_by(
+                course_name=selected_subject.course_name,
+                semester=selected_subject.semester
+            ).order_by(StudentProfile.enrollment_number).all()
+            
+            # Fetch Existing Attendance
+            existing_records = Attendance.query.filter_by(
+                subject_id=selected_subject_id,
+                date=selected_date
+            ).all()
+            
+            status_map = {att.student_id: att.status for att in existing_records}
+            
+            for student in students:
+                current_status = status_map.get(student.id, 'Present') 
+                attendance_data.append({'student': student, 'status': current_status})
+                if current_status == 'Present': stats['present'] += 1
+                else: stats['absent'] += 1
+                    
+            stats['total'] = len(students)
+            if stats['total'] > 0:
+                stats['percentage'] = round((stats['present'] / stats['total']) * 100, 1)
 
-    else:
-        # Load Dashboard View: Lecture History
+            # Low Attendance Calculation
+            all_subject_attendance = Attendance.query.filter_by(subject_id=selected_subject_id).all()
+            student_stats = {} # {id: {total: 0, present: 0}}
+            for rec in all_subject_attendance:
+                if rec.student_id not in student_stats: student_stats[rec.student_id] = {'total': 0, 'present': 0}
+                student_stats[rec.student_id]['total'] += 1
+                if rec.status == 'Present': student_stats[rec.student_id]['present'] += 1
+            
+            for student in students:
+                s_stat = student_stats.get(student.id, {'total': 0, 'present': 0})
+                pct = (s_stat['present'] / s_stat['total'] * 100) if s_stat['total'] > 0 else 100.0
+                if pct < 75:
+                    low_attendance_list.append({
+                        'student': student,
+                        'percentage': round(pct, 1),
+                        'attended': s_stat['present'],
+                        'total': s_stat['total']
+                    })
+        except ValueError:
+            flash('Invalid date provided for marking.', 'error')
+            marking_mode = False
+
+    # B. DASHBOARD MODE (Default or if marking mode fails)
+    if not marking_mode:
         all_lectures = []
         
-        # Optimize: Filter dict of faculty's timetable slots by day
-        timetable_map = {}
+        # Build Timetable Cache
+        timetable_map = {} # {DayName: [Slots]}
         slots_query = Timetable.query.filter_by(faculty_id=faculty.id)
-        
-        # Filter Slots by Subject if provided
         if selected_subject_id:
-             slots_query = slots_query.filter_by(subject_id=selected_subject_id)
-             
-        slots = slots_query.all()
-        for slot in slots:
+            slots_query = slots_query.filter_by(subject_id=selected_subject_id)
+            selected_subject = Subject.query.get(selected_subject_id)
+        
+        faculty_slots = slots_query.all()
+        for slot in faculty_slots:
             if slot.day_of_week not in timetable_map: timetable_map[slot.day_of_week] = []
             timetable_map[slot.day_of_week].append(slot)
-            
-        # Determine Date Range
-        if selected_date_str:
-             try:
-                 # Specific Date
-                 date_range = [datetime.strptime(selected_date_str, '%Y-%m-%d').date()]
-             except ValueError:
-                 flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
-                 today = date.today()
-                 date_range = [today - timedelta(days=i) for i in range(30)]
-        else:
-             # Last 30 Days
-             today = date.today()
-             date_range = [today - timedelta(days=i) for i in range(30)]
 
-        # Iterate dates
+        # Determine Date Range to display
+        if selected_date_str:
+            try:
+                date_range = [datetime.strptime(selected_date_str, '%Y-%m-%d').date()]
+            except ValueError:
+                flash('Invalid date. Showing recent history instead.', 'error')
+                date_range = [date.today() - timedelta(days=i) for i in range(30)]
+        else:
+            date_range = [date.today() - timedelta(days=i) for i in range(30)]
+
+        # Find lectures for the date range
         for curr_date in date_range:
             day_name = curr_date.strftime('%A')
-            
             if day_name in timetable_map:
                 for slot in timetable_map[day_name]:
-                    # Check if marked
-                    marked_count = Attendance.query.filter_by(
-                        subject_id=slot.subject_id,
-                        date=curr_date
-                    ).count()
-                    
-                    status = 'Marked' if marked_count > 0 else 'Pending'
-                    
+                    marked_count = Attendance.query.filter_by(subject_id=slot.subject_id, date=curr_date).count()
                     all_lectures.append({
                         'date': curr_date,
                         'date_str': curr_date.strftime('%Y-%m-%d'),
                         'subject': slot.subject,
-                        'time': f"{9 + (slot.period_number-1)}:00 - {10 + (slot.period_number-1)}:00", # Approx logic
-                        'status': status
+                        'time': f"{9 + (slot.period_number-1)}:00 - {10 + (slot.period_number-1)}:00",
+                        'status': 'Marked' if marked_count > 0 else 'Pending'
                     })
         
-        # Sort descending by date
         all_lectures.sort(key=lambda x: x['date'], reverse=True)
 
-        # Pagination Logic (Manual list pagination)
+        # Pagination
         per_page = 5
         total_items = len(all_lectures)
         start = (page - 1) * per_page
         end = start + per_page
         lecture_history = all_lectures[start:end]
-        
         pagination = {
             'page': page,
             'total_pages': (total_items + per_page - 1) // per_page,
             'has_next': end < total_items,
             'has_prev': start > 0
         }
+
+    return render_template(
+        'faculty/attendance.html',
+        faculty=faculty,
+        subjects=subjects,
+        selected_subject=selected_subject,
+        selected_date=selected_date_str,
+        attendance_data=attendance_data,
+        stats=stats,
+        lecture_history=lecture_history,
+        pagination=pagination,
+        marking_mode=marking_mode,
+        low_attendance_list=low_attendance_list
+    )
 
     return render_template(
         'faculty/attendance.html', 
