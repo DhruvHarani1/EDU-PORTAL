@@ -1,6 +1,18 @@
 from datetime import date, datetime
 from app.extensions import db
 
+class Course(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False) # e.g. Bachelor of Technology
+    code = db.Column(db.String(20), unique=True, nullable=False) # e.g. B.Tech
+    department = db.Column(db.String(100), nullable=True)
+    duration_years = db.Column(db.Integer, default=4)
+    total_semesters = db.Column(db.Integer, default=8)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Course {self.code}>'
+
 class Exam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_name = db.Column(db.String(100), nullable=False)

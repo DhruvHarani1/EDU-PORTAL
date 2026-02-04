@@ -1,7 +1,8 @@
 from flask import render_template, request, flash, redirect, url_for, current_app, Response, make_response
+from datetime import datetime
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import User, StudentProfile, FacultyProfile, Subject
+from app.models import User, StudentProfile, FacultyProfile, Subject, Course
 from . import admin_bp
 import csv
 import io
@@ -73,13 +74,24 @@ def add_student():
             db.session.add(user)
             db.session.flush()
 
+            # Parse date if provided
+            dob_str = request.form.get('date_of_birth')
+            dob = datetime.strptime(dob_str, '%Y-%m-%d').date() if dob_str else None
+
             student = StudentProfile(
                 user_id=user.id,
                 display_name=name,
                 enrollment_number=enrollment,
                 course_name=course,
                 semester=semester,
-                mentor_id=request.form.get('mentor_id')
+                batch_year=request.form.get('batch_year'),
+                date_of_birth=dob,
+                phone_number=request.form.get('phone_number'),
+                address=request.form.get('address'),
+                guardian_name=request.form.get('guardian_name'),
+                guardian_contact=request.form.get('guardian_contact'),
+                mentor_id=request.form.get('mentor_id') or None,
+                id_card_status=request.form.get('id_card_status', 'Active')
             )
             db.session.add(student)
             db.session.commit()
@@ -90,7 +102,9 @@ def add_student():
             flash(f'Error adding student: {str(e)}', 'error')
 
     faculty_list = FacultyProfile.query.all()
-    return render_template('student_add.html', faculty_list=faculty_list)
+    courses = Course.query.order_by(Course.code).all()
+    
+    return render_template('student_add.html', faculty_list=faculty_list, courses=courses)
 
 @admin_bp.route('/students/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -115,6 +129,17 @@ def edit_student(id):
         student.enrollment_number = enrollment
         student.course_name = course
         student.semester = semester
+        student.batch_year = request.form.get('batch_year')
+        
+        dob_str = request.form.get('date_of_birth')
+        student.date_of_birth = datetime.strptime(dob_str, '%Y-%m-%d').date() if dob_str else None
+        
+        student.phone_number = request.form.get('phone_number')
+        student.address = request.form.get('address')
+        student.guardian_name = request.form.get('guardian_name')
+        student.guardian_contact = request.form.get('guardian_contact')
+        student.mentor_id = request.form.get('mentor_id') or None
+        student.id_card_status = request.form.get('id_card_status', 'Active')
         
         try:
             db.session.commit()
@@ -124,7 +149,10 @@ def edit_student(id):
             db.session.rollback()
             flash(f'Error updating student: {str(e)}', 'error')
             
-    return render_template('student_edit.html', student=student)
+    faculty_list = FacultyProfile.query.all()
+    courses = Course.query.order_by(Course.code).all()
+    
+    return render_template('student_edit.html', student=student, faculty_list=faculty_list, courses=courses)
 
 @admin_bp.route('/students/delete/<int:id>', methods=['POST'])
 @login_required

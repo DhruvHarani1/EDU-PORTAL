@@ -9,6 +9,17 @@ CREATE TABLE users (
 -- Indexes
 CREATE INDEX ix_users_email ON users (email);
 
+-- Course Schema
+CREATE TABLE course (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    code VARCHAR(20) UNIQUE NOT NULL,
+    department VARCHAR(100),
+    duration_years INTEGER DEFAULT 4,
+    total_semesters INTEGER DEFAULT 8,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Student Profile Schema
 CREATE TABLE student_profile (
     id SERIAL PRIMARY KEY,

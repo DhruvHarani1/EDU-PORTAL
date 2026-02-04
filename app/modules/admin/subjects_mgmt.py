@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Subject, FacultyProfile, StudentProfile
+from app.models import Subject, FacultyProfile, StudentProfile, Course
 
 subjects_bp = Blueprint('subjects', __name__)
 
@@ -13,8 +13,7 @@ def subject_list():
     
     # Data for assignment modal
     faculty_list = FacultyProfile.query.all()
-    courses = db.session.query(StudentProfile.course_name).distinct().all()
-    courses = [c[0] for c in courses if c[0]]
+    courses = Course.query.order_by(Course.code).all()
     
     return render_template('subjects/subject_list.html', 
                            subjects=subjects, 
@@ -39,6 +38,7 @@ def create_subject():
 @login_required
 def assign_subject():
     subject_id = request.form.get('subject_id')
+    sub = Subject.query.get_or_404(subject_id)
     course = request.form.get('course')
     semester = request.form.get('semester')
     academic_year = request.form.get('academic_year')

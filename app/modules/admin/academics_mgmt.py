@@ -1,7 +1,7 @@
 from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required
 from app.extensions import db
-from app.models import Exam, Attendance, StudentProfile
+from app.models import Exam, Attendance, StudentProfile, Course
 from datetime import datetime
 from . import admin_bp
 
@@ -74,4 +74,5 @@ def mark_attendance():
             db.session.rollback()
             flash(f'Error marking attendance: {str(e)}', 'error')
 
-    return render_template('attendance_add.html', students=students)
+    courses = Course.query.order_by(Course.code).all()
+    return render_template('attendance_add.html', students=students, courses=courses)
