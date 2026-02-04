@@ -359,6 +359,22 @@ def seed():
                 db.session.add(reg)
         db.session.commit()
 
+        # 12. Syllabi
+        print("Seeding Syllabi...")
+        from app.models import Syllabus
+        all_subjects = Subject.query.all()
+        sample_pdf = b"%PDF-1.4\n1 0 obj\n<< /Title (Sample Syllabus) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF"
+        for sub in all_subjects:
+            # Check if syllabus already exists (to avoid duplicates if re-seeding without reset)
+            if not sub.syllabus:
+                new_syl = Syllabus(
+                    subject_id=sub.id,
+                    filename=f"Syllabus_{sub.name.replace(' ', '_')}.pdf",
+                    file_data=sample_pdf
+                )
+                db.session.add(new_syl)
+        db.session.commit()
+
         print("--- Standard Seeding Complete ---")
 
 if __name__ == "__main__":

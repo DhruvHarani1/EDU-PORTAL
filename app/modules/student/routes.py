@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import io
 from datetime import datetime
 from . import student_bp
-from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, ExamEvent, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile
+from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, ExamEvent, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Syllabus
 from app.extensions import db
 from flask import render_template, request, redirect, url_for, flash, jsonify
 
@@ -308,13 +308,33 @@ def download_marksheet(exam_id):
 def notes():
     student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
     
-    # Fetch subjects for the student's current semester
-    subjects = Subject.query.filter_by(
+    # Fetch subjects for the student's current semester with syllabus pre-loaded
+    from sqlalchemy.orm import joinedload
+    subjects = Subject.query.options(joinedload(Subject.syllabus)).filter_by(
         course_name=student.course_name,
         semester=student.semester
     ).all()
     
     return render_template('student/notes.html', student=student, subjects=subjects)
+
+@student_bp.route('/syllabus/<int:subject_id>')
+@login_required
+def download_syllabus(subject_id):
+    # Security: Ensure student is enrolled in this subject's course/sem
+    student = StudentProfile.query.filter_by(user_id=current_user.id).first_or_404()
+    syllabus = Syllabus.query.filter_by(subject_id=subject_id).first_or_404()
+    
+    # Check if subject matches student's academic path
+    if syllabus.subject.course_name != student.course_name or syllabus.subject.semester != student.semester:
+        flash('Unauthorized syllabus access.', 'error')
+        return redirect(url_for('student.notes'))
+
+    return send_file(
+        io.BytesIO(syllabus.file_data),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=syllabus.filename
+    )
 
 @student_bp.route('/events')
 @login_required

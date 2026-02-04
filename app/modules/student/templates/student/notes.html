@@ -72,18 +72,30 @@
                     </div>
                 </div>
 
-                <!-- Action Button -->
-                {% if sub.resource_link %}
-                <a href="{{ sub.resource_link }}" target="_blank" rel="noopener noreferrer" 
-                   class="w-full flex items-center justify-center px-4 py-3 bg-gray-50 hover:bg-indigo-50 text-indigo-700 font-semibold rounded-xl border border-gray-200 hover:border-indigo-200 transition-colors group">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="Drive" class="h-5 w-5 mr-3 group-hover:scale-110 transition-transform">
-                    Open Drive Folder
-                </a>
-                {% else %}
-                <button disabled class="w-full px-4 py-3 bg-gray-50 text-gray-400 font-medium rounded-xl border border-gray-100 cursor-not-allowed">
-                    No Link Available
-                </button>
-                {% endif %}
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    {% if sub.syllabus %}
+                    <a href="{{ url_for('student.download_syllabus', subject_id=sub.id) }}" 
+                       class="w-full flex items-center justify-center px-4 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl border border-indigo-200 transition-colors group">
+                        <svg class="h-5 w-5 mr-3 text-indigo-500 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download Syllabus (PDF)
+                    </a>
+                    {% endif %}
+
+                    {% if sub.resource_link %}
+                    <a href="{{ sub.resource_link }}" target="_blank" rel="noopener noreferrer" 
+                       class="w-full flex items-center justify-center px-4 py-3 bg-gray-50 hover:bg-indigo-50 text-indigo-700 font-semibold rounded-xl border border-gray-200 hover:border-indigo-200 transition-colors group">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="Drive" class="h-5 w-5 mr-3 group-hover:scale-110 transition-transform">
+                        Open Drive Folder
+                    </a>
+                    {% else %}
+                    <button disabled class="w-full px-4 py-3 bg-gray-50 text-gray-400 font-medium rounded-xl border border-gray-100 cursor-not-allowed">
+                        Resources Pending
+                    </button>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}
