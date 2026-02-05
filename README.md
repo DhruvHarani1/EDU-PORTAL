@@ -1,114 +1,158 @@
-# EduPortal - University Management System
+<div align="center">
 
-Welcome to **EduPortal**, an Open Source University Management System built with **Flask** (Python) and **TailwindCSS**.
+# 🎓 EDU-PORTAL
+### The Future of University Management
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-2.3-000000?style=for-the-badge&logo=flask&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="University Banner" width="100%" style="border-radius: 10px;" />
+</p>
+
+[**🚀 Getting Started**](#-getting-started) •
+[**✨ Key Features**](#-key-features) •
+[**📚 Documentation**](#-documentation-hub) •
+[**🏗️ Tech Stack**](#-tech-stack) •
+[**🤝 Contributing**](#-contributing)
+
+</div>
+
+---
+
+## 🌟 Overview
+
+**EduPortal** is not just another management system; it is an **Intelligent Academic Operating System**. Built with a modern, high-performance stack (Flask + TailwindCSS), it bridges the gap between Administration, Faculty, and Students through a seamless, responsive, and data-driven interface.
+
+It features **AI-powered analytics**, automated scheduling algorithms, and a robust permission system, all wrapped in a premium, glassmorphism-inspired UI.
+
+---
+
+## ✨ Key Features
+
+### 🏛️ For Administrators
+*   **AI-Driven Insights**: Dashboard with predictive analytics for Student Retention (Truancy Risk) and Faculty Performance archetypes.
+*   **Automated Scheduling**: One-click **Timetable Generation** using a greedy constraint-satisfaction algorithm. Avoids conflicts automatically.
+*   **Examination Lifecycle**: Manage Exam Events, Schedule Papers, and auto-generate **Result Matrices (CSV)** for thousands of students.
+*   **Targeted Announcements**: Send notices to the entire university, specific courses, or individual faculty members.
+
+### 👨‍🏫 For Faculty
+*   **Batch Operations**: Mark attendance for 60+ students in seconds using our "Sticky Form" batch interface.
+*   **Result Entry**: Rapid-fire marks entry system with auto-validation and "Fail" flagging (Marks < 33%).
+*   **Mentorship Hub**: Dedicated dashboard to track and edit profiles for assigned mentees.
+*   **Smart Attendance**: Visual indicators for low-attendance students directly in the marking view.
+
+### 🎓 For Students
+*   **Live Dashboard**: Real-time **SPI (Semester Performance Index)** calculation and Attendance percentages.
+*   **Bunk Recovery Calculator**: "You need to attend next **5** classes to reach 75%."
+*   **Digital Services**: Apply for Scholarships, Register for Events, and Pay Fees online (simulated gateway).
+*   **Ticket System**: Direct query channel to faculty for academic doubts.
+
+---
+
+## 📚 Documentation Hub
+
+We believe code should be self-documenting, but we documented it anyway— **in extreme detail**.
+
+### 🛠️ Technical Deep Dives
+*   [**Architecture & Design**](docs/PROJECT_FUNCTIONAL_SPEC.md): The masterplan, user personas, and system vision.
+*   [**Database Schema**](docs/DATABASE_SCHEMA.md): Full ER Diagram and relationship details.
+*   [**Deployment Guide**](docs/DEPLOYMENT.md): Production setup updates.
+
+### 📝 Code Reference (The "Engine Room")
+*   [**AI & Analytics Engine**](docs/code_reference/app_modules_admin_reports_mgmt_code_notes.md): How we predict careers and classify faculty.
+*   [**Scheduler Algorithm**](docs/code_reference/app_modules_admin_timetable_mgmt_code_notes.md): The logic behind the timetable generator.
+*   [**Grading Logic**](docs/code_reference/app_modules_student_code_notes.md): Breakdowns of SPI, CGPA, and Attendance Recovery formulas.
+*   [**Exam System**](docs/code_reference/app_modules_admin_exams_mgmt_code_notes.md): How dynamic result CSVs are built.
+*   [**Core Models**](docs/code_reference/app_models_academics_code_notes.md): Deep dive into the `Course`, `Subject`, and `Attendance` tables.
+
+---
 
 ## 🚀 Getting Started
 
-Follow this guide to set up the project locally from scratch.
-
 ### 1. Prerequisites
-Ensure you have the following installed on your machine:
-*   **Python 3.8+**: [Download Python](https://www.python.org/downloads/)
-*   **Node.js & npm** (for TailwindCSS): [Download Node.js](https://nodejs.org/)
-*   **PostgreSQL**: [Download PostgreSQL](https://www.postgresql.org/download/)
+*   **Python 3.8+**
+*   **Node.js** (for TailwindCSS compilation)
+*   **PostgreSQL**
 
-### 2. Clone the Repository
+### 2. Installation
+
+**Backend Setup**
 ```bash
-git clone <repository-url>
+# Clone the repo
+git clone https://github.com/your-org/edu-portal.git
 cd EDU-PORTAL
-```
 
-### 3. Backend Setup (Python)
-Create a virtual environment and install dependencies.
-
-**Windows:**
-```bash
+# Create Virtual Env
 python -m venv .venv
-.venv\Scripts\activate
+# Windows: .venv\Scripts\activate
+# Mac/Linux: source .venv/bin/activate
+
+# Install Deps
 pip install -r requirements.txt
 ```
 
-**Mac/Linux:**
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 4. Frontend Setup (TailwindCSS)
-Install the Node.js dependencies required for compiling TailwindCSS.
-
+**Frontend Setup**
 ```bash
 npm install
 ```
 
-### 5. Configuration & Database Setup
-
-**A. Environment Variables**
-1.  Copy the example environment file:
+### 3. Configuration
+1.  Copy `.env.example` to `.env`.
+2.  Update your Database credentials.
+3.  Run the **Seeder** to populate the DB with realistic test data:
     ```bash
-    cp .env.example .env
+    python manage.py seed
     ```
-    *(On Windows, just copy and rename `.env.example` to `.env`)*
-2.  Open `.env` and update the database credentials (`DB_USER`, `DB_PASSWORD`, etc.) to match your local PostgreSQL setup.
 
-**B. Create Database**
-Open your PostgreSQL terminal (psql or pgAdmin) and create the database:
-```sql
-CREATE DATABASE "EduPortal";
-```
-*(Make sure the name matches `DB_NAME` in your `.env` file)*
+### 4. Running the App
+You need **two** terminals:
 
-**C. Initialize & Seed Database**
-Run the management script to create tables and populate them with sample data (Students, Faculty, Courses, Attendance, etc.).
-
-```bash
-python manage.py seed
-```
-*This command drops existing tables, creates new ones, and fills them with optimized test data.*
-
-### 6. Running the Application
-
-You need two terminals running simultaneously:
-
-**Terminal 1: TailwindCSS Compiler (Frontend)**
-Watches for HTML changes and rebuilds CSS in real-time.
+**Terminal 1 (CSS Compiler)**
 ```bash
 npm run dev
 ```
 
-**Terminal 2: Flask Server (Backend)**
-Runs the Python web server.
+**Terminal 2 (Flask Server)**
 ```bash
 flask run
 ```
 
-Access the application at: **http://127.0.0.1:5000**
+Visit: `http://127.0.0.1:5000`
 
 ---
 
-## 📚 Documentation Index
+## 🏗️ Tech Stack
 
-We have divided the detailed documentation into specific modules:
+### Backend
+*   **Framework**: Flask (Blueprints architecture)
+*   **ORM**: SQLAlchemy (Relational mapping)
+*   **Auth**: Flask-Login (RBAC: Admin, Faculty, Student)
+*   **Exports**: Python CSV, ReportLab (PDFs)
 
-### 🏗️ Architecture & Core
-*   [**Project Functional Spec**](docs/PROJECT_FUNCTIONAL_SPEC.md) - User Personas, Journeys, and Vision.
-*   [**System Architecture**](docs/ARCHITECTURE.md) - App Factory Pattern, Directory Structure.
-*   [**Database Schema**](docs/DATABASE_SCHEMA.md) - ERD, Model Relationships.
-
-### 🧠 Logic & Algorithms
-*   [**Feature & Data Flow Deep Dive**](docs/FEATURES_AND_DATA_FLOW.md) - Enrollment, Attendance, Exams.
-*   [**Admin Module Deep Dive**](docs/ADMIN_MODULE_DEEP_DIVE.md) - Prediction Algorithms, PDF Generation.
-*   [**Reports Manual**](docs/REPORTS_MANUAL.md) - How to interpret AI Faculty Intelligence.
-
-### 🛠️ Developer Resources
-*   [**Contributing Guide**](CONTRIBUTING.md) - Code Style, PR Process.
-*   [**Deployment Guide**](docs/DEPLOYMENT.md) - Production Setup (Gunicorn, Nginx).
+### Frontend
+*   **Styling**: **TailwindCSS v3** (Utility-first)
+*   **Components**: Jinja2 Templates (Server-Side Rendering)
+*   **Charts**: Chart.js (Data Visualization)
+*   **Icons**: FontAwesome & HeroIcons
 
 ---
 
-## 🔑 Default Login Credentials (Seeded Data)
+## 🔑 Login Credentials (Seed Data)
 
-*   **Admin**: `admin@edu.com` / `123`
-*   **Faculty**: `faculty1@edu.com` / `123`
-*   **Student**: `student1@edu.com` / `123`
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@edu.com` | `123` |
+| **Faculty** | `faculty1@edu.com` | `123` |
+| **Student** | `student1@edu.com` | `123` |
+
+---
+
+<div align="center">
+
+Made with ❤️ by the EduPortal Team.
+
+</div>

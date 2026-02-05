@@ -13,23 +13,24 @@
     *   **User Management**: Onboard students and hire faculty.
     *   **Academic Configuration**: Create Courses (B.Tech, MBA), Subjects, and Semesters.
     *   **Exam Controller**: Schedule "Exam Events", publish results, and declare holidays.
-    *   **Intelligence Viewer**: Access the "Future Sight" prediction engine to see batch performance trends.
+    *   **Intelligence Viewer**: Access the "Future Sight" prediction engine.
+    *   **Financial Overseer**: Track student fee payments and dues.
 
 ### 🎓 The Faculty (Teacher)
 *   **Role**: Academic Delivery & Assessment.
 *   **Key Capabilities**:
-    *   **Attendance Marking**: Log daily class attendance (Present/Absent).
-    *   **Result Entry**: Input marks for their specific subjects after exams.
-    *   **Notice Board**: Post course-specific announcements (e.g., "Assignment Due").
-    *   **Timetable View**: View their personal weekly schedule.
+    *   **Attendance Marking**: Log daily class attendance.
+    *   **Result Entry**: Input marks for their specific subjects.
+    *   **Support & Mentorship**: Reply to breakdown queries from their mentees.
+    *   **Timetable**: View generated weekly schedules.
 
 ### 🎒 The Student (End User)
 *   **Role**: Consumer of information.
 *   **Key Capabilities**:
     *   **Performance View**: See their own grades and GPA trends.
-    *   **Attendance Tracker**: View their innovative "Warning Bar" if attendance drops <75%.
-    *   **Notice Board**: Read university and course announcements.
-    *   **Profile**: Manage personal details.
+    *   **Event Hub**: Register for Cultural, Tech, or Sports events.
+    *   **Financials**: Check fee status and history.
+    *   **Helpdesk**: Raise queries directly to faculty or admin.
 
 ---
 
@@ -37,22 +38,34 @@
 
 ### A. The Academic Engine
 This module manages the core university structure.
-*   **Functionality**:
-    *   **Dynamic Timetable**: Automatically detects conflicts. If Prof. Smith is busy on Monday 9AM, the system won't let you book him for another class.
-    *   **Attendance Registry**: Real-time aggregation. It calculates percentages instantly, coloring students as **Green (Safe)**, **Yellow (Warning)**, or **Red (Critical)**.
+*   **Dynamic Timetable**: Automatically detects conflicts.
+*   **Attendance Registry**: Real-time aggregation. It calculates percentages instantly, coloring students as **Green (Safe)**, **Yellow (Warning)**, or **Red (Critical)**.
 
 ### B. The Examination System
 A hierarchical system designed for flexibility.
-1.  **Event Creation**: Admin creates "Winter Semester Finals 2024".
-2.  **Paper Scheduling**: Admin schedules "Maths I" on Dec 10th, "Physics" on Dec 12th.
-3.  **Result Entry**: Faculty enters marks for their respective papers.
-4.  **Result Publishing**: Admin clicks "Publish", and students can instantly see their Spider Charts.
+1.  **Event Creation**: Admin creates "Winter Semester Finals 2025".
+2.  **Paper Scheduling**: Admin schedules "Maths I" on Dec 10th.
+3.  **Result Entry**: Faculty enters marks; Admin publishes results.
 
-### C. The Intelligence Suite (Unique Feature)
-This is the USP (Unique Selling Point) of EduPortal.
-1.  **Career Prediction**: Using Monte Carlo simulations, the system predicts the "Future Salary" of a student based on their consistency and grades.
-2.  **Radar Analysis**: A 5-point spider chart that evaluates a student not just on grades, but on "Consistency" and "Attendance".
-3.  **Equity Index**: A metric for Faculty. It calculates how "Inclusive" a teacher is. (Low Standard Deviation in class marks = High Equity).
+### C. Student Support & Helpdesk
+A dedicated ticketing system for students.
+*   **Workflow**: Student raises query -> Linked Faculty receives notification -> Chat-style thread for resolution.
+*   **Categories**: Academic doubts, Leave requests, Administration issues.
+
+### D. University Life (Events)
+Beyond academics, managing campus culture.
+*   **Event Types**: Technical Symposiums, Cultural Nights, Sports Meets.
+*   **Registration**: Students can "One-Click Register" for events.
+*   **Multimedia**: Events support rich image banners.
+
+### E. Finance Module
+*   **Fee Tracking**: Semester-wise fee records (Paid/Pending/Partial).
+*   **History**: Students can view their entire payment ledger.
+
+### F. The Intelligence Suite (USP)
+1.  **Career Prediction**: Monte Carlo simulations predict "Future Salary".
+2.  **Radar Analysis**: A 5-point spider chart evaluating "Consistency" and "Attendance".
+3.  **Faculty Equity**: Measures how "Inclusive" a teacher is based on mark distribution standard deviation.
 
 ---
 
@@ -62,15 +75,11 @@ This is the USP (Unique Selling Point) of EduPortal.
 1.  **Admin** creates `ExamEvent`: "Mid-Terms".
 2.  **Admin** adds `ExamPaper`s for all subjects.
 3.  **Students** view the Date Sheet on their dashboard.
-4.  Exams happen offline.
-5.  **Faculty** logs in and sees "Pending Marks Entry". They input scores.
-6.  **Admin** reviews the "Batch Average". If it's too low, they may request moderation.
-7.  **Admin** publishes results.
-8.  **System** automatically updates the "Placement Prediction" for the batch based on new grades.
+4.  **Faculty** inputs scores once exams are done.
+5.  **Admin** publishes results, triggering AI prediction updates.
 
-### Journey 2: The "At-Risk" Intervention
-1.  **System** scans Attendance daily.
-2.  Student "John Doe" drops to 58% attendance.
-3.  **Admin Dashboard** shows John in the "Critical List" (Quick Actions).
-4.  **Admin** clicks John's profile -> "Send Warning Notice".
-5.  **John** receives a notification on his dashboard.
+### Journey 2: The "Event Registration" Flow
+1.  **Admin** posts "Hackathon 2026" under University Events.
+2.  **Student** sees the banner on their dashboard.
+3.  **Student** clicks "Register".
+4.  **System** adds them to the participant list and updates the database.

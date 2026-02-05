@@ -1,82 +1,122 @@
 # Database Schema Documentation
 
 ## Overview
-The database is normalized to 3NF standards where possible. We use **SQLAlchemy** as the ORM.
+The EduPortal database is built on **PostgreSQL** and uses **SQLAlchemy** as the ORM. The schema is normalized to **3NF** standards to ensure data integrity, with strict Foreign Key constraints and `ON DELETE CASCADE` rules to prevent orphaned records.
 
-### 1. Authentication & Users
-The system separates **Authentication Credentials** from **User Data**.
+## 1. Authentication & Profiles (Core)
 
-#### `User` Table (`app/models/user.py`)
-*   **Purpose**: Stores login info.
+### `users`
+*   **Purpose**: Central authentication table. Stores login credentials for all roles.
 *   **Fields**:
-    *   `id` (PK): Integer.
-    *   `email`: Unique String.
+    *   `id` (PK): Serial.
+    *   `email`: Unique String (Indexed).
     *   `password_hash`: Scrypt hashed string.
     *   `role`: Enum ('admin', 'student', 'faculty').
 
-#### `StudentProfile` Table (`app/models/profiles.py`)
-*   **Purpose**: Academic identity.
-*   **Fields**:
-    *   `id` (PK): Integer.
-    *   `user_id` (FK): Links to `User.id`.
-    *   `enrollment_number`: Unique (e.g., "STU2024001").
-    *   `course_name`: (e.g., "B.Tech").
-    *   `semester`: Integration current semester.
-*   **Relationships**: `user` (backref).
+### `faculty_profile`
+*   **Purpose**: Extended profile for faculty members.
+*   **Relationships**:
+    *   `user_id` (FK): Links to `users.id` (**Cascade Delete**).
+*   **Fields**: `designation`, `department`, `specialization`, `experience`, `photo_data`.
 
-#### `FacultyProfile` Table
-*   **Purpose**: Staff identity.
-*   **Fields**: `designation`, `department`, `specialization`.
-
----
-
-### 2. Academic Core
-
-#### `Subject` Table
-*   **Purpose**: Represents a specific course module (e.g., "Data Structures").
-*   **Fields**:
-    *   `faculty_id`: Who teaches this?
-    *   `semester`, `course_name`: Which batch is it for?
-    *   `weekly_lectures`: Expected load.
-
-#### `Attendance` Table (`app/models/academics.py`)
-*   **Purpose**: Daily log.
-*   **Volume**: High (One row per student per day).
-*   **Fields**:
-    *   `student_id` (FK).
-    *   `date`: Date object.
-    *   `status`: 'Present', 'Absent', 'Late'.
-    *   `course_name`: Denormalized for faster querying.
+### `student_profile`
+*   **Purpose**: extended profile for students. Includes academic linkage.
+*   **Relationships**:
+    *   `user_id` (FK): Links to `users.id` (**Cascade Delete**).
+    *   `mentor_id` (FK): Links to `faculty_profile.id` (Set Null).
+*   **Fields**: `enrollment_number` (Unique), `course_name`, `semester` (Int), `batch_year`, `guardian_name`.
 
 ---
 
-### 3. Examination System (Complex Hierarchy)
+## 2. Academic Management
 
-The exam system is hierarchical to support flexibility.
+### `course`
+*   **Purpose**: Defines degrees/programs (e.g., "B.Tech", "MBA").
+*   **Fields**: `name`, `code`, `department`, `total_semesters`.
 
-1.  **`ExamEvent`**: The "Season".
-    *   *Example*: "Winter Semester Finals 2025"
-    *   Attributes: `start_date`, `end_date`, `is_published`.
+### `subject`
+*   **Purpose**: Individual subjects being taught. Linked to Faculty.
+*   **Fields**: `name`, `semester`, `credits`, `weekly_lectures`.
+*   **FKs**: `faculty_id` (Set Null).
 
-2.  **`ExamPaper`**: The specific "Test".
-    *   *Example*: "Mathematics I - Paper A"
-    *   Linked to `ExamEvent`.
-    *   Attributes: `date`, `time`, `total_marks`.
-    *   Linked to `Subject` (So we know it's a Math test).
+### `syllabus`
+*   **Purpose**: PDF files for subject syllabus.
+*   **FKs**: `subject_id` (**Cascade Delete**).
+*   **Fields**: `file_data` (Binary), `filename`.
 
-3.  **`StudentResult`**: The "Score".
-    *   *Example*: "John scored 85 in Math".
-    *   Linked to `ExamPaper` AND `StudentProfile`.
-    *   Attributes: `marks_obtained`, `is_fail`.
+### `timetable`
+*   **Purpose**: Weekly schedule slots.
+*   **Fields**: `day_of_week` (Mon-Fri), `period_number` (1-8), `room_number`.
+*   **FKs**: 
+    *   `subject_id` (**Cascade Delete**).
+    *   `faculty_id` (**Cascade Delete**).
+
+### `schedule_settings`
+*   **Purpose**: Configuration for the timetable generator (start time, recess duration).
+*   **Fields**: `slots_per_day`, `recess_after_slot`.
+
+### `attendance`
+*   **Purpose**: Daily attendance logs.
+*   **Fields**: `date`, `status` (Present/Absent).
+*   **FKs**: `student_id` (**Cascade Delete**), `subject_id`, `faculty_id`.
 
 ---
 
-### 4. Communication
+## 3. Examination System
 
-#### `Notice` Table
-*   **Purpose**: System-wide announcements.
-*   **Fields**:
-    *   `category`: 'university', 'course', 'emergency'.
-    *   `target_course`: Optional filter (e.g., only show to 'MBA').
-    *   `target_faculty_id`: Optional filter.
-    *   `content`: HTML/Text body.
+### `exam_event`
+*   **Purpose**: The "Season" or high-level event (e.g., "Winter Semester Finals 2025").
+*   **Fields**: `start_date`, `end_date`, `is_published` (Boolean).
+
+### `exam_paper`
+*   **Purpose**: Specific paper within an event (e.g., "Maths I").
+*   **FKs**: 
+    *   `exam_event_id` (**Cascade Delete**).
+    *   `subject_id` (**Cascade Delete**).
+*   **Fields**: `date`, `start_time`, `end_time`, `total_marks`.
+
+### `student_result`
+*   **Purpose**: Stores marks for a specific student in a specific paper.
+*   **FKs**:
+    *   `exam_paper_id` (**Cascade Delete**).
+    *   `student_id` (**Cascade Delete**).
+*   **Fields**: `marks_obtained`, `is_fail` (Boolean), `status` (Present/Absent).
+
+---
+
+## 4. University Life & Communication
+
+### `university_event`
+*   **Purpose**: Cultural or Tech events (e.g., "Tech Fest", "Sports Meet").
+*   **Fields**: `title`, `description`, `date`, `category` (Sports/Tech/Cultural), `image_data`.
+
+### `event_registration`
+*   **Purpose**: Tracks which students are attending an event.
+*   **FKs**:
+    *   `event_id` (**Cascade Delete**).
+    *   `student_id` (**Cascade Delete**).
+*   **Constraint**: Unique constraint on `(event_id, student_id)` to prevent double registration.
+
+### `notice`
+*   **Purpose**: Broadcast messages.
+*   **Fields**: `title`, `content`, `category`, `target_course`.
+*   **FKs**: `target_student_id` (**Cascade Delete** - for private notices).
+
+---
+
+## 5. Administrative & Support
+
+### `fee_record`
+*   **Purpose**: Financial tracking.
+*   **FKs**: `student_id` (**Cascade Delete**).
+*   **Fields**: `amount_due`, `amount_paid`, `status` (Paid/Pending), `transaction_reference`.
+
+### `student_query`
+*   **Purpose**: Helpdesk tickets raised by students.
+*   **FKs**: `student_id` (**Cascade Delete**), `faculty_id` (Target).
+*   **Fields**: `title`, `status` (Pending/Resolved).
+
+### `query_message`
+*   **Purpose**: Chat history/replies within a query.
+*   **FKs**: `query_id` (**Cascade Delete**).
+*   **Fields**: `sender_type` (Student/Faculty), `content`.
