@@ -20,6 +20,21 @@ CREATE TABLE course (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Faculty Profile Schema (Created before student_profile for mentor_id)
+CREATE TABLE faculty_profile (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE,
+    designation VARCHAR(100) NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    experience INTEGER,
+    specialization VARCHAR(200),
+    assigned_subject VARCHAR(100),
+    photo_data BYTEA,
+    photo_mimetype VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
 -- Student Profile Schema
 CREATE TABLE student_profile (
     id SERIAL PRIMARY KEY,
@@ -36,23 +51,22 @@ CREATE TABLE student_profile (
     guardian_contact VARCHAR(15),
     id_card_status VARCHAR(20) DEFAULT 'Active',
     mentor_id INTEGER,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (mentor_id) REFERENCES faculty_profile (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (mentor_id) REFERENCES faculty_profile (id) ON DELETE SET NULL
 );
 
--- Faculty Profile Schema
-CREATE TABLE faculty_profile (
+-- Subjects Schema
+CREATE TABLE subject (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE,
-    designation VARCHAR(100) NOT NULL,
-    department VARCHAR(100) NOT NULL,
-    display_name VARCHAR(100) NOT NULL,
-    experience INTEGER,
-    specialization VARCHAR(200),
-    assigned_subject VARCHAR(100),
-    photo_data BYTEA,
-    photo_mimetype VARCHAR(50),
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    name VARCHAR(100) NOT NULL,
+    course_name VARCHAR(100),
+    semester INTEGER,
+    academic_year VARCHAR(20),
+    faculty_id INTEGER,
+    weekly_lectures INTEGER DEFAULT 3,
+    credits INTEGER DEFAULT 3,
+    resource_link VARCHAR(500),
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id) ON DELETE SET NULL
 );
 
 -- Notice Schema
@@ -68,9 +82,9 @@ CREATE TABLE notice (
     sender_faculty_id INTEGER,
     target_faculty_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (target_student_id) REFERENCES student_profile (id),
-    FOREIGN KEY (sender_faculty_id) REFERENCES faculty_profile (id),
-    FOREIGN KEY (target_faculty_id) REFERENCES faculty_profile (id)
+    FOREIGN KEY (target_student_id) REFERENCES student_profile (id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_faculty_id) REFERENCES faculty_profile (id) ON DELETE SET NULL,
+    FOREIGN KEY (target_faculty_id) REFERENCES faculty_profile (id) ON DELETE SET NULL
 );
 
 -- Exam Schema
@@ -92,23 +106,9 @@ CREATE TABLE attendance (
     status VARCHAR(20) NOT NULL,
     subject_id INTEGER,
     faculty_id INTEGER,
-    FOREIGN KEY (student_id) REFERENCES student_profile (id),
-    FOREIGN KEY (subject_id) REFERENCES subject (id),
-    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
-);
-
--- Subjects Schema
-CREATE TABLE subject (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    course_name VARCHAR(100),
-    semester INTEGER,
-    academic_year VARCHAR(20),
-    faculty_id INTEGER,
-    weekly_lectures INTEGER DEFAULT 3,
-    credits INTEGER DEFAULT 3,
-    resource_link VARCHAR(500),
-    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+    FOREIGN KEY (student_id) REFERENCES student_profile (id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE SET NULL,
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id) ON DELETE SET NULL
 );
 
 -- Syllabus Schema
@@ -118,10 +118,8 @@ CREATE TABLE syllabus (
     filename VARCHAR(255) NOT NULL,
     file_data BYTEA NOT NULL,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (subject_id) REFERENCES subject (id)
+    FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE CASCADE
 );
-
-
 
 -- Timetable Schema
 CREATE TABLE timetable (
@@ -133,8 +131,8 @@ CREATE TABLE timetable (
     subject_id INTEGER NOT NULL,
     faculty_id INTEGER NOT NULL, 
     room_number VARCHAR(20) DEFAULT 'Room 101',
-    FOREIGN KEY (subject_id) REFERENCES subject (id),
-    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id)
+    FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id) ON DELETE CASCADE
 );
 
 -- Schedule Settings Schema
@@ -149,7 +147,6 @@ CREATE TABLE schedule_settings (
     recess_duration INTEGER DEFAULT 0,
     recess_after_slot INTEGER DEFAULT 0
 );
-
 
 -- Exam Event Schema
 CREATE TABLE exam_event (
@@ -172,8 +169,8 @@ CREATE TABLE exam_paper (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     total_marks INTEGER DEFAULT 100,
-    FOREIGN KEY (exam_event_id) REFERENCES exam_event (id),
-    FOREIGN KEY (subject_id) REFERENCES subject (id)
+    FOREIGN KEY (exam_event_id) REFERENCES exam_event (id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE CASCADE
 );
 
 -- Student Result Schema
@@ -184,8 +181,8 @@ CREATE TABLE student_result (
     marks_obtained FLOAT,
     status VARCHAR(20) DEFAULT 'Present',
     is_fail BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (exam_paper_id) REFERENCES exam_paper (id),
-    FOREIGN KEY (student_id) REFERENCES student_profile (id)
+    FOREIGN KEY (exam_paper_id) REFERENCES exam_paper (id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES student_profile (id) ON DELETE CASCADE
 );
 
 -- University Event Schema
@@ -209,8 +206,8 @@ CREATE TABLE event_registration (
     event_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (event_id) REFERENCES university_event (id),
-    FOREIGN KEY (student_id) REFERENCES student_profile (id),
+    FOREIGN KEY (event_id) REFERENCES university_event (id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES student_profile (id) ON DELETE CASCADE,
     UNIQUE(event_id, student_id)
 );
 
@@ -227,7 +224,7 @@ CREATE TABLE fee_record (
     payment_date TIMESTAMP,
     payment_mode VARCHAR(50),
     transaction_reference VARCHAR(100),
-    FOREIGN KEY (student_id) REFERENCES student_profile (id)
+    FOREIGN KEY (student_id) REFERENCES student_profile (id) ON DELETE CASCADE
 );
 
 -- Student Query (Support) Schema
@@ -240,9 +237,9 @@ CREATE TABLE student_query (
     status VARCHAR(20) DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES student_profile (id),
-    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id),
-    FOREIGN KEY (subject_id) REFERENCES subject (id)
+    FOREIGN KEY (student_id) REFERENCES student_profile (id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty_profile (id) ON DELETE SET NULL,
+    FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE SET NULL
 );
 
 CREATE TABLE query_message (
@@ -253,5 +250,5 @@ CREATE TABLE query_message (
     image_data BYTEA,
     image_mimetype VARCHAR(50),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (query_id) REFERENCES student_query (id)
+    FOREIGN KEY (query_id) REFERENCES student_query (id) ON DELETE CASCADE
 );
