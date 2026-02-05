@@ -17,10 +17,14 @@ def dashboard():
     total_students = StudentProfile.query.count()
     total_faculty = FacultyProfile.query.count()
     
-    # 2. Daily Attendance (Mock today as last recorded day)
-    # real_today_att = Attendance.query.filter_by(date=date.today()).count() 
-    # using simple aggregate for demo
-    avg_att_global = 76 # Placeholder until complex query
+    # 2. Daily Attendance (Real Data)
+    # Calculate global average attendance %
+    total_att_records = Attendance.query.count()
+    if total_att_records > 0:
+        present_count = Attendance.query.filter_by(status='Present').count()
+        avg_att_global = round((present_count / total_att_records) * 100, 1)
+    else:
+        avg_att_global = 0
     
     # 3. Academic Health
     # Get recent batch average
@@ -32,12 +36,34 @@ def dashboard():
         global_avg_score = 0
         
     # 4. Critical Alerts (Danger Zone)
-    # Simplistic count of students with avg < 40 in any subject
-    danger_zone_count = 12 # Mocked for speed, or perform complex join
+    # Count students with avg < 40
+    # In prod: Use SQL Group By + Having. Here: Python iteration (cached/optimized)
+    danger_zone_count = 0
+    all_students_ids = [s[0] for s in db.session.query(StudentProfile.id).all()]
+    
+    # Pre-fetch all marks
+    all_marks_rows = db.session.query(StudentResult.student_id, StudentResult.marks_obtained).all()
+    student_marks_map = {sid: [] for sid in all_students_ids}
+    for sid, mark in all_marks_rows:
+        if mark is not None and sid in student_marks_map:
+            student_marks_map[sid].append(mark)
+            
+    for sid, marks in student_marks_map.items():
+        if marks:
+            s_avg = statistics.mean(marks)
+            if s_avg < 40:
+                danger_zone_count += 1
     
     # 5. Top Performer
-    # In prod, grouped query. Here:
-    top_student = "Student 42"
+    top_student = "N/A"
+    highest_avg = -1
+    for sid, marks in student_marks_map.items():
+        if marks:
+            s_avg = statistics.mean(marks)
+            if s_avg > highest_avg:
+                highest_avg = s_avg
+                # Fetch name lazy
+                top_student = StudentProfile.query.get(sid).display_name
     
     stats = {
         'total_students': total_students,
@@ -76,7 +102,7 @@ def student_performance_data():
     for r in results:
         sid = r.student_id
         if sid not in student_data: 
-            student_data[sid] = {'marks': [], 'sem_marks': {1:[], 2:[], 3:[]}, 'name': students.get(sid).display_name}
+            student_data[sid] = {'marks': [], 'sem_marks': {}, 'name': students.get(sid).display_name}
         
         if r.marks_obtained is not None:
             student_data[sid]['marks'].append(r.marks_obtained)
@@ -138,16 +164,20 @@ def student_performance_data():
     # FETCH ALL SUBJECTS (Safe Fallback)
     active_subjects = Subject.query.all()
     
-    for sub in active_subjects:
-        results = db.session.query(func.avg(StudentResult.marks_obtained))\
-            .select_from(StudentResult)\
-            .join(ExamPaper, StudentResult.exam_paper_id == ExamPaper.id)\
-            .filter(ExamPaper.subject_id == sub.id)\
-            .scalar()
-        
-        if results:
-            radar_labels.append(sub.name)
-            radar_data.append(round(results, 1))
+    # 3. Radar Data (Optimized & Limited)
+    # Fetch top 7 subjects with most results to prevent UI clutter
+    radar_query = db.session.query(
+        Subject.name,
+        func.avg(StudentResult.marks_obtained)
+    ).join(ExamPaper, ExamPaper.subject_id == Subject.id)\
+     .join(StudentResult, StudentResult.exam_paper_id == ExamPaper.id)\
+     .group_by(Subject.name)\
+     .order_by(func.count(StudentResult.id).desc())\
+     .limit(7).all()
+
+    for name, avg_score in radar_query:
+        radar_labels.append(name)
+        radar_data.append(round(avg_score, 1))
 
     # 4. AI Executive Summary / Review
     # Analyze the whole batch
