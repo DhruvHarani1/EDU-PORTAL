@@ -41,9 +41,11 @@ def create_exam_event():
         flash('Exam Event Created!', 'success')
         return redirect(url_for('.schedule_exam', event_id=event.id))
 
-    # Fetch courses from standard Course definition instead of enrolled students
-    courses_query = Course.query.with_entities(Course.name).all()
-    courses = [c.name for c in courses_query]
+    # Fetch courses from standard Course definition
+    # Use Course.code (e.g. B.Tech) to match Subject.course_name which stores the Course Code
+    courses_query = Course.query.with_entities(Course.code, Course.name).all()
+    # Pass dicts to template for code/name separation
+    courses = [{'code': c.code, 'name': c.name} for c in courses_query]
     return render_template('exams/create_event.html', courses=courses)
 
 @exams_bp.route('/exams/<int:event_id>/schedule', methods=['GET', 'POST'])
