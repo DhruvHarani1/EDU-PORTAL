@@ -1,7 +1,7 @@
 from flask import render_template, send_file, Response
 from flask_login import login_required, current_user
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 from . import student_bp
 from app.models import StudentProfile, Attendance, Subject, Timetable, StudentResult, ExamPaper, ExamEvent, UniversityEvent, EventRegistration, Notice, FeeRecord, StudentQuery, QueryMessage, FacultyProfile, Syllabus
 from app.extensions import db
@@ -409,10 +409,10 @@ def pay_fee(fee_id):
     
     # Simulate Payment
     fee.status = 'Paid'
-    fee.payment_date = datetime.utcnow()
+    fee.payment_date = datetime.now(timezone.utc)
     fee.payment_mode = 'Online'
     fee.amount_paid = fee.amount_due
-    fee.transaction_reference = f"TXN{int(datetime.utcnow().timestamp())}{fee.id}"
+    fee.transaction_reference = f"TXN{int(datetime.now(timezone.utc).timestamp())}{fee.id}"
     
     db.session.commit()
     return {'status': 'success', 'message': 'Payment successful!'}, 200
@@ -544,7 +544,7 @@ def send_message(query_id):
     if query.status == 'Answered':
         query.status = 'Pending'
     
-    query.updated_at = datetime.utcnow()
+    query.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return redirect(url_for('student.query_chat', query_id=query_id))
