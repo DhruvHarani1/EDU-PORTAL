@@ -36,3 +36,15 @@ def help_center():
 @main_bp.route('/system-status')
 def system_status():
     return render_template('system_status.html')
+
+@main_bp.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+@main_bp.route('/terms-of-service')
+def terms_of_service():
+    return render_template('terms_of_service.html')
+
+@main_bp.route('/cookie-settings')
+def cookie_settings():
+    return render_template('cookie_settings.html')

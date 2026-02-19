@@ -175,8 +175,8 @@
                 <h3 class="text-sm font-semibold text-gray-200 tracking-wider uppercase mb-4">Contact</h3>
                 <ul class="space-y-3 text-sm text-gray-400">
                     <li>support@eduportal.com</li>
-                    <li>+1 (555) 123-4567</li>
-                    <li>123 Education Lane, Tech City</li>
+                    <li>+91 98765 43210</li>
+                    <li>One World Trade Center, Suite 8500, New York, NY 10007</li>
                 </ul>
             </div>
         </div>
@@ -186,9 +186,9 @@
              <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
                 <p>&copy; 2026 EduPortal Inc. All rights reserved.</p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="hover:text-gray-300">Privacy Policy</a>
-                    <a href="#" class="hover:text-gray-300">Terms of Service</a>
-                    <a href="#" class="hover:text-gray-300">Cookie Settings</a>
+                    <a href="{{ url_for('main.privacy_policy') }}" class="hover:text-gray-300">Privacy Policy</a>
+                    <a href="{{ url_for('main.terms_of_service') }}" class="hover:text-gray-300">Terms of Service</a>
+                    <a href="{{ url_for('main.cookie_settings') }}" class="hover:text-gray-300">Cookie Settings</a>
                 </div>
             </div>
         </div>
