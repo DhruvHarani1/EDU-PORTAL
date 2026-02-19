@@ -16,3 +16,23 @@ def features_faculty():
 @main_bp.route('/features/admin')
 def features_admin():
     return render_template('features_admin.html')
+
+@main_bp.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+@main_bp.route('/documentation')
+def documentation():
+    return render_template('documentation.html')
+
+@main_bp.route('/api-reference')
+def api_reference():
+    return render_template('api_reference.html')
+
+@main_bp.route('/help-center')
+def help_center():
+    return render_template('help_center.html')
+
+@main_bp.route('/system-status')
+def system_status():
+    return render_template('system_status.html')
